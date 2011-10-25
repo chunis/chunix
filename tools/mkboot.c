@@ -13,7 +13,7 @@ int get_file_size(char *filepath)
 		return ret;
 	}
 
-	//printf("size: %d\n", buf.st_size);
+	printf("size: %d\n", buf.st_size);
 	return buf.st_size;
 }
 
