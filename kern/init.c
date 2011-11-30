@@ -1,6 +1,8 @@
-#include "global.h"
 #include <types.h>
+
+#include "global.h"
 #include "string.h"
+#include "console.h"
 
 extern uint8_t gdt_ptr[];
 
@@ -24,6 +26,10 @@ int main(void)
 {
 	int i = 0;
 	char wheel[] = { '\\', '|', '/', '-' };
+	char *os_str = "Welcome to ChuniX! :)";
+
+	cons_init();
+	putstr(os_str);
 
 	for(;;){
 		__asm__ ("movb	%%al, 0xb8000+160*24"::"a"(wheel[i]));

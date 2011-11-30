@@ -5,7 +5,7 @@ OBJDUMP = objdump
 
 all: kernel
 
-kernel: entry.o init.o string.o
+kernel: entry.o init.o string.o console.o
 	${LD} -s -e _start -Ttext 0x200094 -o kernel $^
 	${OBJDUMP} -d kernel > kernel.asm
 
@@ -17,4 +17,4 @@ kernel: entry.o init.o string.o
 
 
 clean:
-	@rm -f *.o kernel
+	@rm -f *.o kernel kernel.asm
