@@ -1,11 +1,14 @@
 *** How to build
 
-run 'make clean && make', you will get chunix.img
+run 'make clean && make', you will get chunix.img in the root directory
 
 
 
 
 *** How to run
+
+1. bochs: go to the root directory of chunix, and run:
+	$ bochs -f hd.bxrc
 
 2. qemu: go to the root directory of chunix, and run:
 

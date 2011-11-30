@@ -1,0 +1,25 @@
+megs: 32
+#cpu: count=1, ips=10000000
+romimage: file=$BXSHARE/BIOS-bochs-latest
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+vga: extension=none
+
+ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
+#ata0-master: type=disk, mode=flat, path="chunix.img", cylinders=100, heads=10, spt=10
+ata0-master: type=disk, mode=flat, path="chunix.img", cylinders=4, heads=16, spt=63
+boot: disk
+#clock: sync=realtime, time0=local
+#floppy_bootsig_check: disabled=0
+log: bochs.log
+panic: action=ask
+error: action=report
+info: action=ignore
+debug: action=ignore
+debugger_log: -
+parport1: enabled=1, file="/dev/stdout"
+vga_update_interval: 300000
+#keyboard_serial_delay: 250
+#keyboard_paste_delay: 100000
+mouse: enabled=0
+#private_colormap: enabled=0
+keyboard_mapping: enabled=0, map=
