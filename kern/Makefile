@@ -1,16 +1,19 @@
 CC = gcc
 LD = ld
+CFLAG = -nostdinc -I../inc -fno-builtin
+OBJDUMP = objdump
 
 all: kernel
 
-kernel: entry.o init.o
-	${LD} -s -e _start -Ttext 0x100000 -o kernel $^
+kernel: entry.o init.o string.o
+	${LD} -s -e _start -Ttext 0x200094 -o kernel $^
+	${OBJDUMP} -d kernel > kernel.asm
 
 %o: %c
-	${CC} -nostdinc -I../inc -c -o $@ $<
+	${CC} ${CFLAG} -c -o $@ $<
 
 %o: %s
-	${CC} -nostdinc -I../inc -c -o $@ $<
+	${CC} ${CFLAG} -c -o $@ $<
 
 
 clean:
