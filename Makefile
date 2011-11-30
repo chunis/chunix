@@ -9,10 +9,10 @@ OBJDUMP = objdump
 
 all: chunix.img
 
-chunix.img: bootsect kernel tools/blank_hd.img
+chunix.img: bootsect kernel tools/blank_hd.img.bz2
 	@cat boot/bootsect kern/kernel > tmp.img
 	@rm -f chunix.img
-	@cp tools/blank_hd.img chunix.img
+	@bzcat tools/blank_hd.img.bz2 > chunix.img
 	@dd if=tmp.img of=chunix.img conv=notrunc
 	@rm -f tmp.img
 
