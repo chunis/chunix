@@ -1,11 +1,3 @@
-CC = gcc
-AS = as
-LD = ld
-OBJCOPY = objcopy
-OBJDUMP = objdump
-
-.s.o:
-	${AS} -a $< -o $*.o >$*.map
 
 all: chunix.img
 

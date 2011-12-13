@@ -1,20 +1,16 @@
-CC = gcc
-LD = ld
-CFLAG = -nostdinc -I../inc -fno-builtin
-OBJDUMP = objdump
+include ../make.inc
 
 all: kernel
 
 kernel: entry.o init.o string.o console.o
-	${LD} -s -e _start -Ttext 0x200094 -o kernel $^
+	${LD} ${LDFLAGS} -s -e _start -Ttext 0x200094 -o kernel $^
 	${OBJDUMP} -d kernel > kernel.asm
 
-%o: %c
-	${CC} ${CFLAG} -c -o $@ $<
+%.o: %.c
+	${CC} ${CFLAGS} -c -o $@ $<
 
-%o: %s
-	${CC} ${CFLAG} -c -o $@ $<
-
+%.o: %.s
+	${AS} ${ASFLAGS} -o $@ $<
 
 clean:
 	@rm -f *.o kernel kernel.asm

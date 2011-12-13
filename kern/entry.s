@@ -16,6 +16,10 @@ _start:
 	sgdt	gdt_ptr
 	call	init_gdt
 	lgdt	gdt_ptr
+
+	call	init_idt
+	lidt	idt_ptr
+
 	ljmp	$KERN_CS, $pm_mode
 
 pm_mode:
