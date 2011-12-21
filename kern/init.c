@@ -5,8 +5,15 @@
 #include "string.h"
 #include "console.h"
 
+#define ISR_NUM		32
+#define KER_CODE	0x08
+#define KER_DATA	0x10
+#define KER_ISR		0x18
+
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];
+//extern void (*isr_table[ISR_NUM])(void);
+extern long isr_table[ISR_NUM];
 
 static void init_8259A(void)
 {
@@ -40,12 +47,12 @@ void init_gdt(void)
 	*gdt_lim = GDT_NUM * 8 - 1;
 }
 
-void idt_entry(uint8_t *idtp, uint32_t offset, int *sel)
+void idt_entry(uint8_t *idtp, uint32_t offset, int sel)
 {
-	uint16_t *p = idtp;
+	uint16_t *p = (uint16_t *)idtp;
 	*(p+0) = offset & 0xffff;
-	*(p+1) = 0x8e00;
-	*(p+2) = (uint16_t)sel;
+	*(p+1) = (uint16_t)sel;
+	*(p+2) = 0x8e00;	// attributes
 	*(p+3) = (offset >> 16) & 0xffff;
 }
 
@@ -53,10 +60,15 @@ void init_idt(void)
 {
 	uint32_t *idt_base;
 	uint16_t *idt_lim;
+	int i;
+
+	for(i=0; i<ISR_NUM; i++){
+		idt_entry(&idt[i<<2], isr_table[i], KER_CODE);
+	}
 
 	idt_base = (uint32_t *)(&idt_ptr[2]);
 	idt_lim = (uint16_t *)(&idt_ptr[0]);
-	*idt_base = (uint32_t)&gdt;
+	*idt_base = (uint32_t)&idt;
 	*idt_lim = IDT_NUM * 8 - 1;
 }
 
@@ -65,11 +77,13 @@ int main(void)
 	int i = 0;
 	char wheel[] = { '\\', '|', '/', '-' };
 	char *os_str = "Welcome to ChuniX! :)";
+	int a = 3, b = 0;
 
 	cons_init();
 	putstr(os_str);
 
-	//init_8259A();
+	init_8259A();
+	//a /= b;
 
 	for(;;){
 		__asm__ ("movb	%%al, 0xb8000+160*24"::"a"(wheel[i]));

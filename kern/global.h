@@ -7,7 +7,7 @@
 #define IDT_NUM		256
 
 uint8_t gdt[GDT_NUM*8];
-uint8_t idt[GDT_NUM*8];
+uint8_t idt[IDT_NUM*8];
 uint8_t gdt_ptr[6];
 uint8_t idt_ptr[6];
 
