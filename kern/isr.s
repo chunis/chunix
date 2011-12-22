@@ -15,11 +15,14 @@ isr\en:
 .endm
 
 isr_dummy:
-loop:
-	jmp	loop
+	hlt
 	iret
 
 isr_comm:
+	popl	%eax
+	pushl	%eax
+	addl	$0x30, %eax
+	movb	%al, 0xb8000+160*24+6
 	jmp		isr_dummy
 
 isr_noerr	0x00

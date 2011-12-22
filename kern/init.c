@@ -12,8 +12,10 @@
 
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];
-//extern void (*isr_table[ISR_NUM])(void);
-extern long isr_table[ISR_NUM];
+extern uint32_t isr_table[ISR_NUM];
+
+typedef void (*int_handler)(void);
+
 
 static void init_8259A(void)
 {
@@ -47,9 +49,11 @@ void init_gdt(void)
 	*gdt_lim = GDT_NUM * 8 - 1;
 }
 
-void idt_entry(uint8_t *idtp, uint32_t offset, int sel)
+void idt_entry(uint8_t *idtp, int_handler handler, uint16_t sel)
 {
+	uint32_t offset = (uint32_t)handler;
 	uint16_t *p = (uint16_t *)idtp;
+
 	*(p+0) = offset & 0xffff;
 	*(p+1) = (uint16_t)sel;
 	*(p+2) = 0x8e00;	// attributes
@@ -63,7 +67,7 @@ void init_idt(void)
 	int i;
 
 	for(i=0; i<ISR_NUM; i++){
-		idt_entry(&idt[i<<2], isr_table[i], KER_CODE);
+		idt_entry(&idt[i<<3], isr_table[i], KER_CODE);
 	}
 
 	idt_base = (uint32_t *)(&idt_ptr[2]);
@@ -83,7 +87,7 @@ int main(void)
 	putstr(os_str);
 
 	init_8259A();
-	//a /= b;
+	a /= b;
 
 	for(;;){
 		__asm__ ("movb	%%al, 0xb8000+160*24"::"a"(wheel[i]));
