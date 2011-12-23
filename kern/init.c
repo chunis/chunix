@@ -6,7 +6,7 @@
 #include "console.h"
 #include "printf.h"
 
-#define ISR_NUM		33
+#define ISR_NUM		34
 #define KER_CODE	0x08
 #define KER_DATA	0x10
 #define KER_ISR		0x18
@@ -92,6 +92,7 @@ int main(void)
 
 	init_8259A();
 	install_timer(100);
+	init_keyboard();
 	__asm__("sti\n");
 	//a /= b;
 
