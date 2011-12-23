@@ -1,10 +1,12 @@
 #include <types.h>
 #include "printf.h"
 
+#define BUF_LEN		(64+3)
+
 static void printint(int n, int base, int sign)
 {
 	static char digits[] = "0123456789ABCDEF";
-	char buf[33];
+	char buf[BUF_LEN];
 	int i = 0, flag = 0;
 	uint32_t ui = n;
 

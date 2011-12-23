@@ -82,16 +82,16 @@ int main(void)
 	int i = 0;
 	char wheel[] = { '\\', '|', '/', '-' };
 	char *os_str = "Welcome to ChuniX! :)\n";
-	int a = 43, b = 0;
+	int a = 42, b = 0;
 
 	cons_init();
 	putstr(os_str);
 
-	printf("a = %d = %o = %x = %p = %b\n", a, a, a, a, a);
-	printf("\n\nHello\tworld\n");
+	printf("\n%d = %o = %x = %p = %b\n", a, a, a, a, a);
+	printf("\nHello\twos\brld!\b\n");
 
 	init_8259A();
-	a /= b;
+	//a /= b;
 
 	for(;;){
 		__asm__ ("movb	%%al, 0xb8000+160*24"::"a"(wheel[i]));

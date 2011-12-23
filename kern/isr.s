@@ -1,3 +1,6 @@
+.set KER_CODE,	0x08	# kernel code segment selector
+.set KER_DATA,	0x10	# kernel data segment selector
+
 .text
 .globl isr_table, isr_dummy
 
@@ -15,7 +18,30 @@ isr\en:
 .endm
 
 isr_dummy:
-	hlt
+	pushal
+	pushl	%ds
+	pushl	%es
+	pushl	%fs
+	pushl	%gs
+	pushl	%ss
+
+	#movw	$KER_CODE, %ax
+	#movw	%ax, %cs
+	movw	$KER_DATA, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	movw	%ax, %fs
+	movw	%ax, %gs
+	movw	%ax, %ss
+	call	info
+
+	popl	%ss
+	popl	%gs
+	popl	%fs
+	popl	%es
+	popl	%ds
+	popal
+	addl	$0x8, %esp		# for isr_nr and errno
 	iret
 
 isr_comm:
