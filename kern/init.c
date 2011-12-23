@@ -4,6 +4,7 @@
 #include "global.h"
 #include "string.h"
 #include "console.h"
+#include "printf.h"
 
 #define ISR_NUM		32
 #define KER_CODE	0x08
@@ -80,11 +81,14 @@ int main(void)
 {
 	int i = 0;
 	char wheel[] = { '\\', '|', '/', '-' };
-	char *os_str = "Welcome to ChuniX! :)";
-	int a = 3, b = 0;
+	char *os_str = "Welcome to ChuniX! :)\n";
+	int a = 43, b = 0;
 
 	cons_init();
 	putstr(os_str);
+
+	printf("a = %d = %o = %x = %p = %b\n", a, a, a, a, a);
+	printf("\n\nHello\tworld\n");
 
 	init_8259A();
 	a /= b;
