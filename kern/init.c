@@ -6,7 +6,7 @@
 #include "console.h"
 #include "printf.h"
 
-#define ISR_NUM		32
+#define ISR_NUM		33
 #define KER_CODE	0x08
 #define KER_DATA	0x10
 #define KER_ISR		0x18
@@ -91,6 +91,8 @@ int main(void)
 	printf("\nHello\twos\brld!\b\n");
 
 	init_8259A();
+	install_timer(100);
+	__asm__("sti\n");
 	//a /= b;
 
 	for(;;){

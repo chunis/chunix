@@ -33,7 +33,7 @@ isr_dummy:
 	movw	%ax, %fs
 	movw	%ax, %gs
 	movw	%ax, %ss
-	call	info
+	call	timer_isr
 
 	popl	%ss
 	popl	%gs
@@ -84,6 +84,13 @@ isr_noerr	0x1D
 isr_noerr	0x1E
 isr_noerr	0x1F
 
+do_timer:
+	pushl	$0
+	pushl	$0x20
+	call	timer_isr
+	addl	$0x8, %esp		# for isr_nr and errno
+	iret
+
 isr_table:
 	.long	isr0x00, isr0x01, isr0x02, isr0x03
 	.long	isr0x04, isr0x05, isr0x06, isr0x07
@@ -93,3 +100,4 @@ isr_table:
 	.long	isr0x14, isr0x15, isr0x16, isr0x17
 	.long	isr0x18, isr0x19, isr0x1A, isr0x1B
 	.long	isr0x1C, isr0x1D, isr0x1E, isr0x1F
+	.long	do_timer

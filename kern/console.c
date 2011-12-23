@@ -21,6 +21,17 @@ void clean_screen(void)
 	cons_pos = 0;
 }
 
+void get_cursor(int *x, int *y)
+{
+	*x = cons_pos % CONS_COLS;
+	*y = cons_pos / CONS_COLS;
+}
+
+void set_cursor(int x, int y)
+{
+	cons_pos = y * CONS_COLS + x;
+}
+
 void cons_init(void)
 {
 	cons_buf = (uint16_t *)CGA_START;
