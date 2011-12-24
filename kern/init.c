@@ -5,11 +5,7 @@
 #include "string.h"
 #include "console.h"
 #include "printf.h"
-
-#define ISR_NUM		34
-#define KER_CODE	0x08
-#define KER_DATA	0x10
-#define KER_ISR		0x18
+#include "task.h"
 
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];
@@ -17,6 +13,8 @@ extern uint32_t isr_table[ISR_NUM];
 
 typedef void (*int_handler)(void);
 
+static uint32_t task1_stack3[1024];
+static uint32_t task2_stack3[1024];
 
 static void init_8259A(void)
 {
@@ -50,6 +48,19 @@ void init_gdt(void)
 	*gdt_lim = GDT_NUM * 8 - 1;
 }
 
+/*
+void gdt_entry(uint8_t *gdtp, int_handler handler, uint16_t sel)
+{
+	uint32_t offset = (uint32_t)handler;
+	uint16_t *p = (uint16_t *)gdtp;
+
+	*(p+0) = offset & 0xffff;
+	*(p+1) = (uint16_t)sel;
+	*(p+2) = 0x8e00;	// attributes
+	*(p+3) = (offset >> 16) & 0xffff;
+}
+*/
+
 void idt_entry(uint8_t *idtp, int_handler handler, uint16_t sel)
 {
 	uint32_t offset = (uint32_t)handler;
@@ -75,6 +86,33 @@ void init_idt(void)
 	idt_lim = (uint16_t *)(&idt_ptr[0]);
 	*idt_base = (uint32_t)&idt;
 	*idt_lim = IDT_NUM * 8 - 1;
+}
+
+void new_task(TASK_STRUCT *task, uint32_t eip,
+		uint32_t stack3, uint32_t sel)
+{
+	extern TASK_STRUCT task0;
+
+	// add ldt to gdt
+	// gdt_entry();
+	// set task->ldt[]
+
+	memmove(task, &task0, sizeof(TASK_STRUCT));
+	task->ldt_sel = sel;
+	task->regs.eip = eip;
+	task->regs.esp = (uint32_t)stack3;
+	task->regs.eflags = 0x3202;
+}
+
+void add_tasks(void)
+{
+	TASK_STRUCT task1, task2;
+
+	// add tss to gdt
+	// gdt_entry();
+
+	new_task(&task1, taskA, task1_stack3, KER_LDT1);
+	new_task(&task2, taskB, task2_stack3, KER_LDT2);
 }
 
 int main(void)
