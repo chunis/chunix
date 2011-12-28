@@ -4,6 +4,7 @@
 #include <types.h>
 
 #define INIT_PRIO	20
+#define LDT_SIZE	2
 
 enum TS_STATE {
 	TS_RUNNING,

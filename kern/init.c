@@ -6,6 +6,7 @@
 #include "console.h"
 #include "printf.h"
 #include "task.h"
+#include "descriptor.h"
 
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];
@@ -48,19 +49,6 @@ void init_gdt(void)
 	*gdt_lim = GDT_NUM * 8 - 1;
 }
 
-/*
-void gdt_entry(uint8_t *gdtp, int_handler handler, uint16_t sel)
-{
-	uint32_t offset = (uint32_t)handler;
-	uint16_t *p = (uint16_t *)gdtp;
-
-	*(p+0) = offset & 0xffff;
-	*(p+1) = (uint16_t)sel;
-	*(p+2) = 0x8e00;	// attributes
-	*(p+3) = (offset >> 16) & 0xffff;
-}
-*/
-
 void idt_entry(uint8_t *idtp, int_handler handler, uint16_t sel)
 {
 	uint32_t offset = (uint32_t)handler;
@@ -93,15 +81,16 @@ void new_task(TASK_STRUCT *task, uint32_t eip,
 {
 	extern TASK_STRUCT task0;
 
-	// add ldt to gdt
-	// gdt_entry();
-	// set task->ldt[]
-
 	memmove(task, &task0, sizeof(TASK_STRUCT));
 	task->ldt_sel = sel;
 	task->regs.eip = eip;
 	task->regs.esp = (uint32_t)stack3;
 	task->regs.eflags = 0x3202;
+
+	// add ldt to gdt
+	set_descriptor((DESCRIPTOR *)&gdt[sel], LDT_SIZE*sizeof(DESCRIPTOR)-1, task->ldt, 0xcf9a);
+
+	// set task->ldt[]
 }
 
 void add_tasks(void)
@@ -109,7 +98,7 @@ void add_tasks(void)
 	TASK_STRUCT task1, task2;
 
 	// add tss to gdt
-	// gdt_entry();
+	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], sizeof(tss)-1, &tss, 0xcf9a);
 
 	new_task(&task1, taskA, task1_stack3, KER_LDT1);
 	new_task(&task2, taskB, task2_stack3, KER_LDT2);

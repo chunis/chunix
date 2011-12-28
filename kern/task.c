@@ -59,7 +59,7 @@ void taskA(void)
 
 void taskB(void)
 {
-	int i = 0;
+	int i = 80;
 
-	__asm__ ("movb	%%al, 0xb8000+160*24+6"::"a"(i++));
+	__asm__ ("movb	%%al, 0xb8000+160*24+20"::"a"(i++));
 }
