@@ -2,9 +2,11 @@
 #define __TASK_H__
 
 #include <types.h>
+#include "descriptor.h"
 
 #define INIT_PRIO	20
 #define LDT_SIZE	2
+#define USR_STACK_SIZE 1024
 
 enum TS_STATE {
 	TS_RUNNING,
@@ -50,7 +52,7 @@ typedef struct {
 typedef struct _task {
 	STACK_FRAME regs;
 
-	uint32_t ldt[2*8/sizeof(int)];
+	DESCRIPTOR ldt[LDT_SIZE];
 	uint16_t ldt_sel;
 	uint32_t pid;
 	char name[24];
@@ -59,6 +61,7 @@ typedef struct _task {
 	struct _task *next;
 } TASK_STRUCT;
 
+void new_task(TASK_STRUCT *task, uint32_t eip, uint32_t stack3, uint32_t sel);
 void taskA(void);
 void taskB(void);
 

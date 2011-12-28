@@ -3,7 +3,8 @@
 #include "descriptor.h"
 
 // add an descriptor entry to GDT
-void set_descriptor(DESCRIPTOR *desp, uint32_t lim, uint32_t base, uint16_t attr)
+void set_descriptor(DESCRIPTOR *desp, uint32_t base,
+		uint32_t lim, uint16_t attr)
 {
 	desp->base_low = base & 0xffff;
 	desp->base_mid = (base >> 16) & 0xff;

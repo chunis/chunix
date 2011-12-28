@@ -22,7 +22,7 @@ typedef struct {
 	uint16_t offset_high;
 } GATE;
 
-void set_descriptor(DESCRIPTOR *desp, uint32_t lim, uint32_t base, uint16_t attr);
+void set_descriptor(DESCRIPTOR *desp, uint32_t base, uint32_t lim, uint16_t attr);
 void set_gate(GATE *gatep, uint32_t offset, uint8_t attr, uint16_t sel);
 
 #endif

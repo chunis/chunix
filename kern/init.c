@@ -14,8 +14,10 @@ extern uint32_t isr_table[ISR_NUM];
 
 typedef void (*int_handler)(void);
 
-static uint32_t task1_stack3[1024];
-static uint32_t task2_stack3[1024];
+static uint32_t task1_stack3[USR_STACK_SIZE];
+static uint32_t task2_stack3[USR_STACK_SIZE];
+
+TASK_STRUCT *current;
 
 static void init_8259A(void)
 {
@@ -76,32 +78,15 @@ void init_idt(void)
 	*idt_lim = IDT_NUM * 8 - 1;
 }
 
-void new_task(TASK_STRUCT *task, uint32_t eip,
-		uint32_t stack3, uint32_t sel)
+// add tss to gdt
+void setup_tss(void)
 {
-	extern TASK_STRUCT task0;
+	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], &tss, sizeof(tss)-1, 0xcf9a);
+	memmove(&tss, 0, sizeof(tss));
+	tss.ss0 = KER_DATA;
+	//tss.iobase = sizeof(tss);
 
-	memmove(task, &task0, sizeof(TASK_STRUCT));
-	task->ldt_sel = sel;
-	task->regs.eip = eip;
-	task->regs.esp = (uint32_t)stack3;
-	task->regs.eflags = 0x3202;
-
-	// add ldt to gdt
-	set_descriptor((DESCRIPTOR *)&gdt[sel], LDT_SIZE*sizeof(DESCRIPTOR)-1, task->ldt, 0xcf9a);
-
-	// set task->ldt[]
-}
-
-void add_tasks(void)
-{
-	TASK_STRUCT task1, task2;
-
-	// add tss to gdt
-	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], sizeof(tss)-1, &tss, 0xcf9a);
-
-	new_task(&task1, taskA, task1_stack3, KER_LDT1);
-	new_task(&task2, taskB, task2_stack3, KER_LDT2);
+	__asm__ ("ltrw  %%ax\n\t"::"a"(KER_TSS));
 }
 
 int main(void)
@@ -110,6 +95,7 @@ int main(void)
 	char wheel[] = { '\\', '|', '/', '-' };
 	char *os_str = "Welcome to ChuniX! :)\n";
 	int a = 42, b = 0;
+	TASK_STRUCT task1, task2;
 
 	cons_init();
 	putstr(os_str);
@@ -122,6 +108,20 @@ int main(void)
 	init_keyboard();
 	__asm__("sti\n");
 	//a /= b;
+
+	new_task(&task1, taskA, task1_stack3, KER_LDT1);
+	new_task(&task2, taskB, task2_stack3, KER_LDT2);
+	current = &task1;
+
+	tss.esp0 = current->ldt;
+	__asm__ ("lldt  %%ax\n\t"::"a"(current->ldt_sel));
+	__asm__ ("popl %gs\n\t" \
+			"popl %fs\n\t" \
+			"popl %es\n\t" \
+			"popl %ds\n\t" \
+			"popal\n\t" \
+			"addl %esp, 4\n\t" \
+			"iret\n\t");
 
 	for(;;){
 		__asm__ ("movb	%%al, 0xb8000+160*24"::"a"(wheel[i]));

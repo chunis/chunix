@@ -1,8 +1,9 @@
 #include <types.h>
 #include "task.h"
 #include "global.h"
+#include "descriptor.h"
 
-#define STACK_SIZE	256
+#define SA_RPL1     1
 
 TASK_STRUCT task0 = {
 	{ // STACK_FRAME
@@ -35,6 +36,33 @@ TASK_STRUCT task0 = {
 	INIT_PRIO, // priority
 	0, // next
 };
+
+// TODO: task->ldt[].attr need more improvement
+void new_task(TASK_STRUCT *task, uint32_t eip, uint32_t stack3, uint32_t sel)
+{
+	memmove(task, &task0, sizeof(TASK_STRUCT));
+
+	// set task->ldt[]
+	memmove(task->ldt, &gdt[KER_CODE], sizeof(DESCRIPTOR)*LDT_SIZE);
+	task->ldt[0].attr1 = 0x98 | 1<<5;
+	task->ldt[1].attr1 = 0x92 | 1<<5;
+
+	task->regs.cs = 0 & (TI_LDT << 2) | SA_RPL1;
+	task->regs.ds = 8 & (TI_LDT << 2) | SA_RPL1;
+	task->regs.es = 8 & (TI_LDT << 2) | SA_RPL1;
+	task->regs.fs = 8 & (TI_LDT << 2) | SA_RPL1;
+	task->regs.gs = 8 & (TI_LDT << 2) | SA_RPL1;
+	task->regs.ss = 8 & (TI_LDT << 2) | SA_RPL1;
+
+	task->ldt_sel = sel;
+	task->regs.eip = eip;
+	task->regs.esp = (uint32_t)stack3 + USR_STACK_SIZE;
+	task->regs.eflags = 0x3202;
+
+	// add ldt to gdt
+	set_descriptor((DESCRIPTOR *)&gdt[sel], task->ldt,
+			LDT_SIZE*sizeof(DESCRIPTOR)-1, 0x82);	// 0x82? 0xcf9a?
+}
 
 static void delay(int time)
 {
