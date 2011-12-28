@@ -74,10 +74,3 @@ void put_c(char c)
 			break;
 	}
 }
-
-void putstr(char *str)
-{
-	char *p = str;
-	while(*p)
-		put_c(*p++);
-}

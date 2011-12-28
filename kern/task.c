@@ -2,6 +2,7 @@
 #include "task.h"
 #include "global.h"
 #include "descriptor.h"
+#include "printf.h"
 
 #define SA_RPL1     1
 
@@ -56,7 +57,7 @@ void new_task(TASK_STRUCT *task, uint32_t eip, uint32_t stack3, uint32_t sel)
 
 	task->ldt_sel = sel;
 	task->regs.eip = eip;
-	task->regs.esp = (uint32_t)stack3 + USR_STACK_SIZE;
+	task->regs.esp = stack3;
 	task->regs.eflags = 0x3202;
 
 	// add ldt to gdt

@@ -16,6 +16,5 @@
 
 void cons_init(void);
 void put_c(char c);
-void putstr(char *str);
 
 #endif

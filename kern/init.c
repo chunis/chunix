@@ -81,7 +81,7 @@ void init_idt(void)
 // add tss to gdt
 void setup_tss(void)
 {
-	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], &tss, sizeof(tss)-1, 0xcf9a);
+	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss, sizeof(tss)-1, 0xcf9a);
 	memmove(&tss, 0, sizeof(tss));
 	tss.ss0 = KER_DATA;
 	//tss.iobase = sizeof(tss);
@@ -98,10 +98,7 @@ int main(void)
 	TASK_STRUCT task1, task2;
 
 	cons_init();
-	putstr(os_str);
-
-	printf("\n%d = %o = %x = %p = %b\n", a, a, a, a, a);
-	printf("\nHello\twos\brld!\b\n");
+	printf("%s\n", os_str);
 
 	init_8259A();
 	install_timer(100);
@@ -109,8 +106,8 @@ int main(void)
 	__asm__("sti\n");
 	//a /= b;
 
-	new_task(&task1, taskA, task1_stack3, KER_LDT1);
-	new_task(&task2, taskB, task2_stack3, KER_LDT2);
+	new_task(&task1, (uint32_t)taskA, (uint32_t)&task1_stack3+USR_STACK_SIZE, KER_LDT1);
+	new_task(&task2, (uint32_t)taskB, (uint32_t)&task2_stack3+USR_STACK_SIZE, KER_LDT2);
 	current = &task1;
 
 	tss.esp0 = current->ldt;

@@ -33,7 +33,7 @@ isr_dummy:
 	movw	%ax, %fs
 	movw	%ax, %gs
 	movw	%ax, %ss
-	call	timer_isr
+	#call	info
 
 	popl	%ss
 	popl	%gs
