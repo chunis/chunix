@@ -1,6 +1,7 @@
 #include <types.h>
 
 #include "descriptor.h"
+#include "printf.h"
 
 // add an descriptor entry to GDT
 void set_descriptor(DESCRIPTOR *desp, uint32_t base,
@@ -23,4 +24,16 @@ void set_gate(GATE *gatep, uint32_t offset, uint8_t attr, uint16_t sel)
 	gatep->sel = sel;
 	gatep->dcount = 0x00;	// be 0
 	gatep->attr = attr; // 0x8e
+}
+
+void dump_descriptor(DESCRIPTOR *desp)
+{
+	uint32_t base, lim;
+	uint16_t attr;
+
+	base = (desp->base_high << 24) | (desp->base_mid << 16) | desp->base_low;
+	lim = desp->lim_low | ((desp->attr2_lim_high & 0x0f) << 16);
+	attr = desp->attr1 | ((desp->attr2_lim_high &0xf0) << 8);
+
+	printf("base: %x, lim: %x, attr: %x\n", base, lim, attr);
 }

@@ -7,6 +7,7 @@
 #include "printf.h"
 #include "task.h"
 #include "descriptor.h"
+#include "const.h"
 
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];
@@ -81,12 +82,25 @@ void init_idt(void)
 // add tss to gdt
 void setup_tss(void)
 {
-	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss, sizeof(tss)-1, 0xcf9a);
+	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss, sizeof(tss)-1, DA_386TSS);
 	memmove(&tss, 0, sizeof(tss));
 	tss.ss0 = KER_DATA;
 	//tss.iobase = sizeof(tss);
 
 	__asm__ ("ltrw  %%ax\n\t"::"a"(KER_TSS));
+}
+
+void dump_gdt(void)
+{
+	int i;
+	uint32_t *gp = (uint32_t *)&gdt;
+
+	printf("\n------- dump_gdt() start ------\n");
+	for(i=0; i<6; i++) {
+		dump_descriptor((DESCRIPTOR *)gp);
+		gp += 2;
+	}
+	printf("------- dump_gdt() end --------\n");
 }
 
 int main(void)
@@ -110,14 +124,18 @@ int main(void)
 	new_task(&task2, (uint32_t)taskB, (uint32_t)&task2_stack3+USR_STACK_SIZE, KER_LDT2);
 	current = &task1;
 
+	setup_tss();
 	tss.esp0 = current->ldt;
-	__asm__ ("lldt  %%ax\n\t"::"a"(current->ldt_sel));
+
+	//dump_gdt();
+	__asm__ ("lldt %%ax\n\t"::"a"(current->ldt_sel));
+	__asm__ ("movl %%eax, %%esp\n\t"::"a"((uint32_t)current));
 	__asm__ ("popl %gs\n\t" \
 			"popl %fs\n\t" \
 			"popl %es\n\t" \
 			"popl %ds\n\t" \
 			"popal\n\t" \
-			"addl %esp, 4\n\t" \
+			"addl $0x4, %esp\n\t" \
 			"iret\n\t");
 
 	for(;;){

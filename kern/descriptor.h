@@ -3,8 +3,6 @@
 
 #include <types.h>
 
-enum TI_TYPE { TI_GDT, TI_LDT };
-
 typedef struct {
 	uint16_t lim_low;
 	uint16_t base_low;
@@ -24,5 +22,6 @@ typedef struct {
 
 void set_descriptor(DESCRIPTOR *desp, uint32_t base, uint32_t lim, uint16_t attr);
 void set_gate(GATE *gatep, uint32_t offset, uint8_t attr, uint16_t sel);
+void dump_descriptor(DESCRIPTOR *desp);
 
 #endif

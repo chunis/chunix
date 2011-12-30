@@ -3,8 +3,7 @@
 #include "global.h"
 #include "descriptor.h"
 #include "printf.h"
-
-#define SA_RPL1     1
+#include "const.h"
 
 TASK_STRUCT task0 = {
 	{ // STACK_FRAME
@@ -45,15 +44,15 @@ void new_task(TASK_STRUCT *task, uint32_t eip, uint32_t stack3, uint32_t sel)
 
 	// set task->ldt[]
 	memmove(task->ldt, &gdt[KER_CODE], sizeof(DESCRIPTOR)*LDT_SIZE);
-	task->ldt[0].attr1 = 0x98 | 1<<5;
-	task->ldt[1].attr1 = 0x92 | 1<<5;
+	task->ldt[0].attr1 = (DA_C + DA_32) | SA_RPL3<<5;
+	task->ldt[1].attr1 = DA_DRW | SA_RPL3<<5;
 
-	task->regs.cs = 0 & (TI_LDT << 2) | SA_RPL1;
-	task->regs.ds = 8 & (TI_LDT << 2) | SA_RPL1;
-	task->regs.es = 8 & (TI_LDT << 2) | SA_RPL1;
-	task->regs.fs = 8 & (TI_LDT << 2) | SA_RPL1;
-	task->regs.gs = 8 & (TI_LDT << 2) | SA_RPL1;
-	task->regs.ss = 8 & (TI_LDT << 2) | SA_RPL1;
+	task->regs.cs = 0 | SA_TIL | SA_RPL3;
+	task->regs.ds = 8 | SA_TIL | SA_RPL3;
+	task->regs.es = 8 | SA_TIL | SA_RPL3;
+	task->regs.fs = 8 | SA_TIL | SA_RPL3;
+	task->regs.gs = 8 | SA_TIL | SA_RPL3;
+	task->regs.ss = 8 | SA_TIL | SA_RPL3;
 
 	task->ldt_sel = sel;
 	task->regs.eip = eip;
@@ -62,7 +61,16 @@ void new_task(TASK_STRUCT *task, uint32_t eip, uint32_t stack3, uint32_t sel)
 
 	// add ldt to gdt
 	set_descriptor((DESCRIPTOR *)&gdt[sel], task->ldt,
-			LDT_SIZE*sizeof(DESCRIPTOR)-1, 0x82);	// 0x82? 0xcf9a?
+			LDT_SIZE*sizeof(DESCRIPTOR)-1, DA_LDT);
+
+	/* // output ldt for debug purpose
+	int i;
+	uint32_t *lp = (uint32_t *)task->ldt;
+	printf("Dump_descriptor: ldt:\n");
+	for(i=0; i<2; i++) {
+		dump_descriptor((DESCRIPTOR *)lp);
+		lp += 2;
+	} */
 }
 
 static void delay(int time)
@@ -78,17 +86,18 @@ void taskA(void)
 {
 	int i = 0;
 
-	__asm__ ("movb	%%al, 0xb8000+160*24+6"::"a"(i++));
-
-	/* while(1){
-		put_c(i++);
-		delay(1);
-	} */
+	while(1){
+		printf("%xA.", i++);
+		delay(500);
+	}
 }
 
 void taskB(void)
 {
 	int i = 80;
 
-	__asm__ ("movb	%%al, 0xb8000+160*24+20"::"a"(i++));
+	while(1){
+		printf("%xB.", i++);
+		delay(500);
+	}
 }
