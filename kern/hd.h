@@ -5,6 +5,10 @@
 
 void init_hd(void);
 
+#define SECT_SIZE 512
+#define HD_READ   0x20
+#define HD_WRITE  0x30
+
 // Hard Disk Registers: command
 #define HDR_DATA     0x1f0
 #define HDR_ERR      0x1f1

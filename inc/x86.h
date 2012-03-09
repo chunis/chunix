@@ -25,4 +25,12 @@ outb(int port, uint8_t val)
 	__asm__ __volatile__("outb %0, %w1" : : "a"(val), "d"(port));
 }
 
+static __inline void
+outsl(int port, void const *addr, int count)
+{
+	__asm__ __volatile__("cld\n\trepne\n\toutsl" : "=S"(addr), "=c"(count)
+				: "d"(port), "0"(addr), "1"(count)
+				: "cc");
+}
+
 #endif

@@ -32,7 +32,7 @@ static void init_8259A(void)
 	outb(0xa1, 0x01);
 
 	// disable all interrupts
-	outb(0x21, 0xff);
+	outb(0x21, (0xff & ~(1<<2)));  // enable IRQ2 for slave 8259A
 	outb(0xa1, 0xff);
 }
 
