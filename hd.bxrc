@@ -7,6 +7,7 @@ vga: extension=none
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 #ata0-master: type=disk, mode=flat, path="chunix.img", cylinders=100, heads=10, spt=10
 ata0-master: type=disk, mode=flat, path="chunix.img", cylinders=4, heads=16, spt=63
+ata0-slave: type=disk, mode=flat, path="hd.img", cylinders=130, heads=16, spt=63
 boot: disk
 #clock: sync=realtime, time0=local
 #floppy_bootsig_check: disabled=0
