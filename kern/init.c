@@ -118,6 +118,8 @@ int main(void)
 	install_timer(100);
 	init_keyboard();
 	init_hd();
+	mkfs();
+	init_fs();
 
 	__asm__("sti\n");
 	//a /= b;

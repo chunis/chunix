@@ -27,20 +27,20 @@
 #define CONT_ENTRY    0x20	// 0x20 ~ 0xFF
 
 struct superblock {
-	uint8_t rev_boot1[11];
-	uint8_t rev_bios[21];
-	uint8_t rev_boot2[372];
-	uint8_t time_stamp[8];
-	uint8_t da_blk[8];
-	uint8_t ia_size[8];
-	uint8_t magic_num[3];
-	uint8_t fs_version;
-	uint8_t total_blk[8];
-	uint8_t rev_blk[4];
-	uint8_t blk_size;
-	uint8_t checksum;
-	uint8_t rev_pt[64];  // partition table
-	uint8_t rev_boot_sig[2];  // boot signature
+	uint8_t  rev_boot1[11];
+	uint8_t  rev_bios[21];
+	uint8_t  rev_boot2[372];
+	uint64_t time_stamp;
+	uint64_t da_blk;
+	uint64_t ia_size;
+	uint8_t  magic_num[3];
+	uint8_t  fs_version;
+	uint64_t total_blk;
+	uint32_t rev_blk;
+	uint8_t  blk_size;
+	uint8_t  checksum;
+	uint8_t  rev_pt[64];  // partition table
+	uint8_t  rev_boot_sig[2];  // boot signature
 };
 
 #endif
