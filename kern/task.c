@@ -4,6 +4,8 @@
 #include "descriptor.h"
 #include "printf.h"
 #include "const.h"
+#include "fs.h"
+#include "string.h"
 
 TASK_STRUCT task0 = {
 	{ // STACK_FRAME
@@ -85,6 +87,23 @@ static void delay(int time)
 void taskA(void)
 {
 	int i = 0;
+	int fd;
+	int len = 6;
+	char buf[20];
+	char *file = "/first_file";
+	char *str = "My first file";
+
+	fd = open(file, O_CREAT);
+	printf("fd = %d\n", fd);
+	write(fd, str, strlen(str));
+	close(fd);
+
+	fd = open(file, O_RDWR);
+	printf("fd = %d\n", fd);
+	read(fd, buf, len);
+	buf[len] = '\0';
+	close(fd);
+	printf("In taskA, buf = %s\n", buf);
 
 	while(1){
 		printf("%xA.", i++);

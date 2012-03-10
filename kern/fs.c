@@ -12,6 +12,38 @@ struct superblock sb;
 
 void hd_rw(int cmd, int nb, int offset, char *buf);
 
+int open(const char *pathname, int flags)
+{
+	int fd = 0;
+
+	printf("In open\n");
+	return fd;
+}
+
+int read(int fd, void *buf, int n)
+{
+	int count;
+
+	printf("In read\n");
+	return count;
+}
+
+int write(int fd, const void *buf, int n)
+{
+	int count;
+
+	printf("In write\n");
+	return count;
+}
+
+int close(int fd)
+{
+	int ret;
+
+	printf("In close\n");
+	return 0;
+}
+
 static char calc_checksum(char *sb)
 {
 	char sum = 0;

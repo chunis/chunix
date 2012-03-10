@@ -8,7 +8,14 @@
 
 #include <types.h>
 
+int open(const char *pathname, int flags);
+int read(int fd, void *buf, int n);
+int write(int fd, const void *buf, int n);
+int close(int fd);
+
 #define OFILE  10	// open file for each process
+#define O_CREAT   1
+#define O_RDWR    2
 
 // Layout of areas
 #define SUPER_BLOCK   0x1

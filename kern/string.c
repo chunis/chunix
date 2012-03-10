@@ -36,7 +36,7 @@ int strlen(char const *s)
 {
 	int len = 0;
 
-	while(*s)
+	while(*s++)
 		len++;
 
 	return len;
