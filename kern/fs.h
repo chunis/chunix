@@ -8,6 +8,8 @@
 
 #include <types.h>
 
+#define OFILE  10	// open file for each process
+
 // Layout of areas
 #define SUPER_BLOCK   0x1
 #define RESERVED_AREA   0x2
@@ -41,6 +43,59 @@ struct superblock {
 	uint8_t  checksum;
 	uint8_t  rev_pt[64];  // partition table
 	uint8_t  rev_boot_sig[2];  // boot signature
+};
+
+struct inode {
+	uint8_t etype;	// entry type
+	uint8_t data[63];
+};
+
+struct file_desp {
+	int fd_mode;
+	int fd_off;
+	struct inode *fd_inode;
+};
+
+struct sfs_vol_id {
+	uint8_t etype;
+	uint8_t resv;
+	uint64_t time;
+	uint8_t name[52];
+};
+
+struct sfs_mark {
+	uint8_t etype;
+	uint8_t resv[63];
+};
+
+struct sfs_unused {
+	uint8_t etype;
+	uint8_t resv[63];
+};
+
+struct sfs_dir {
+	uint8_t etype;
+	uint8_t ne;  // number of entry
+	uint64_t time;
+	uint8_t name[54];
+};
+
+struct sfs_file {
+	uint8_t etype;
+	uint8_t ne;  // number of entry
+	uint64_t time;
+	uint64_t blk_start;
+	uint64_t blk_end;
+	uint64_t len;
+	uint8_t name[30];
+};
+
+struct sfs_unusable {
+	uint8_t etype;
+	uint8_t resv1[9];
+	uint64_t blk_start;
+	uint64_t blk_end;
+	uint8_t resv2[38];
 };
 
 #endif

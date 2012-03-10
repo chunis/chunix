@@ -3,6 +3,7 @@
 
 #include <types.h>
 #include "descriptor.h"
+#include "fs.h"
 
 #define INIT_PRIO	20
 #define LDT_SIZE	2
@@ -56,6 +57,7 @@ typedef struct _task {
 	uint16_t ldt_sel;
 	uint32_t pid;
 	char name[24];
+	struct file_desp *fdp[OFILE];
 	enum TS_STATE state;
 	int priority;
 	struct _task *next;
