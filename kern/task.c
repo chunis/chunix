@@ -116,6 +116,7 @@ void taskA(void)
 	char input[80];
 
 	while(1){
+		readline(">>> ");
 		i = 0;
 		while( (input[i++] = get_c()) != '\n'){
 			;

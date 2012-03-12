@@ -1,6 +1,8 @@
 #ifndef __CONST_H__
 #define __CONST_H__
 
+#define NULL  ((void *)0)
+
 // Descriptor attributes
 // Byte-6
 #define DA_LIM_4K	0x80
