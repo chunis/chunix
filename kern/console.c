@@ -36,6 +36,8 @@ void cons_init(void)
 {
 	cons_buf = (uint16_t *)CGA_START;
 	cons_pos = 0;
+	cbuf.wpos = 0;
+	cbuf.rpos = 0;
 
 	clean_screen();
 }
@@ -73,4 +75,18 @@ void put_c(char c)
 			put_color_c(BRIGHT_GREEN, c);
 			break;
 	}
+}
+
+char get_c(void)
+{
+	char c;
+
+	while(cbuf.rpos == cbuf.wpos)  // no chars available in cbuf.buf[]
+		;
+
+	c = cbuf.buf[cbuf.rpos++];
+	if(cbuf.rpos == CONS_SIZE)
+		cbuf.rpos = 0;
+
+	return c;
 }

@@ -87,6 +87,8 @@ static void delay(int time)
 void taskA(void)
 {
 	int i = 0;
+
+#if 0
 	int fd;
 	int len = 6;
 	char buf[20];
@@ -108,6 +110,18 @@ void taskA(void)
 	while(1){
 		printf("%xA.", i++);
 		delay(500);
+	}
+#endif
+
+	char input[80];
+
+	while(1){
+		i = 0;
+		while( (input[i++] = get_c()) != '\n'){
+			;
+		}
+		input[--i] = '\0';  // delete the last '\n'
+		printf("You inputed is '%s'\n", input);
 	}
 }
 

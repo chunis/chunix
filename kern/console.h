@@ -16,5 +16,12 @@
 
 void cons_init(void);
 void put_c(char c);
+char get_c(void);
+
+struct console_buf {
+	char buf[CONS_SIZE];
+	int rpos;  // read position
+	int wpos;  // write position
+} cbuf;
 
 #endif
