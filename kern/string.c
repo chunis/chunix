@@ -1,4 +1,5 @@
 #include "string.h"
+#include "const.h"
 
 void *memmove(void *dst, const void *src, uint32_t n)
 {
@@ -40,4 +41,39 @@ int strlen(char const *s)
 		len++;
 
 	return len;
+}
+
+int strcmp(char const *s, char const *t)
+{
+	while(s && t && *s == *t){
+		s++;
+		t++;
+	}
+	if(s == NULL && t == NULL)
+		return 0;
+	else if(s == NULL)
+		return -1;
+	else if(t == NULL)
+		return 1;
+	else
+		return *s - *t;
+}
+
+int strncmp(char const *s, char const *t, int n)
+{
+	while(s && t && *s == *t && n>0){
+		s++;
+		t++;
+		n--;
+	}
+	if(n == 0)
+		return 0;
+	else if(s == NULL && t == NULL)
+		return 0;
+	else if(s == NULL)
+		return -1;
+	else if(t == NULL)
+		return 1;
+	else
+		return *s - *t;
 }

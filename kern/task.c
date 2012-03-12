@@ -112,18 +112,7 @@ void taskA(void)
 		delay(500);
 	}
 #endif
-
-	char input[80];
-
-	while(1){
-		readline(">>> ");
-		i = 0;
-		while( (input[i++] = get_c()) != '\n'){
-			;
-		}
-		input[--i] = '\0';  // delete the last '\n'
-		printf("You inputed is '%s'\n", input);
-	}
+	monitor();
 }
 
 void taskB(void)
