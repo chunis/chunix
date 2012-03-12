@@ -64,6 +64,9 @@ void monitor(void)
 		input = readline(">>> ");
 
 		cmd = strip_lspace(input);
+		if(*cmd == '\0')
+			continue;
+
 		if( !strncmp(cmd, "bc", 2) ){
 			bc();
 		} else if( !strncmp(cmd, "clr", 3) ){
