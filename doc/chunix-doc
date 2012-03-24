@@ -3,13 +3,16 @@
 run 'make clean && make', you will get chunix.img in the root directory
 
 
-
-
 *** How to run
 
-1. bochs: go to the root directory of chunix, and run:
-	$ bochs -f hd.bxrc
+1. bochs:
+* In root dir, just type 'make bochs',
+or:
+* go to the root directory of chunix, and run:
+	>> bochs -f hd.bxrc
 
-2. qemu: go to the root directory of chunix, and run:
-
-	$ qemu -hda chunix.img
+2. qemu:
+* In root dir, just type 'make qemu',
+or:
+* go to the root directory of chunix, and run:
+	>> qemu -hda chunix.img -hdb hd.img
