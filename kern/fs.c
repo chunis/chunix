@@ -6,17 +6,68 @@
 #include <types.h>
 #include "hd.h"
 #include "fs.h"
+#include "const.h"
+#include "task.h"
+
+#define IE_SIZE 64	// Index entries size is 64 bytes each
 
 char buf[SECT_SIZE];
 struct superblock sb;
 
 void hd_rw(int cmd, int nb, int offset, char *buf);
 
+static struct inode *search_inode()
+{
+	return NULL;
+}
+
+static struct inode *create_file()
+{
+	return NULL;
+}
+
 int open(const char *pathname, int flags)
 {
-	int fd = 0;
+	int fd = -1;
+	int i;
+	struct inode *inp;
 
 	printf("In open\n");
+	printf("pathname: %s\n", pathname);
+
+	// search free slot in fdp[]
+	for(i = 0; i < OFILE; i++){
+		if(current->fdp[i] == 0){
+			fd = i;
+			break;
+		}
+	}
+	if(fd < 0 || fd >= OFILE)
+		panic("open: fdp[] is full!");
+
+	// search free slot in fdtable[]
+	for(i = 0; i < NR_FDT; i++){
+		if(fdtable[i].fd_inode == 0)
+			break;
+	}
+	if(i >= NR_FDT)
+		panic("open: fdtable[] is full!");
+
+	inp = search_inode(pathname);
+	if(! inp){		// file doesn't exist
+		if(flags & O_CREAT){
+			inp = create_file(pathname);
+			if(!inp)
+				printf("Create file fail!\n");
+		} else {
+			return -1;
+		}
+	}
+	current->fdp[fd] = &fdtable[i];
+	fdtable[i].fd_inode = inp;
+	fdtable[i].fd_mode = flags;
+	fdtable[i].fd_off = 0;
+
 	return fd;
 }
 
@@ -60,8 +111,8 @@ void init_superblock(void)
 	hd_rw(HD_READ, 1, 0, (char *)&sb);
 
 	sb.time_stamp = 0;
-	sb.da_blk = 0;
-	sb.ia_size = 0;
+	sb.da_blk = 0;			// by blocks
+	sb.ia_size = 0;			// by 64 bytes each
 	sb.magic_num[0] = 'S';
 	sb.magic_num[1] = 'F';
 	sb.magic_num[2] = 'S';

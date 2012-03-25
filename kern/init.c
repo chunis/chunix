@@ -18,8 +18,6 @@ typedef void (*int_handler)(void);
 static uint32_t task1_stack3[USR_STACK_SIZE];
 static uint32_t task2_stack3[USR_STACK_SIZE];
 
-TASK_STRUCT *current;
-
 static void init_8259A(void)
 {
 	outb(0x20, 0x11);

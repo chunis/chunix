@@ -63,6 +63,8 @@ typedef struct _task {
 	struct _task *next;
 } TASK_STRUCT;
 
+TASK_STRUCT *current;
+
 void new_task(TASK_STRUCT *task, uint32_t eip, uint32_t stack3, uint32_t sel);
 void taskA(void);
 void taskB(void);

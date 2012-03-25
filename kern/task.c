@@ -88,7 +88,6 @@ void taskA(void)
 {
 	int i = 0;
 
-#if 0
 	int fd;
 	int len = 6;
 	char buf[20];
@@ -107,6 +106,7 @@ void taskA(void)
 	close(fd);
 	printf("In taskA, buf = %s\n", buf);
 
+#if 0
 	while(1){
 		printf("%xA.", i++);
 		delay(500);

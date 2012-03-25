@@ -14,6 +14,8 @@ int write(int fd, const void *buf, int n);
 int close(int fd);
 
 #define OFILE  10	// open file for each process
+#define NR_FDT 64	// size of fdtable[]
+
 #define O_CREAT   1
 #define O_RDWR    2
 
@@ -104,5 +106,7 @@ struct sfs_unusable {
 	uint64_t blk_end;
 	uint8_t resv2[38];
 };
+
+struct file_desp fdtable[NR_FDT];
 
 #endif

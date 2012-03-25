@@ -77,3 +77,10 @@ void printf(char *fmt, ...)
 		}
 	}
 }
+
+void panic(char *str)
+{
+	printf("Kernel PANIC!! --> %s\n", str);
+
+	while(1) ;  // loop forever
+}
