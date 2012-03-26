@@ -16,6 +16,12 @@ int close(int fd);
 #define OFILE  10	// open file for each process
 #define NR_FDT 64	// size of fdtable[]
 
+// buffer size for inode cache array
+#define IBUF1  100
+#define IBUF2  30
+#define IBUF3  8
+#define IBUF4  4
+
 #define O_CREAT   1
 #define O_RDWR    2
 
@@ -54,10 +60,12 @@ struct superblock {
 	uint8_t  rev_boot_sig[2];  // boot signature
 };
 
+/*
 struct inode {
 	uint8_t etype;	// entry type
 	uint8_t data[63];
 };
+*/
 
 struct file_desp {
 	int fd_mode;
@@ -107,6 +115,58 @@ struct sfs_unusable {
 	uint8_t resv2[38];
 };
 
+// inode cache in memory for files whose index entry size == 64 bytes
+struct inode1 {
+	int nb;		// block number in hd
+	uint8_t ni;		// index number in a single block
+	int8_t nref;	// reference count
+	int8_t rw;		// read/write flag
+	int8_t dirty;	// is this inode changed?
+
+	struct sfs_file sfile;	// index block (64bytes)
+};
+
+// inode cache in memory for files whose index entry size == 64*2 bytes
+struct inode2 {
+	int nb;		// block number in hd
+	uint8_t ni;		// index number in a single block
+	int8_t nref;	// reference count
+	int8_t rw;		// read/write flag
+	int8_t dirty;	// is this inode changed?
+
+	struct sfs_file sfile;	// index block (64bytes)
+	uint8_t cont_ent[64];
+};
+
+// inode cache in memory for files whose index entry size == 64*3 bytes
+struct inode3 {
+	int nb;		// block number in hd
+	uint8_t ni;		// index number in a single block
+	int8_t nref;	// reference count
+	int8_t rw;		// read/write flag
+	int8_t dirty;	// is this inode changed?
+
+	struct sfs_file sfile;	// index block (64bytes)
+	uint8_t cont_ent[64*2];
+};
+
+// inode cache in memory for files whose index entry size == 64*4 bytes
+struct inode4 {
+	int nb;		// block number in hd
+	uint8_t ni;		// index number in a single block
+	int8_t nref;	// reference count
+	int8_t rw;		// read/write flag
+	int8_t dirty;	// is this inode changed?
+
+	struct sfs_file sfile;	// index block (64bytes)
+	uint8_t cont_ent[64*3];
+};
+
 struct file_desp fdtable[NR_FDT];
+
+struct inode1 ibuf1[IBUF1];
+struct inode2 ibuf2[IBUF2];
+struct inode3 ibuf3[IBUF3];
+struct inode4 ibuf4[IBUF4];
 
 #endif

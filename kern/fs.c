@@ -13,12 +13,43 @@
 
 char buf[SECT_SIZE];
 struct superblock sb;
+int ibufs[4] = { IBUF1, IBUF2, IBUF3, IBUF4 };
 
 void hd_rw(int cmd, int nb, int offset, char *buf);
 
-static struct inode *search_inode()
+static struct inode1 *search_ibuf(void *bufp, char *name, int scale)
 {
+	int i;
+	struct inode1 *p = (struct inode1 *)bufp;
+
+	for(i = 0; i<ibufs[scale-1]; i++){
+		if(p->nb == 0)	// slot not in use
+			continue;
+
+		if(! strcmp(p->sfile.name, name) )	// found it
+			return p;
+
+		p += scale;
+	}
 	return NULL;
+}
+
+static struct inode1 *search_inode(char *name)
+{
+	int len = strlen(name);
+	struct inode1 *ret = NULL;
+
+	if(len <= 30){
+		ret = search_ibuf(ibuf1, name, 1);
+	} else if(len <= 30 + 64){
+		ret = search_ibuf(ibuf2, name, 2);
+	} else if(len <= 30 + 64*2){
+		ret = search_ibuf(ibuf3, name, 3);
+	} else if(len <= 30 + 64*3){
+		ret = search_ibuf(ibuf4, name, 4);
+	}
+
+	return ret;
 }
 
 static struct inode *create_file()
@@ -32,7 +63,6 @@ int open(const char *pathname, int flags)
 	int i;
 	struct inode *inp;
 
-	printf("In open\n");
 	printf("pathname: %s\n", pathname);
 
 	// search free slot in fdp[]
