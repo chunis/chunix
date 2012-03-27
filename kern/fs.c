@@ -9,8 +9,6 @@
 #include "const.h"
 #include "task.h"
 
-#define IE_SIZE 64	// Index entries size is 64 bytes each
-
 char buf[SECT_SIZE];
 struct superblock sb;
 int ibufs[4] = { IBUF1, IBUF2, IBUF3, IBUF4 };
@@ -41,11 +39,11 @@ static struct inode1 *search_inode(char *name)
 
 	if(len <= 30){
 		ret = search_ibuf(ibuf1, name, 1);
-	} else if(len <= 30 + 64){
+	} else if(len <= 30 + IE_SIZE){
 		ret = search_ibuf(ibuf2, name, 2);
-	} else if(len <= 30 + 64*2){
+	} else if(len <= 30 + IE_SIZE*2){
 		ret = search_ibuf(ibuf3, name, 3);
-	} else if(len <= 30 + 64*3){
+	} else if(len <= 30 + IE_SIZE*3){
 		ret = search_ibuf(ibuf4, name, 4);
 	}
 
@@ -76,11 +74,11 @@ int open(const char *pathname, int flags)
 		panic("open: fdp[] is full!");
 
 	// search free slot in fdtable[]
-	for(i = 0; i < NR_FDT; i++){
+	for(i = 0; i < FDT_SIZE; i++){
 		if(fdtable[i].fd_inode == 0)
 			break;
 	}
-	if(i >= NR_FDT)
+	if(i >= FDT_SIZE)
 		panic("open: fdtable[] is full!");
 
 	inp = search_inode(pathname);
@@ -138,17 +136,20 @@ static char calc_checksum(char *sb)
 
 void init_superblock(void)
 {
+	struct sfs_vol_id *idp;
+	struct sfs_mark *markp;
+
 	hd_rw(HD_READ, 1, 0, (char *)&sb);
 
 	sb.time_stamp = 0;
 	sb.da_blk = 0;			// by blocks
-	sb.ia_size = 0;			// by 64 bytes each
+	sb.ia_size = IE_SIZE * 2;			// by 64 bytes each
 	sb.magic_num[0] = 'S';
 	sb.magic_num[1] = 'F';
 	sb.magic_num[2] = 'S';
 	sb.fs_version = 0x10;	// sfs vresion 1.0
 
-	sb.total_blk = 60*2*1024; // we assume hd is 60M here with sb.blk_size=2
+	sb.total_blk = 80*2*1024; // we assume hd is 80M here with sb.blk_size=2
 	sb.rev_blk = 2;     // one for superblock, one for future usage
 	sb.blk_size = 2;    // 512 bytes per block
 
@@ -158,6 +159,25 @@ void init_superblock(void)
 	printf("sb.checksum = %d\n", sb.checksum);
 
 	hd_rw(HD_WRITE, 1, 0, (char *)&sb);
+
+	// TODO
+	// memset(buf, 0, SECT_SIZE);
+
+	// vol id stay at the botton of hd area
+	idp = (struct sfs_vol_id *)buf;
+	idp += 7;
+	idp->etype = VOLUME_ID;
+	idp->resv = 0;
+	idp->time = 0;
+	strcpy(idp->name, "HD of SFS-v1.0");  // any info here should be OK
+
+	// starting marker just above vol id since no files yet in the hd
+	// since only etype need to be set, idp is OK for it
+	idp -= 1;
+	idp->etype = START_MARK;
+
+	// write it to the last block of hd
+	hd_rw(HD_WRITE, 1, sb.total_blk-1, buf);
 }
 
 void mkfs(void)

@@ -14,7 +14,9 @@ int write(int fd, const void *buf, int n);
 int close(int fd);
 
 #define OFILE  10	// open file for each process
-#define NR_FDT 64	// size of fdtable[]
+#define FDT_SIZE 64	// size of fdtable[]
+
+#define IE_SIZE 64	// Index entries size is 64 bytes each
 
 // buffer size for inode cache array
 #define IBUF1  100
@@ -135,7 +137,7 @@ struct inode2 {
 	int8_t dirty;	// is this inode changed?
 
 	struct sfs_file sfile;	// index block (64bytes)
-	uint8_t cont_ent[64];
+	uint8_t cont_ent[IE_SIZE];
 };
 
 // inode cache in memory for files whose index entry size == 64*3 bytes
@@ -147,7 +149,7 @@ struct inode3 {
 	int8_t dirty;	// is this inode changed?
 
 	struct sfs_file sfile;	// index block (64bytes)
-	uint8_t cont_ent[64*2];
+	uint8_t cont_ent[IE_SIZE*2];
 };
 
 // inode cache in memory for files whose index entry size == 64*4 bytes
@@ -159,10 +161,10 @@ struct inode4 {
 	int8_t dirty;	// is this inode changed?
 
 	struct sfs_file sfile;	// index block (64bytes)
-	uint8_t cont_ent[64*3];
+	uint8_t cont_ent[IE_SIZE*3];
 };
 
-struct file_desp fdtable[NR_FDT];
+struct file_desp fdtable[FDT_SIZE];
 
 struct inode1 ibuf1[IBUF1];
 struct inode2 ibuf2[IBUF2];
