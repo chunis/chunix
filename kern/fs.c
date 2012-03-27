@@ -1,6 +1,9 @@
 /*
   fs.c: A trival implement for SFS (Simple File System).
   Refer to: http://dimensionalrift.homelinux.net/combuster/vdisk/sfs.html
+
+limits:
+	* files/dirs length should be less than 30+64*3 = 222 bytes
 */
 
 #include <types.h>
@@ -10,6 +13,8 @@
 #include "task.h"
 
 char buf[SECT_SIZE];
+char buf2[SECT_SIZE*2];
+
 struct superblock sb;
 int ibufs[4] = { IBUF1, IBUF2, IBUF3, IBUF4 };
 
@@ -56,16 +61,16 @@ static struct inode1 *search_index(char *name, int type)
 
 static struct inode1 *search_inode(char *name)
 {
-	int len = strlen(name);
+	int nie = NIE(strlen(name));
 	struct inode1 *ret = NULL;
 
-	if(len <= 30){
+	if(nie == 1){
 		ret = search_ibuf(ibuf1, name, 1);
-	} else if(len <= 30 + IE_SIZE){
+	} else if(nie == 2){
 		ret = search_ibuf(ibuf2, name, 2);
-	} else if(len <= 30 + IE_SIZE*2){
+	} else if(nie == 3){
 		ret = search_ibuf(ibuf3, name, 3);
-	} else if(len <= 30 + IE_SIZE*3){
+	} else if(nie == 4){
 		ret = search_ibuf(ibuf4, name, 4);
 	}
 
@@ -75,16 +80,25 @@ static struct inode1 *search_inode(char *name)
 	return ret;
 }
 
-static struct inode *create_file()
+static struct inode1 *create_file(char *f)
 {
+	int nie = NIE(strlen(f));
+	int bn;		// number of block
+	int bi;		// number in block
+	struct sfs_file *sp, *sq;
+
+	bn = sb.total_blk - 1 - (sb.ia_size - 1)/SECT_SIZE;
+	bi = sb.ia_size % SECT_SIZE;
+	bi /= IE_SIZE;
+
 	return NULL;
-}
+};
 
 int open(const char *pathname, int flags)
 {
 	int fd = -1;
 	int i;
-	struct inode *inp;
+	struct inode1 *inp;
 
 	printf("pathname: %s\n", pathname);
 
@@ -171,14 +185,14 @@ void init_superblock(void)
 
 	sb.time_stamp = 0;
 	sb.da_blk = 0;			// by blocks
-	sb.ia_size = IE_SIZE * 2;			// by 64 bytes each
+	sb.ia_size = IE_SIZE * 2;	// by 64 bytes each, for vol_id and mark
 	sb.magic_num[0] = 'S';
 	sb.magic_num[1] = 'F';
 	sb.magic_num[2] = 'S';
 	sb.fs_version = 0x10;	// sfs vresion 1.0
 
 	sb.total_blk = 80*2*1024; // we assume hd is 80M here with sb.blk_size=2
-	sb.rev_blk = 2;     // one for superblock, one for future usage
+	sb.rev_blk = 1;     // one for superblock, no one for future usage
 	sb.blk_size = 2;    // 512 bytes per block
 
 	// setup checksum

@@ -13,10 +13,15 @@ int read(int fd, void *buf, int n);
 int write(int fd, const void *buf, int n);
 int close(int fd);
 
+// Number of Index entries needed for a name str whose length is 'len'
+#define NIE(len) (((len)+34)/IE_SIZE + 1)
+
 #define OFILE  10	// open file for each process
 #define FDT_SIZE 64	// size of fdtable[]
 
 #define IE_SIZE 64	// Index entries size is 64 bytes each
+#define NB_INIT 4	// blocks for file when created
+#define NB_MORE 8	// blocks for file when it overflow its init space
 
 // buffer size for inode cache array
 #define IBUF1  100
