@@ -45,6 +45,9 @@ int close(int fd);
 #define DEL_FILE      0x1A
 #define CONT_ENTRY    0x20	// 0x20 ~ 0xFF
 
+#define T_FILE   FILE_ENTRY
+#define T_DIR    DIR_ENTRY
+
 struct superblock {
 	uint8_t  rev_boot1[11];
 	uint8_t  rev_bios[21];
@@ -62,17 +65,10 @@ struct superblock {
 	uint8_t  rev_boot_sig[2];  // boot signature
 };
 
-/*
-struct inode {
-	uint8_t etype;	// entry type
-	uint8_t data[63];
-};
-*/
-
 struct file_desp {
 	int fd_mode;
 	int fd_off;
-	struct inode *fd_inode;
+	struct inode1 *fd_inode;
 };
 
 struct sfs_vol_id {
@@ -162,6 +158,12 @@ struct inode4 {
 
 	struct sfs_file sfile;	// index block (64bytes)
 	uint8_t cont_ent[IE_SIZE*3];
+};
+
+// use to step index by 64 bytes scale each
+struct sfs_index {
+	uint8_t etype;	// entry type
+	uint8_t data[63];
 };
 
 struct file_desp fdtable[FDT_SIZE];

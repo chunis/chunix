@@ -32,6 +32,28 @@ static struct inode1 *search_ibuf(void *bufp, char *name, int scale)
 	return NULL;
 }
 
+static struct inode1 *search_index(char *name, int type)
+{
+	int ic, j;
+	int nb = (sb.ia_size - 1)/SECT_SIZE;
+	struct sfs_index *ip;
+
+	for(ic = 0; ic <= nb; ic++){
+		hd_rw(HD_READ, 1, sb.total_blk-1-ic, buf);
+		ip = (struct sfs_index *)buf;
+		ip += 7;
+		for(j = 0; j<8; j++){
+			if(ip->etype == START_MARK)
+				break;
+			if(ip->etype == type)
+				return ip;
+			ip--;
+		}
+	}
+
+	return NULL;
+}
+
 static struct inode1 *search_inode(char *name)
 {
 	int len = strlen(name);
@@ -46,6 +68,9 @@ static struct inode1 *search_inode(char *name)
 	} else if(len <= 30 + IE_SIZE*3){
 		ret = search_ibuf(ibuf4, name, 4);
 	}
+
+	if(ret == NULL)
+		ret = search_index(name, T_FILE);
 
 	return ret;
 }
@@ -85,12 +110,15 @@ int open(const char *pathname, int flags)
 	if(! inp){		// file doesn't exist
 		if(flags & O_CREAT){
 			inp = create_file(pathname);
-			if(!inp)
+			if(!inp){
 				printf("Create file fail!\n");
+				return -1;
+			}
 		} else {
 			return -1;
 		}
 	}
+
 	current->fdp[fd] = &fdtable[i];
 	fdtable[i].fd_inode = inp;
 	fdtable[i].fd_mode = flags;
