@@ -68,7 +68,7 @@ struct superblock {
 	uint8_t  checksum;
 	uint8_t  rev_pt[64];  // partition table
 	uint8_t  rev_boot_sig[2];  // boot signature
-};
+}__attribute__((packed));
 
 struct file_desp {
 	int fd_mode;
@@ -78,10 +78,10 @@ struct file_desp {
 
 struct sfs_vol_id {
 	uint8_t etype;
-	uint8_t resv;
+	uint8_t resv[3];
 	uint64_t time;
 	uint8_t name[52];
-};
+}__attribute__((packed));
 
 struct sfs_mark {
 	uint8_t etype;
@@ -98,7 +98,7 @@ struct sfs_dir {
 	uint8_t ne;  // number of entry
 	uint64_t time;
 	uint8_t name[54];
-};
+}__attribute__((packed));
 
 struct sfs_file {
 	uint8_t etype;
@@ -108,7 +108,7 @@ struct sfs_file {
 	uint64_t blk_end;
 	uint64_t len;
 	uint8_t name[30];
-};
+}__attribute__((packed));
 
 struct sfs_unusable {
 	uint8_t etype;
@@ -116,7 +116,7 @@ struct sfs_unusable {
 	uint64_t blk_start;
 	uint64_t blk_end;
 	uint8_t resv2[38];
-};
+}__attribute__((packed));
 
 // inode cache in memory for files whose index entry size == 64 bytes
 struct inode1 {
@@ -127,7 +127,7 @@ struct inode1 {
 	int8_t dirty;	// is this inode changed?
 
 	struct sfs_file sfile;	// index block (64bytes)
-};
+}__attribute__((packed));
 
 // inode cache in memory for files whose index entry size == 64*2 bytes
 struct inode2 {
@@ -139,7 +139,7 @@ struct inode2 {
 
 	struct sfs_file sfile;	// index block (64bytes)
 	uint8_t cont_ent[IE_SIZE];
-};
+}__attribute__((packed));
 
 // inode cache in memory for files whose index entry size == 64*3 bytes
 struct inode3 {
@@ -163,7 +163,7 @@ struct inode4 {
 
 	struct sfs_file sfile;	// index block (64bytes)
 	uint8_t cont_ent[IE_SIZE*3];
-};
+}__attribute__((packed));
 
 // use to step index by 64 bytes scale each
 struct sfs_index {
