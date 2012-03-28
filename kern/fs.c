@@ -85,13 +85,36 @@ static struct inode1 *create_file(char *f)
 	int nie = NIE(strlen(f));
 	int bn;		// number of block
 	int bi;		// number in block
-	struct sfs_file *sp, *sq;
+	struct sfs_file *sp;
 
 	bn = sb.total_blk - 1 - (sb.ia_size - 1)/SECT_SIZE;
 	bi = sb.ia_size % SECT_SIZE;
 	bi /= IE_SIZE;
 
-	return NULL;
+	printf("nie: %d, sb.total_blk: %d\n", nie, sb.total_blk);
+	hd_rw(HD_READ, 2, bn-1, buf2);	// read 2 blocks (end-of-index + free space)
+
+	sp = (struct sfs_file *)buf2;
+	sp += 16 - bi - nie + 1;  // begin from space used to be 'marker' entry
+	sp->etype = FILE_ENTRY;
+	sp->ne = nie - 1;
+	sp->time = 0;	// we don't set it yet
+	sp->blk_start = sb.da_blk;
+	sp->blk_end = sp->blk_start + NB_INIT;	// each file is 2K when created
+	sp->len = 0;
+	strcpy(sp->name, f);
+	sp--;	// to setup 'marker' entry
+	sp->etype = START_MARK;
+
+	hd_rw(HD_WRITE, 2, bn-1, buf2);
+
+	// save superblock changes to hd
+	printf("sb.da_blk: %d\n", sb.da_blk);
+	sb.da_blk += NB_INIT;
+	printf("sb.da_blk: %d\n", sb.da_blk);
+	hd_rw(HD_WRITE, 1, 0, (char *)&sb);
+
+	return (struct inode1 *)(++sp);
 };
 
 int open(const char *pathname, int flags)
@@ -191,7 +214,8 @@ void init_superblock(void)
 	sb.magic_num[2] = 'S';
 	sb.fs_version = 0x10;	// sfs vresion 1.0
 
-	sb.total_blk = 80*2*1024; // we assume hd is 80M here with sb.blk_size=2
+	// for both qemu and bochs, hd size ~= 80M with sb.blk_size=2
+	sb.total_blk = 170*16*63;
 	sb.rev_blk = 1;     // one for superblock, no one for future usage
 	sb.blk_size = 2;    // 512 bytes per block
 
@@ -209,7 +233,7 @@ void init_superblock(void)
 	idp = (struct sfs_vol_id *)buf;
 	idp += 7;
 	idp->etype = VOLUME_ID;
-	idp->resv = 0;
+	idp->resv[0] = idp->resv[1] = idp->resv[2] = 0;
 	idp->time = 0;
 	strcpy(idp->name, "HD of SFS-v1.0");  // any info here should be OK
 
