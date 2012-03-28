@@ -116,7 +116,7 @@ do_keyboard:
 
 do_hd:
 	pushl	$0
-	pushl	$0x21
+	pushl	$0x2E
 	call	hd_isr
 	addl	$0x8, %esp		# for isr_nr and errno
 	iret

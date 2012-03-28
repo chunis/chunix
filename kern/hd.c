@@ -39,9 +39,9 @@ void hd_rw(int cmd, int nb, int offset, char *buf)
 	outb(HDR_STATUS, cmd);   // 0x1f7
 
 	if(cmd == HD_READ)
-		insl(HDR_DATA, buf, SECT_SIZE/4);  // 0x1f0
+		insl(HDR_DATA, buf, SECT_SIZE*nb/4);  // 0x1f0
 	else
-		outsl(HDR_DATA, buf, SECT_SIZE/4);  // 0x1f0
+		outsl(HDR_DATA, buf, SECT_SIZE*nb/4);  // 0x1f0
 }
 
 // test basic hard disk read and write
