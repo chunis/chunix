@@ -107,7 +107,6 @@ int main(void)
 	char wheel[] = { '\\', '|', '/', '-' };
 	char *os_str = "Welcome to ChuniX! :)\n";
 	int a = 42, b = 0;
-	TASK_STRUCT task1, task2;
 
 	cons_init();
 	printf("%s\n", os_str);
@@ -122,9 +121,10 @@ int main(void)
 	__asm__("sti\n");
 	//a /= b;
 
-	new_task(&task1, (uint32_t)taskA, (uint32_t)&task1_stack3+USR_STACK_SIZE, KER_LDT1);
-	new_task(&task2, (uint32_t)taskB, (uint32_t)&task2_stack3+USR_STACK_SIZE, KER_LDT2);
-	current = &task1;
+	rootp = 0;
+	new_task(&task1, "TaskA", (uint32_t)taskA, (uint32_t)&task1_stack3+USR_STACK_SIZE, KER_LDT1);
+	new_task(&task2, "TaskB", (uint32_t)taskB, (uint32_t)&task2_stack3+USR_STACK_SIZE, KER_LDT2);
+	current = rootp;
 
 	setup_tss();
 	tss.esp0 = current->ldt;

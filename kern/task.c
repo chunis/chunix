@@ -40,9 +40,11 @@ TASK_STRUCT task0 = {
 };
 
 // TODO: task->ldt[].attr need more improvement
-void new_task(TASK_STRUCT *task, uint32_t eip, uint32_t stack3, uint32_t sel)
+void new_task(TASK_STRUCT *task, const char *name, uint32_t eip, uint32_t stack3, uint32_t sel)
 {
 	memmove(task, &task0, sizeof(TASK_STRUCT));
+	strncpy(task->name, name, 24);
+	task->name[23] = '\0';
 
 	// set task->ldt[]
 	memmove(task->ldt, &gdt[KER_CODE], sizeof(DESCRIPTOR)*LDT_SIZE);
@@ -73,6 +75,9 @@ void new_task(TASK_STRUCT *task, uint32_t eip, uint32_t stack3, uint32_t sel)
 		dump_descriptor((DESCRIPTOR *)lp);
 		lp += 2;
 	} */
+	task->state = TS_RUNABLE;
+	task->next = rootp;
+	rootp = task;
 }
 
 static void delay(int time)

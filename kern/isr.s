@@ -106,9 +106,9 @@ do_timer:
 	pushl	%es
 	pushl	%fs
 	pushl	%gs
-	movl	%ss, %dx
-	movl	%dx, %ds
-	movl	%dx, %es
+	movw	%ss, %dx
+	movw	%dx, %ds
+	movw	%dx, %es
 
 	incb	(0xb8000+160*24)
 	call	timer_isr
@@ -126,9 +126,9 @@ do_keyboard:
 	pushl	%es
 	pushl	%fs
 	pushl	%gs
-	movl	%ss, %dx
-	movl	%dx, %ds
-	movl	%dx, %es
+	movw	%ss, %dx
+	movw	%dx, %ds
+	movw	%dx, %es
 
 	call	keyboard_isr
 
