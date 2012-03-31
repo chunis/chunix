@@ -6,7 +6,7 @@
 
 #define GDT_NUM		128
 #define IDT_NUM		256
-#define ISR_NUM		34
+#define ISR_NUM		0x30
 
 #define KER_NULL	0x00
 #define KER_CODE	0x08

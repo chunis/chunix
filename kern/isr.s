@@ -101,24 +101,46 @@ isr_noerr	0x2E
 isr_noerr	0x2F
 
 do_timer:
-	pushl	$0
-	pushl	$0x20
+	pushal
+	pushl	%ds
+	pushl	%es
+	pushl	%fs
+	pushl	%gs
+	movl	%ss, %dx
+	movl	%dx, %ds
+	movl	%dx, %es
+
+	incb	(0xb8000+160*24)
 	call	timer_isr
-	addl	$0x8, %esp		# for isr_nr and errno
+
+	popl	%gs
+	popl	%fs
+	popl	%es
+	popl	%ds
+	popal
 	iret
 
 do_keyboard:
-	pushl	$0
-	pushl	$0x21
+	pushal
+	pushl	%ds
+	pushl	%es
+	pushl	%fs
+	pushl	%gs
+	movl	%ss, %dx
+	movl	%dx, %ds
+	movl	%dx, %es
+
 	call	keyboard_isr
-	addl	$0x8, %esp		# for isr_nr and errno
+
+	popl	%gs
+	popl	%fs
+	popl	%es
+	popl	%ds
+	popal
 	iret
 
 do_hd:
-	pushl	$0
-	pushl	$0x2E
 	call	hd_isr
-	addl	$0x8, %esp		# for isr_nr and errno
 	iret
 
 isr_table:
