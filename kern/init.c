@@ -106,7 +106,6 @@ int main(void)
 	int i = 0;
 	char wheel[] = { '\\', '|', '/', '-' };
 	char *os_str = "Welcome to ChuniX! :)\n";
-	int a = 42, b = 0;
 
 	cons_init();
 	printf("%s\n", os_str);
@@ -119,7 +118,6 @@ int main(void)
 	init_fs();
 
 	__asm__("sti\n");
-	//a /= b;
 
 	rootp = 0;
 	new_task(&task1, "TaskA", (uint32_t)taskA, (uint32_t)&task1_stack3+USR_STACK_SIZE, KER_LDT1);

@@ -99,6 +99,7 @@ void taskA(void)
 	char *file = "/first_file";
 	char *str = "My first file";
 
+#if 0
 	fd = open(file, O_CREAT);
 	printf("fd = %d\n", fd);
 	write(fd, str, strlen(str));
@@ -110,11 +111,12 @@ void taskA(void)
 	buf[len] = '\0';
 	close(fd);
 	printf("In taskA, buf = %s\n", buf);
+#endif
 
-#if 0
+#if 1
 	while(1){
 		printf("%xA.", i++);
-		delay(500);
+		delay(120);
 	}
 #endif
 	monitor();
@@ -126,6 +128,6 @@ void taskB(void)
 
 	while(1){
 		printf("%xB.", i++);
-		delay(500);
+		delay(120);
 	}
 }
