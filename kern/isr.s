@@ -1,6 +1,11 @@
 .set KER_CODE,	0x08	# kernel code segment selector
 .set KER_DATA,	0x10	# kernel data segment selector
 
+#.set SM_SIZE,	72		# STACK_FRAME size is 72 bytes
+#.set DESC_SIZE,	8		# DESCRIPTOR size is 8 bytes
+#.set SM_2DESC,	(SM_SIZE + DESC_SIZE * 2)
+#.set TSS_SP0,	4		# ESP0 to the start of tss is 4 bytes
+
 .text
 .globl isr_table, isr_dummy
 
@@ -100,7 +105,9 @@ isr_noerr	0x2D
 isr_noerr	0x2E
 isr_noerr	0x2F
 
+.globl current, tss
 do_timer:
+	subl	$0x4, %esp
 	pushal
 	pushl	%ds
 	pushl	%es
@@ -110,17 +117,24 @@ do_timer:
 	movw	%dx, %ds
 	movw	%dx, %es
 
-	incb	(0xb8000+160*24)
+	incb	(0xb8000+160*24+2)	# just increase a char in screen for funny
+	movl	$0x7c00, %esp		# TODO
 	call	timer_isr
+	movl	current, %esp
+#	lldt	SM_2DESC(%esp)
+#	leal	SM_SIZE(%esp), %ebx
+#	movl	%ebx, tss+TSS_SP0
 
 	popl	%gs
 	popl	%fs
 	popl	%es
 	popl	%ds
 	popal
+	addl	$0x4, %esp
 	iret
 
 do_keyboard:
+	subl	$0x4, %esp
 	pushal
 	pushl	%ds
 	pushl	%es
@@ -130,13 +144,16 @@ do_keyboard:
 	movw	%dx, %ds
 	movw	%dx, %es
 
+	movl	$0x7c00, %esp		# TODO
 	call	keyboard_isr
+	movl	current, %esp
 
 	popl	%gs
 	popl	%fs
 	popl	%es
 	popl	%ds
 	popal
+	addl	$0x4, %esp
 	iret
 
 do_hd:
