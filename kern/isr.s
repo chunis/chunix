@@ -1,11 +1,6 @@
 .set KER_CODE,	0x08	# kernel code segment selector
 .set KER_DATA,	0x10	# kernel data segment selector
 
-#.set SM_SIZE,	72		# STACK_FRAME size is 72 bytes
-#.set DESC_SIZE,	8		# DESCRIPTOR size is 8 bytes
-#.set SM_2DESC,	(SM_SIZE + DESC_SIZE * 2)
-#.set TSS_SP0,	4		# ESP0 to the start of tss is 4 bytes
-
 .text
 .globl isr_table, isr_dummy
 
@@ -121,9 +116,6 @@ do_timer:
 	movl	$0x7c00, %esp		# TODO
 	call	timer_isr
 	movl	current, %esp
-#	lldt	SM_2DESC(%esp)
-#	leal	SM_SIZE(%esp), %ebx
-#	movl	%ebx, tss+TSS_SP0
 
 	popl	%gs
 	popl	%fs
