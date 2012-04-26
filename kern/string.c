@@ -77,3 +77,15 @@ int strncmp(char const *s, char const *t, int n)
 	else
 		return *s - *t;
 }
+
+void *memset(void *s, char c, int n)
+{
+	char *p = (char *)s;
+
+	if(n <= 0)
+		return;
+
+	while(--n){
+		p[n] = c;
+	}
+}

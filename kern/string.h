@@ -9,5 +9,6 @@ void strcpy(char *d, const char *s);
 int strlen(char const *s);
 int strcmp(char const *s, char const *t);
 int strncmp(char const *s, char const *t, int n);
+void *memset(void *s, char c, int n);
 
 #endif

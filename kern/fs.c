@@ -20,7 +20,7 @@ int ibufs[4] = { IBUF1, IBUF2, IBUF3, IBUF4 };
 
 void hd_rw(int cmd, int nb, int offset, char *buf);
 
-static struct inode1 *search_ibuf(void *bufp, char *name, int scale)
+static struct inode1 *search_ibuf(void *bufp, const char *name, int scale)
 {
 	int i;
 	struct inode1 *p = (struct inode1 *)bufp;
@@ -37,7 +37,7 @@ static struct inode1 *search_ibuf(void *bufp, char *name, int scale)
 	return NULL;
 }
 
-static struct inode1 *search_index(char *name, int type)
+static struct inode1 *search_index(const char *name, int type)
 {
 	int ic, j;
 	int nb = (sb.ia_size - 1)/SECT_SIZE;
@@ -59,7 +59,7 @@ static struct inode1 *search_index(char *name, int type)
 	return NULL;
 }
 
-static struct inode1 *search_inode(char *name)
+static struct inode1 *search_inode(const char *name)
 {
 	int nie = NIE(strlen(name));
 	struct inode1 *ret = NULL;
@@ -80,7 +80,7 @@ static struct inode1 *search_inode(char *name)
 	return ret;
 }
 
-static struct inode1 *create_file(char *f)
+static struct inode1 *create_file(const char *f)
 {
 	int nie = NIE(strlen(f));
 	int bn;		// number of block
@@ -226,9 +226,7 @@ void init_superblock(void)
 
 	hd_rw(HD_WRITE, 1, 0, (char *)&sb);
 
-	// TODO
-	// memset(buf, 0, SECT_SIZE);
-
+	memset(buf, 0, SECT_SIZE);
 	// vol id stay at the botton of hd area
 	idp = (struct sfs_vol_id *)buf;
 	idp += 7;
