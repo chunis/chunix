@@ -1,0 +1,9 @@
+cscope.*
+*.o
+*.asm
+*.img
+
+boot/bootsect
+boot/bootsect.out
+kern/kernel
+tools/mkboot
