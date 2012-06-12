@@ -117,8 +117,6 @@ int main(void)
 	mkfs();
 	init_fs();
 
-	__asm__("sti\n");
-
 	rootp = 0;
 	new_task(&task1, "TaskA", (uint32_t)taskA, (uint32_t)&task1_stack3+USR_STACK_SIZE, KER_LDT1);
 	new_task(&task2, "TaskB", (uint32_t)taskB, (uint32_t)&task2_stack3+USR_STACK_SIZE, KER_LDT2);
@@ -126,6 +124,9 @@ int main(void)
 
 	setup_tss();
 	tss.esp0 = current->ldt;
+
+	// we should setup new_task first, then sti()
+	__asm__("sti\n");
 
 	//dump_gdt();
 	__asm__ ("lldt %%ax\n\t"::"a"(current->ldt_sel));
