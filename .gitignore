@@ -1,9 +1,12 @@
 cscope.*
 *.o
 *.asm
+*.sym
 *.img
 
 boot/bootsect
 boot/bootsect.out
 kern/kernel
 tools/mkboot
+bochs.*
+*.swp
