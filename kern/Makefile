@@ -13,5 +13,8 @@ kernel: entry.o isr.o init.o string.o console.o printf.o exception.o time.o keyb
 %.o: %.s
 	${AS} ${ASFLAGS} -o $@ $<
 
+%.o: %.S
+	${CC} ${CFLAGS} -c -o $@ $<
+
 clean:
 	@rm -f *.o kernel kernel.asm

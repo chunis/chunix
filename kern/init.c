@@ -1,5 +1,6 @@
 #include <types.h>
 #include <x86.h>
+#include <mmu.h>
 
 #include "global.h"
 #include "string.h"
@@ -149,3 +150,14 @@ int main(void)
 
 	return 0;
 }
+
+// boot page table
+// should be aligned to PGSIZE
+// use PTE_PS to enable 4MB pages
+__attribute__((__aligned__(PGSIZE)))
+pde_t entrypgdir[1024] = {
+	// Map VA's [0, 4MB) to PA's [0, 4MB)
+	[0] = (0) | PTE_P | PTE_W | PTE_PS,
+	// Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
+	[KERNBASE>>PDXSHIFT] = (0) | PTE_P | PTE_W | PTE_PS,
+};
