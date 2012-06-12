@@ -1,7 +1,8 @@
 #ifndef __X86_H__
 #define __X86_H__
 
-static __inline void insl(int port, void *addr, int count) __attribute__((always_inline));
+static __inline void
+insl(int port, void *addr, int count) __attribute__((always_inline));
 
 static __inline uint8_t
 inb(int port)

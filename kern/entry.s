@@ -33,4 +33,4 @@ pm_mode:
 	call	main
 
 loop:
-	jmp		loop
+	jmp	loop

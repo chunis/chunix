@@ -4,7 +4,7 @@
 
 .set PROT_MODE_CSEG,	0x08	# kernel code segment selector
 .set PROT_MODE_DSEG,	0x10	# kernel data segment selector
-.set CR0_PE_ON,			0x1		# flag for enable protect mode
+.set CR0_PE_ON,		0x1	# flag for enable protect mode
 
 .global	start
 start:
@@ -20,18 +20,18 @@ start:
 
 	# enable A20
 ena20.1:
-	inb		$0x64, %al
+	inb	$0x64, %al
 	testb	$0x2, %al
-	jnz		ena20.1
+	jnz	ena20.1
 
 	# 0xd1 -> port 0x64
 	movb	$0xd1, %al		
 	outb	%al, $0x64
 
 ena20.2:
-	inb		$0x64, %al
+	inb	$0x64, %al
 	testb	$0x2, %al
-	jnz		ena20.2
+	jnz	ena20.2
 
 	# 0xdf -> port 0x60
 	movb	$0xd1, %al		
@@ -40,7 +40,7 @@ ena20.2:
 	# switch from real mode to protected mode using a bootstrap GDT
 	lgdt	gdtdesc
 	movl	%cr0, %eax
-	orl		$CR0_PE_ON, %eax
+	orl	$CR0_PE_ON, %eax
 	movl	%eax, %cr0
 
 	# now jump to next instruction, but in 32-bit protected mode
@@ -62,7 +62,7 @@ protcseg:
 
 	# If bootmain returns, loop forever
 loop:
-	jmp		loop
+	jmp	loop
 
 # Bootstrap GDT
 .p2align 2
@@ -73,4 +73,4 @@ gdt:
 
 gdtdesc:
 	.word	0x17	# sizeof(gdt)-1
-	.long	gdt		# address of gdt
+	.long	gdt	# address of gdt

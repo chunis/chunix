@@ -4,9 +4,9 @@
 static uint16_t *cons_buf;
 static uint16_t cons_pos;
 
-#define CEIL(num, base) (((num)/(base)+1)*(base))
+#define CEIL(num, base)	(((num)/(base)+1)*(base))
 #define TAB_WIDTH	8
-#define BRIGHT_GREEN 0xa
+#define BRIGHT_GREEN	0xa
 #define BLANK_CHAR	(BRIGHT_GREEN << 0x8 | 0x20)
 
 
