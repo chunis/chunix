@@ -13,6 +13,7 @@
 #define PTE_U		0x004	// user
 #define PTE_A		0x020	// accessed
 #define PTE_D		0x040	// dirty
+#define PTE_PS		0x080	// page size, 0: 4K; 1: 4M
 
 // page dir index
 #define PTX(va)		(((uint32_t)(va) >> PTXSHIFT) & 0x3ff)
