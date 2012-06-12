@@ -1,17 +1,30 @@
+#include "../inc/mmu.h"
 
 .text
-.globl _start
+.globl _start, va_start
 .extern init_gdt, main
 .extern gdt_ptr
 
-.equ GDT_START,	0x000000
-.equ STACKTOP,	0x0A0000
-.equ KERN_START,0x100000
+.equ KSTACKSIZE, 4096
 .equ KERN_CS,	0x08
 .equ KERN_DS,	0x10
 
-_start:
-	movl	$STACKTOP, %esp
+_start = V2P(va_start)
+va_start:
+	// turn on paging
+	movl	%cr4, %eax
+	orl	$0x10, %eax	// page size extention
+	movl	%eax, %cr4
+
+	movl	$(V2P(entrypgdir)), %eax
+	movl	%eax, %cr3
+
+	movl	%cr0, %eax
+	orl	$0x80000000, %eax  // enable paging
+	movl	%eax, %cr0
+
+	// setup stack pointer
+	movl	$(stack + KSTACKSIZE), %esp
 
 	sgdt	gdt_ptr
 	call	init_gdt
@@ -34,3 +47,5 @@ pm_mode:
 
 loop:
 	jmp	loop
+
+.comm stack, KSTACKSIZE

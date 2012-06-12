@@ -2,8 +2,12 @@ include ../make.inc
 
 all: kernel
 
-kernel: entry.o isr.o init.o string.o console.o printf.o exception.o time.o keyboard.o task.o descriptor.o fs.o hd.o tools.o
-	${LD} ${LDFLAGS} -e _start -Ttext 0x200094 -o $@ $^
+OBJS = isr.o init.o string.o console.o printf.o exception.o time.o \
+		keyboard.o task.o descriptor.o fs.o hd.o tools.o
+
+kernel: entry.o $(OBJS)
+	#${LD} ${LDFLAGS} -e _start -Ttext 0x200094 -o $@ $^
+	$(LD) $(LDFLAGS) -T kernel.ld -o $@ entry.o $(OBJS)
 	${OBJDUMP} -d $@ > $@.asm
 	${NM} -n $@ > $@.sym
 
