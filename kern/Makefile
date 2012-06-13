@@ -3,7 +3,7 @@ include ../make.inc
 all: kernel
 
 OBJS = isr.o init.o string.o console.o printf.o exception.o time.o \
-		keyboard.o task.o descriptor.o fs.o hd.o tools.o
+		keyboard.o task.o descriptor.o fs.o hd.o tools.o mm.o
 
 kernel: entry.o $(OBJS)
 	#${LD} ${LDFLAGS} -e _start -Ttext 0x200094 -o $@ $^

@@ -1,6 +1,8 @@
 #ifndef __X86_H__
 #define __X86_H__
 
+#include <types.h>
+
 static __inline void
 insl(int port, void *addr, int count) __attribute__((always_inline));
 

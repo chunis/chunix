@@ -107,9 +107,15 @@ int main(void)
 	int i = 0;
 	char wheel[] = { '\\', '|', '/', '-' };
 	char *os_str = "Welcome to ChuniX! :)\n";
+	extern edata[], end[];
+
+	// clear BSS section
+	memset(edata, 0, end - edata);
 
 	cons_init();
 	printf("%s\n", os_str);
+
+	mem_init();
 
 	init_8259A();
 	install_timer(100);
