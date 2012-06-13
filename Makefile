@@ -2,10 +2,10 @@
 all: chunix.img hd.img
 
 qemu: chunix.img hd.img
-	qemu -hda chunix.img -hdb hd.img
+	qemu -m 32 -hda chunix.img -hdb hd.img
 
 qemu-gdb: chunix.img hd.img .gdbinit
-	qemu -hda chunix.img -hdb hd.img -S -gdb tcp::1234
+	qemu -m 32 -hda chunix.img -hdb hd.img -S -gdb tcp::1234
 
 bochs: chunix.img hd.img
 	bochs -f hd.bxrc
