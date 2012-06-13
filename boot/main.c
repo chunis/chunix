@@ -9,7 +9,7 @@ void readseg(uint8_t *va, uint32_t count, uint32_t offset);
 void bootmain(void)
 {
 	struct proghdr *ph, *eph;
-	uint8_t *hdp;
+	uint8_t *pa;
 
 	readseg((uint8_t *)ELFHDR, SECTSIZE*8, 0);
 	if(ELFHDR->e_magic != ELF_MAGIC)
@@ -19,12 +19,17 @@ void bootmain(void)
 	ph = (struct proghdr *)((uint8_t *)ELFHDR + ELFHDR->e_phoff);
 	eph = ph + ELFHDR->e_phnum;
 	while(ph < eph){
-		readseg(ph->ph_va, ph->ph_memsize, ph->ph_offset);
+		pa = (uint8_t *)ph->ph_pa;
+		readseg(pa, ph->ph_filesize, ph->ph_offset);
+		if(ph->ph_memsize > ph->ph_filesize)
+			stosb(pa + ph->ph_filesize, 0,
+				ph->ph_memsize - ph->ph_filesize);
+
 		ph++;
 	}
 
 	// call the entry point
-	((void (*)(void))(ELFHDR->e_entry & 0xffffff))();
+	((void (*)(void))ELFHDR->e_entry)();
 
 bad:
 	while (1)

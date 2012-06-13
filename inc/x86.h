@@ -34,4 +34,20 @@ outsl(int port, void const *addr, int count)
 				: "cc");
 }
 
+static __inline void
+stosb(void *addr, int val, int count)
+{
+	__asm__ __volatile__("cld; rep stosb" : "=D" (addr), "=c" (count)
+				: "0" (addr), "1" (count), "a" (val)
+				: "memory", "cc");
+}
+
+static __inline void
+stosl(void *addr, int val, int count)
+{
+	__asm__ __volatile__("cld; rep stosl" : "=D" (addr), "=c" (count)
+				: "0" (addr), "1" (count), "a" (val)
+				: "memory", "cc");
+}
+
 #endif

@@ -25,7 +25,7 @@ ena20.1:
 	jnz	ena20.1
 
 	# 0xd1 -> port 0x64
-	movb	$0xd1, %al		
+	movb	$0xd1, %al
 	outb	%al, $0x64
 
 ena20.2:
@@ -34,7 +34,7 @@ ena20.2:
 	jnz	ena20.2
 
 	# 0xdf -> port 0x60
-	movb	$0xd1, %al		
+	movb	$0xdf, %al
 	outb	%al, $0x60
 
 	# switch from real mode to protected mode using a bootstrap GDT
