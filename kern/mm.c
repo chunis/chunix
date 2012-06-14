@@ -1,13 +1,7 @@
 #include <x86.h>
 #include <types.h>
 #include <mmu.h>
-
-#define CMOS_EXTLO	0x17
-#define CMOS_EXTHI	0x18
-
-struct pglink {
-	struct pglink *next;
-};
+#include "mm.h"
 
 struct pglink *free_list;	// free page link
 static uint32_t memsz;		// memory size by KB
@@ -59,6 +53,31 @@ char *kalloc(void)
 	if(fp)
 		free_list = fp->next;
 	return (char *)fp;
+}
+
+// return the address of PTE in pgdir that corresponds to virtual address va.
+// if alloc != 0, alloc pages needed to create page table.
+// if fails, return 0 (= NULL).
+static pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc)
+{
+	pde_t *pde;
+	pte_t *pte;
+	struct Page *pp = 0;
+
+	pde = &pgdir[PDX(va)];
+
+	if(*pde & PTE_P) {	// page table exists
+		pte = (pte_t *)P2V(PTE_ADDR(*pde));
+		return (pte_t *)(pte + PTX(va));
+	}
+
+	if(!alloc || (pte = (pte_t *)kalloc()) == 0)
+		return 0;
+
+	memset(pte, 0, PGSIZE);
+	*pde = PTE_ADDR(V2P(pte)) | PTE_U | PTE_W | PTE_P;
+
+	return (pte_t *)(pte + PTX(va));
 }
 
 // we won't bother to detect base memory (< 1M), but simply assume it is 640K.
