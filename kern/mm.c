@@ -5,7 +5,60 @@
 
 struct pglink *free_list;	// free page link
 static uint32_t memsz;		// memory size by KB
-extern char end[];	// defined in kernel.ld
+extern char data[], end[];	// defined in kernel.ld
+static pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
+pde_t *kpgdir;
+
+// create PTEs for va which refer to physical address pa.
+// Note: va and size might not be page-aligned.
+// return 0 when succeed, and -1 if fails
+int mappages(pde_t *pgdir, void *va, uint32_t pa, int sz, int perm)
+{
+	char *_va = (char *)PGROUNDDOWN((uint32_t)va);
+	char *end = (char *)PGROUNDDOWN(((uint32_t)va) + sz - 1);
+	pte_t *pte;
+
+	while(_va <= end){
+		if((pte = pgdir_walk(pgdir, _va, 1)) == 0)
+			return -1;
+		if(*pte & PTE_P)
+			panic("mappages: re-map");
+		*pte = PTE_ADDR(pa) | perm | PTE_P;
+
+		_va += PGSIZE;
+		pa += PGSIZE;
+	}
+	return 0;
+}
+
+pde_t *mapkvm(void)
+{
+	pde_t *pgdir;
+
+	if(!(pgdir = kalloc()))
+		return 0;
+
+	memset(pgdir, 0, PGSIZE);
+	if(mappages(pgdir, (void *)KERNBASE, 0, EXTMEM, PTE_W) < 0)
+		return 0;
+	if(mappages(pgdir, (void *)KERNLINK, (uint32_t)V2P(KERNLINK),
+			((uint32_t)data - (uint32_t)KERNLINK), 0) < 0)
+		return 0;
+
+	if(mappages(pgdir, (uint32_t)data, (uint32_t)V2P(data),
+			(memsz-(uint32_t)data), PTE_W) < 0)
+		return 0;
+
+	return pgdir;
+}
+
+void setupkvm(void)
+{
+	kpgdir = mapkvm();
+	if(!kpgdir)
+		panic("kpgdir is NULL!");
+	//lcr3(V2P((uint32_t)kpgdir));
+}
 
 uint32_t cmos_read(uint32_t r)
 {

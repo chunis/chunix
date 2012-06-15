@@ -5,7 +5,9 @@
 #define PTXSHIFT	12
 #define PDXSHIFT	22
 
+#define EXTMEM		0x100000
 #define KERNBASE	0x80000000
+#define KERNLINK	(KERNBASE + EXTMEM)
 
 // page dir/table entry flags
 #define PTE_P		0x001	// present
@@ -29,5 +31,7 @@
 
 #define PGROUNDUP(a)	(((a)+PGSIZE-1) & ~(PGSIZE-1))
 #define PGROUNDDOWN(a)	(((a)) & ~(PGSIZE-1))
+
+#define NELEM(s)	(sizeof(s) / sizeof(s[0]))
 
 #endif

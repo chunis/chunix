@@ -52,4 +52,10 @@ stosl(void *addr, int val, int count)
 				: "memory", "cc");
 }
 
+static __inline void
+lcr3(uint32_t val)
+{
+	__asm__ __volatile__("movl %0, %%cr3" :: "r"(val));
+}
+
 #endif

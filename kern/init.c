@@ -116,6 +116,7 @@ int main(void)
 	printf("%s\n", os_str);
 
 	mem_init();
+	setupkvm();
 
 	init_8259A();
 	install_timer(100);
