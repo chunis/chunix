@@ -46,7 +46,7 @@ pde_t *mapkvm(void)
 		return 0;
 
 	if(mappages(pgdir, (uint32_t)data, (uint32_t)V2P(data),
-			(memsz-(uint32_t)data), PTE_W) < 0)
+			(memsz-V2P((uint32_t)data)), PTE_W) < 0)
 		return 0;
 
 	return pgdir;
@@ -115,7 +115,6 @@ static pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc)
 {
 	pde_t *pde;
 	pte_t *pte;
-	struct Page *pp = 0;
 
 	pde = &pgdir[PDX(va)];
 
@@ -128,7 +127,7 @@ static pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc)
 		return 0;
 
 	memset(pte, 0, PGSIZE);
-	*pde = PTE_ADDR(V2P(pte)) | PTE_U | PTE_W | PTE_P;
+	*pde = PTE_ADDR(V2P((uint32_t)pte)) | PTE_U | PTE_W | PTE_P;
 
 	return (pte_t *)(pte + PTX(va));
 }
