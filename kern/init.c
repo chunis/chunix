@@ -40,10 +40,11 @@ void init_gdt(void)
 	uint32_t *gdt_base;
 	uint16_t *gdt_lim;
 
-	memmove(&gdt, 	                  // New GDT
-	(void*)(*((uint32_t *)(&gdt_ptr[2]))),   // Base  of Old GDT
-	*((uint16_t *)(&gdt_ptr[0])) + 1      // Limit of Old GDT
-	);
+	memset(gdt, 0, sizeof(gdt));
+	set_descriptor((DESCRIPTOR *)&gdt[KER_CODE], 0,
+			0xffffffff, DA_CR);
+	set_descriptor((DESCRIPTOR *)&gdt[KER_DATA], 0,
+			0xffffffff, DA_DRW);
 
 	gdt_base = (uint32_t *)(&gdt_ptr[2]);
 	gdt_lim = (uint16_t *)(&gdt_ptr[0]);
@@ -84,7 +85,7 @@ void init_idt(void)
 void setup_tss(void)
 {
 	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss, sizeof(tss)-1, DA_386TSS);
-	memmove(&tss, 0, sizeof(tss));
+	memset(&tss, 0, sizeof(tss));
 	tss.ss0 = KER_DATA;
 	//tss.iobase = sizeof(tss);
 
@@ -119,7 +120,7 @@ int main(void)
 
 	mem_init();
 	setupkvm();
-	//init_gdt();
+	init_gdt();
 	init_idt();
 
 	init_8259A();

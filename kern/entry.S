@@ -35,7 +35,6 @@ pm_mode:
 	movw	%ax, %gs
 	movw	%ax, %ss
 
-	sgdt	gdt_ptr
 	call	main
 
 loop:
