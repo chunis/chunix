@@ -1,5 +1,6 @@
 #include <types.h>
 #include "console.h"
+#include <mmu.h>
 
 static uint16_t *cons_buf;
 static uint16_t cons_pos;
@@ -34,7 +35,7 @@ void set_cursor(int x, int y)
 
 void cons_init(void)
 {
-	cons_buf = (uint16_t *)CGA_START;
+	cons_buf = (uint16_t *)P2V(CGA_START);
 	cons_pos = 0;
 	cbuf.wpos = 0;
 	cbuf.rpos = 0;

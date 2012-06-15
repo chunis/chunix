@@ -45,8 +45,8 @@ pde_t *mapkvm(void)
 			((uint32_t)data - (uint32_t)KERNLINK), 0) < 0)
 		return 0;
 
-	if(mappages(pgdir, (uint32_t)data, (uint32_t)V2P(data),
-			(memsz-V2P((uint32_t)data)), PTE_W) < 0)
+	if(mappages(pgdir, (void *)data, (uint32_t)V2P(data),
+			(memsz*1024 - V2P((uint32_t)data)), PTE_W) < 0)
 		return 0;
 
 	return pgdir;
@@ -54,10 +54,9 @@ pde_t *mapkvm(void)
 
 void setupkvm(void)
 {
-	kpgdir = mapkvm();
-	if(!kpgdir)
+	if((kpgdir = mapkvm()) == 0)
 		panic("kpgdir is NULL!");
-	//lcr3(V2P((uint32_t)kpgdir));
+	lcr3(V2P((uint32_t)kpgdir));
 }
 
 uint32_t cmos_read(uint32_t r)

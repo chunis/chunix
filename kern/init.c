@@ -119,7 +119,7 @@ int main(void)
 
 	mem_init();
 	setupkvm();
-	init_gdt();
+	//init_gdt();
 	init_idt();
 
 	init_8259A();
