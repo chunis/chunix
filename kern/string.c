@@ -1,5 +1,6 @@
 #include "string.h"
 #include "const.h"
+#include <x86.h>
 
 void *memmove(void *dst, const void *src, uint32_t n)
 {
@@ -80,12 +81,6 @@ int strncmp(char const *s, char const *t, int n)
 
 void *memset(void *s, char c, int n)
 {
-	char *p = (char *)s;
-
-	if(n <= 0)
-		return;
-
-	while(--n){
-		p[n] = c;
-	}
+	stosb(s, c, n);
+	return s;
 }
