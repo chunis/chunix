@@ -49,6 +49,7 @@ void init_gdt(void)
 	gdt_lim = (uint16_t *)(&gdt_ptr[0]);
 	*gdt_base = (uint32_t)&gdt;
 	*gdt_lim = GDT_NUM * 8 - 1;
+	__asm__ __volatile__("lgdt gdt_ptr");
 }
 
 void idt_entry(uint8_t *idtp, int_handler handler, uint16_t sel)
@@ -76,6 +77,7 @@ void init_idt(void)
 	idt_lim = (uint16_t *)(&idt_ptr[0]);
 	*idt_base = (uint32_t)&idt;
 	*idt_lim = IDT_NUM * 8 - 1;
+	__asm__ __volatile__("lidt idt_ptr");
 }
 
 // add tss to gdt
@@ -117,6 +119,8 @@ int main(void)
 
 	mem_init();
 	setupkvm();
+	init_gdt();
+	init_idt();
 
 	init_8259A();
 	install_timer(100);

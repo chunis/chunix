@@ -25,14 +25,6 @@ va_start:
 
 	// setup stack pointer
 	movl	$(stack + KSTACKSIZE), %esp
-
-	sgdt	gdt_ptr
-	call	init_gdt
-	lgdt	gdt_ptr
-
-	call	init_idt
-	lidt	idt_ptr
-
 	ljmp	$KERN_CS, $pm_mode
 
 pm_mode:
@@ -43,6 +35,7 @@ pm_mode:
 	movw	%ax, %gs
 	movw	%ax, %ss
 
+	sgdt	gdt_ptr
 	call	main
 
 loop:
