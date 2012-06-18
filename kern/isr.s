@@ -17,11 +17,6 @@ isr\en:
 .endm
 
 isr_comm:
-	popl	%eax
-	pushl	%eax
-	addl	$0x30, %eax
-	movb	%al, 0x800b8000+160*24+6
-
 	pushal
 	pushl	%ds
 	pushl	%es
@@ -33,8 +28,6 @@ isr_comm:
 	movw	%ax, %es
 	movw	%ax, %fs
 	movw	%ax, %gs
-	#call	info
-
 	pushl	%esp	# now esp points to the start of STACK_FRAME
 	call	trap
 	addl	$0x4, %esp
