@@ -42,9 +42,9 @@ void init_gdt(void)
 
 	memset(gdt, 0, sizeof(gdt));
 	set_descriptor((DESCRIPTOR *)&gdt[KER_CODE], 0,
-			0xffffffff, DA_CR);
+			0xfffff, 0xC0<<8 | DA_CR);
 	set_descriptor((DESCRIPTOR *)&gdt[KER_DATA], 0,
-			0xffffffff, DA_DRW);
+			0xfffff, 0xC0<<8 | DA_DRW);
 
 	gdt_base = (uint32_t *)(&gdt_ptr[2]);
 	gdt_lim = (uint16_t *)(&gdt_ptr[0]);
@@ -70,9 +70,14 @@ void init_idt(void)
 	uint16_t *idt_lim;
 	int i;
 
+	memset(idt, 0, sizeof(idt));
+
 	for(i=0; i<ISR_NUM; i++){
-		idt_entry(&idt[i<<3], isr_table[i], KER_CODE);
+		set_gate(&idt[i<<3], isr_table[i], 0x8e, KER_CODE);
 	}
+
+	// syscall, DPL=3
+	// set_gate(&idt[SYSCALL<<3], isr_table[SYSCALL], 0xee, KER_CODE);
 
 	idt_base = (uint32_t *)(&idt_ptr[2]);
 	idt_lim = (uint16_t *)(&idt_ptr[0]);
@@ -140,6 +145,8 @@ int main(void)
 
 	// we should setup new_task first, then sti()
 	__asm__("sti\n");
+	printf("After sti()\n");
+	for(;;);
 
 	//dump_gdt();
 	__asm__ ("lldt %%ax\n\t"::"a"(current->ldt_sel));
