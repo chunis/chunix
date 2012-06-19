@@ -3,6 +3,10 @@
 
 #define NULL  ((void *)0)
 
+// some params for kernel
+#define NPROC	64	// maximum number of processes (tasks)
+#define NOFILE	16	// maximum opened files each process
+
 // Descriptor attributes
 // Byte-6
 #define DA_LIM_4K	0x80

@@ -135,6 +135,8 @@ int main(void)
 	mkfs();
 	init_fs();
 
+	task_init();
+
 	rootp = 0;
 	new_task(&task1, "TaskA", (uint32_t)taskA, (uint32_t)&task1_stack3+USR_STACK_SIZE, KER_LDT1);
 	new_task(&task2, "TaskB", (uint32_t)taskB, (uint32_t)&task2_stack3+USR_STACK_SIZE, KER_LDT2);

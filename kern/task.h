@@ -10,9 +10,11 @@
 #define USR_STACK_SIZE 1024
 
 enum TS_STATE {
+	TS_UNUSED = 0,
 	TS_RUNNING,
 	TS_RUNABLE,
-	TS_STOPPED
+	TS_STOPPED,
+	TS_ZOMBIE,
 };
 
 typedef struct {
@@ -61,7 +63,10 @@ typedef struct _task {
 	DESCRIPTOR ldt[LDT_SIZE];
 	uint16_t ldt_sel;
 	uint32_t pid;
+	uint32_t ppid;	// parent's id
 	char name[24];
+	pde_t *pgdir;
+	STACK_FRAME *tf;
 	struct file_desp *fdp[OFILE];
 	enum TS_STATE state;
 	int priority;

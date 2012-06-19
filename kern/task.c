@@ -7,6 +7,9 @@
 #include "fs.h"
 #include "string.h"
 
+TASK_STRUCT tasks[NPROC];
+int nextpid = 1;
+
 TASK_STRUCT task0 = {
 	{ // STACK_FRAME
 		USR_DATA, // gs
@@ -38,6 +41,37 @@ TASK_STRUCT task0 = {
 	INIT_PRIO, // priority
 	0, // next
 };
+
+void task_init(void)
+{
+	int i;
+
+	for(i=0; i<NPROC; i++){
+		;
+	}
+	return;
+}
+
+TASK_STRUCT *task_alloc(void)
+{
+	TASK_STRUCT *tp;
+	for(tp = tasks; tp < tasks + NPROC; tp++)
+		if(tp->state == TS_UNUSED)
+			break;
+	// no task slot available
+	if(tp == tasks + NPROC)
+		return NULL;
+
+	tp->pgdir = kalloc();
+	if(tp->pgdir == NULL)
+		return NULL;
+
+	tp->pid = nextpid++;
+	//TODO tp->ppid = ?
+	tp->state = TS_STOPPED;
+
+	return tp;
+}
 
 // TODO: task->ldt[].attr need more improvement
 void new_task(TASK_STRUCT *task, const char *name, uint32_t eip, uint32_t stack3, uint32_t sel)

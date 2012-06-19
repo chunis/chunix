@@ -2,6 +2,7 @@ AS = as
 CC = gcc
 LD = ld
 NM = nm
+AR = ar
 
 ASFLAGS = -32
 LDFLAGS = -melf_i386

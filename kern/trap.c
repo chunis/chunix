@@ -1,5 +1,6 @@
 #include "printf.h"
 #include "task.h"
+#include <trap.h>
 
 static const char *exceptions[] = {
 	"Divide error",
@@ -23,7 +24,7 @@ static const char *exceptions[] = {
 
 void dump_tf(STACK_FRAME *tf)
 {
-	clean_screen();
+	//clean_screen();
 
 	printf("Exception %d: %s\n\n", tf->trapno, exceptions[tf->trapno]);
 	printf("gs:\t%x,\tfs:\t%x\n", tf->gs, tf->fs);
@@ -45,6 +46,22 @@ void dump_tf(STACK_FRAME *tf)
 void trap(STACK_FRAME *tf)
 {
 	printf("tf->trapno: %d\n", tf->trapno);
+	if(tf->trapno == T_IRQ0){
+		printf("timer interrupt\n");
+		timer_isr();
+		return;
+	}
+
+	if(tf->trapno == T_PGFLT){
+		printf("page fault\n");
+		dump_tf(tf);
+	}
+
+	if(tf->trapno == IRQ_IDE){
+		printf("IDE read/write interrupt\n");
+		return;
+	}
+
 	dump_tf(tf);
 
 	return;
