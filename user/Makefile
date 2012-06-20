@@ -1,13 +1,21 @@
 include ../make.inc
 
-initcode: initcode.S
-	$(CC) $(CFLAGS) -nostdinc -I. -c initcode.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o
-	$(OBJCOPY) -S -O binary initcode.out initcode
-	$(OBJDUMP) -S initcode.o > initcode.asm
+USER_OBJS = hello todo
 
-hello: hello.c
-	$(CC) $(CFLAGS) -nostdinc -I. -c hello.c
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o hello.out hello.o
-	$(OBJCOPY) -S -O binary hello.out hello
-	$(OBJDUMP) -S hello.o > hello.asm
+all: ${USER_OBJS}
+	echo "Build user apps is done"
+
+%: %.c ../lib/entry.o ../lib/libcx.a
+	$(CC) $(CFLAGS) -c -o $@.o $<
+	$(LD) $(LDFLAGS) -N -e _start -Ttext 0 -o $@ ../lib/entry.o $@.o -L../lib -lcx
+	$(OBJDUMP) -S $@ > $@.asm
+	$(NM) -n $@ > $@.sym
+
+../lib/entry.o:
+	(cd ../lib && make)
+
+../lib/libcx.a:
+	(cd ../lib && make)
+
+clean:
+	@rm -f *.o ${USER_OBJS}

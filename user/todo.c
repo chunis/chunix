@@ -1,4 +1,4 @@
-#include <inc/lib.h>
+//#include <inc/lib.h>
 
 int main(int argc, char *argv[])
 {
@@ -26,6 +26,7 @@ void mytodo(void)
 	char *file = "/todo";
 	char *str = "Todo: tool used to keep things need to do";
 
+#if 0
 	fd = open(file, O_CREAT);
 	printf("fd = %d\n", fd);
 	write(fd, str, strlen(str));
@@ -42,4 +43,5 @@ void mytodo(void)
 		printf("%xA.", i++);
 		delay(120);
 	}
+#endif
 }

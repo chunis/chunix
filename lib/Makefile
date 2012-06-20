@@ -1,12 +1,17 @@
 include ../make.inc
 
-LIB_OBJ = entry.o libmain.o syscall.o
+LIB_OBJS = libmain.o
+
+all: libcx.a entry.o
+
+libcx.a: ${LIB_OBJS}
+	${AR} r $@ ${LIB_OBJS}
 
 %.o: %.c
 	${CC} ${CFLAGS} -c -o $@ $<
 
 %.o: %.S
-	${CC} ${USER_CFLAGS} -c -o $@ $<
+	${CC} ${CFLAGS} -c -o $@ $<
 
-libcx.a: ${LIB_OBJ}
-	${AR} r $@ ${LIB_OBJFILES}
+clean:
+	@rm -f ${LIB_OBJS} libcx.a
