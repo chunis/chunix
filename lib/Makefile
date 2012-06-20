@@ -14,4 +14,4 @@ libcx.a: ${LIB_OBJS}
 	${CC} ${CFLAGS} -c -o $@ $<
 
 clean:
-	@rm -f ${LIB_OBJS} libcx.a
+	@rm -f *.o libcx.a

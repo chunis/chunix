@@ -18,4 +18,4 @@ all: ${USER_OBJS}
 	(cd ../lib && make)
 
 clean:
-	@rm -f *.o ${USER_OBJS}
+	@rm -f *.o *.asm *.sym ${USER_OBJS}

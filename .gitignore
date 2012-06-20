@@ -3,6 +3,7 @@ cscope.*
 *.asm
 *.sym
 *.img
+libcx.a
 
 boot/bootsect
 boot/bootsect.out
