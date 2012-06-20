@@ -131,6 +131,7 @@ int main(void)
 	mem_init();
 	setupkvm();
 	init_gdt();
+	//dump_gdt();
 	init_idt();
 
 	init_8259A();
@@ -142,19 +143,18 @@ int main(void)
 
 	rootp = 0;
 	mytask = task_create(_binary____user_hello_start,
-			_binary____user_hello_size);
+			(uint32_t)_binary____user_hello_size);
 	task_run(mytask);
 	current = rootp;
 
 	setup_tss();
 	tss.esp0 = current->ldt;
 
-	// we should setup new_task first, then sti()
+	// we should setup all things before sti()
 	__asm__("sti\n");
 	printf("After sti()\n");
 	for(;;);
 
-	//dump_gdt();
 	__asm__ ("lldt %%ax\n\t"::"a"(current->ldt_sel));
 	__asm__ ("movl %%eax, %%esp\n\t"::"a"((uint32_t)current));
 	__asm__ ("popl %gs\n\t" \

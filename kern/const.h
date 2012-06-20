@@ -4,8 +4,9 @@
 #define NULL  ((void *)0)
 
 // some params for kernel
-#define NPROC	64	// maximum number of processes (tasks)
-#define NOFILE	16	// maximum opened files each process
+#define NPROC		64	// maximum number of processes (tasks)
+#define NOFILE		16	// maximum opened files each process
+#define KSTACKSIZE	4096	// per-task kernel stack size
 
 #define FL_IF	0x00000200
 

@@ -18,6 +18,7 @@ extern pde_t *kpgdir;
 TASK_STRUCT *task_alloc(void)
 {
 	TASK_STRUCT *tp;
+	char *sp;
 
 	for(tp = tasks; tp < tasks + NPROC; tp++)
 		if(tp->state == TS_UNUSED)
@@ -40,7 +41,9 @@ TASK_STRUCT *task_alloc(void)
 	tp->state = TS_STOPPED;
 	tp->priority = INIT_PRIO;
 
-	memset(&tp->tf, 0, sizeof(tp->tf));
+	sp = tp->kstack + KSTACKSIZE - sizeof(*tp->tf);
+	tp->tf = (STACK_FRAME *)sp;
+	memset(tp->tf, 0, sizeof(*tp->tf));
 
 	tp->tf->cs = USR_CODE | SA_RPL3;
 	tp->tf->ds = USR_DATA | SA_RPL3;
@@ -131,6 +134,9 @@ TASK_STRUCT *task_create(uint8_t *binary, uint32_t size)
 // This exits the kernel and starts executing some task's code.
 void task_pop_tf(STACK_FRAME *tf)
 {
+	printf("Stop here\n");
+	for(;;);
+
 	__asm __volatile("movl %0,%%esp\n"
 		"\tpopal\n"
 		"\tpopl %%es\n"
