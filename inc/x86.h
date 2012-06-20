@@ -22,7 +22,7 @@ insl(int port, void *addr, int count)
 				: "memory", "cc");
 }
 
-static __inline uint8_t
+static __inline void
 outb(int port, uint8_t val)
 {
 	__asm__ __volatile__("outb %0, %w1" : : "a"(val), "d"(port));

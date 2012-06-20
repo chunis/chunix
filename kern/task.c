@@ -63,8 +63,7 @@ TASK_STRUCT *task_alloc(void)
 
 // allocate len bytes of physical memory for task tp,
 // and map it at virtual address va.
-static void
-region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
+static void region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
 {
 	pte_t *pte;
 	char *p;
@@ -86,8 +85,7 @@ region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
 // Set up the initial program binary, stack, and processor flags
 // for a user process.
 // use region_alloc() to make it easier.
-static void
-load_icode(TASK_STRUCT *tp, uint8_t *binary, uint32_t size)
+static void load_icode(TASK_STRUCT *tp, uint8_t *binary, uint32_t size)
 {
 	struct proghdr *ph, *eph;
 	struct elf *elfhdr;
@@ -116,8 +114,7 @@ load_icode(TASK_STRUCT *tp, uint8_t *binary, uint32_t size)
 
 // allocates a new task with task_alloc(), loads the named elf
 // binary into it with load_icode().
-void
-task_create(uint8_t *binary, uint32_t size)
+TASK_STRUCT *task_create(uint8_t *binary, uint32_t size)
 {
 	TASK_STRUCT *tp = NULL;
 
@@ -127,12 +124,12 @@ task_create(uint8_t *binary, uint32_t size)
 		load_icode(tp, binary, size);
 		lcr3((uint32_t *)P2V((uint32_t)kpgdir));
 	}
+	return tp;
 }
 
 // Restores register values in the STACK_FRAME with the 'iret' instruction.
 // This exits the kernel and starts executing some task's code.
-void
-task_pop_tf(STACK_FRAME *tf)
+void task_pop_tf(STACK_FRAME *tf)
 {
 	__asm __volatile("movl %0,%%esp\n"
 		"\tpopal\n"
@@ -146,8 +143,7 @@ task_pop_tf(STACK_FRAME *tf)
 
 // Context switch from current to task tp.
 // Note: if this is the first call to task_run, current is NULL.
-void
-task_run(TASK_STRUCT *tp)
+void task_run(TASK_STRUCT *tp)
 {
 	if(tp != current){
 		if(current && current->state == TS_RUNNING)

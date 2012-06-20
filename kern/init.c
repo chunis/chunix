@@ -9,6 +9,7 @@
 #include "task.h"
 #include "descriptor.h"
 #include "const.h"
+#include "mm.h"
 
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];
@@ -117,7 +118,9 @@ void dump_gdt(void)
 int main(void)
 {
 	char *os_str = "Welcome to ChuniX! :)\n";
-	extern edata[], end[];
+	extern uint32_t edata[], end[];
+	TASK_STRUCT *mytask;
+	extern char _binary____user_hello_start[], _binary____user_hello_size[];
 
 	// clear BSS section
 	memset(edata, 0, end - edata);
@@ -138,8 +141,9 @@ int main(void)
 	init_fs();
 
 	rootp = 0;
-	task_create();
-	task_run();
+	mytask = task_create(_binary____user_hello_start,
+			_binary____user_hello_size);
+	task_run(mytask);
 	current = rootp;
 
 	setup_tss();

@@ -74,5 +74,8 @@ typedef struct _task {
 } TASK_STRUCT;
 
 TASK_STRUCT *rootp, *current;
+TASK_STRUCT *task_create(uint8_t *binary, uint32_t size);
+void task_run(TASK_STRUCT *tp);
+void task_destroy(TASK_STRUCT *tp);
 
 #endif
