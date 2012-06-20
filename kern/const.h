@@ -7,6 +7,8 @@
 #define NPROC	64	// maximum number of processes (tasks)
 #define NOFILE	16	// maximum opened files each process
 
+#define FL_IF	0x00000200
+
 // Descriptor attributes
 // Byte-6
 #define DA_LIM_4K	0x80
@@ -35,8 +37,8 @@
 // Selector attribute
 #define SA_RPL0		0
 #define SA_RPL3		3
-#define SA_TIG	0
-#define SA_TIL	4
+#define SA_TIG		0
+#define SA_TIL		4
 #define SA_RPL_MASK	~0x3	// 0...0011
 #define SA_TI_MASK	~0x7	// 0...0111
 

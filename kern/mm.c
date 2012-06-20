@@ -6,7 +6,7 @@
 struct pglink *free_list;	// free page link
 static uint32_t memsz;		// memory size by KB
 extern char data[], end[];	// defined in kernel.ld
-static pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
+pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
 pde_t *kpgdir;
 
 // create PTEs for va which refer to physical address pa.
@@ -110,7 +110,7 @@ char *kalloc(void)
 // return the address of PTE in pgdir that corresponds to virtual address va.
 // if alloc != 0, alloc pages needed to create page table.
 // if fails, return 0 (= NULL).
-static pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc)
+pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc)
 {
 	pde_t *pde;
 	pte_t *pte;

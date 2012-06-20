@@ -13,6 +13,7 @@ uint32_t cmos_read(uint32_t r);
 void kinit(void *vastart, void *vaend);
 void kfree_range(void *start, void *end);
 char *kalloc(void);
+pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
 void kfree(void *v);
 
 #endif

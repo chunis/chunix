@@ -8,6 +8,9 @@
 #define EXTMEM		0x100000
 #define KERNBASE	0x80000000
 #define KERNLINK	(KERNBASE + EXTMEM)
+#define ULIM		KERNBASE
+#define UTOP		ULIM
+#define USTACKTOP	UTOP
 
 // page dir/table entry flags
 #define PTE_P		0x001	// present

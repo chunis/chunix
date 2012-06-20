@@ -3,6 +3,7 @@
 #include "console.h"
 #include "string.h"
 #include "sys.h"
+#include "fs.h"
 
 char monbuf[1024];  // monitor buffer
 
@@ -78,5 +79,62 @@ void monitor(void)
 		} else{
 			printf("Error! no such command: '%s'. type 'help' for help\n", cmd);
 		}
+	}
+}
+
+static void delay(int time)
+{
+	int i, j, k;
+	for(i=0; i<time; i++)
+		for(j=0; j<100; j++)
+			for(k=0; k<1000; k++)
+				;
+}
+
+// do some test for file functions
+void test_fs(void)
+{
+	int i = 0;
+
+	int fd;
+	int len = 20;
+	char buf[64];
+	char *file = "/first_file";
+	char *str = "file used to check file functions";
+
+#if 0
+	fd = fileopen(file, O_CREAT);
+	printf("fd = %d\n", fd);
+	filewrite(fd, str, strlen(str));
+	fileclose(fd);
+
+	fd = fileopen(file, O_RDWR);
+	printf("fd = %d\n", fd);
+	fileread(fd, buf, len);
+	buf[len] = '\0';
+	fileclose(fd);
+	printf("In test_fs, buf = %s\n", buf);
+#endif
+
+#if 1
+	while(1){
+		printf("%xA.", i++);
+		delay(120);
+	}
+#endif
+	monitor();
+}
+
+
+void wheel(void)
+{
+	int i = 0;
+	char wheel[] = { '\\', '|', '/', '-' };
+	for(;;){
+		__asm__ ("movb	%%al, 0xb8000+160*24"::"a"(wheel[i]));
+		if(i == sizeof wheel)
+			i = 0;
+		else
+			i++;
 	}
 }

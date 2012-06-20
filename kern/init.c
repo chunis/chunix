@@ -45,6 +45,10 @@ void init_gdt(void)
 			0xfffff, 0xC0<<8 | DA_CR);
 	set_descriptor((DESCRIPTOR *)&gdt[KER_DATA], 0,
 			0xfffff, 0xC0<<8 | DA_DRW);
+	set_descriptor((DESCRIPTOR *)&gdt[USR_CODE], 0,
+			0xfffff, (0xC0<<8 | DA_DPL3 | DA_CR));
+	set_descriptor((DESCRIPTOR *)&gdt[USR_DATA], 0,
+			0xfffff, (0xC0<<8 | DA_DPL3 | DA_DRW));
 
 	gdt_base = (uint32_t *)(&gdt_ptr[2]);
 	gdt_lim = (uint16_t *)(&gdt_ptr[0]);
@@ -112,8 +116,6 @@ void dump_gdt(void)
 
 int main(void)
 {
-	int i = 0;
-	char wheel[] = { '\\', '|', '/', '-' };
 	char *os_str = "Welcome to ChuniX! :)\n";
 	extern edata[], end[];
 
@@ -135,11 +137,9 @@ int main(void)
 	mkfs();
 	init_fs();
 
-	task_init();
-
 	rootp = 0;
-	new_task(&task1, "TaskA", (uint32_t)taskA, (uint32_t)&task1_stack3+USR_STACK_SIZE, KER_LDT1);
-	new_task(&task2, "TaskB", (uint32_t)taskB, (uint32_t)&task2_stack3+USR_STACK_SIZE, KER_LDT2);
+	task_create();
+	task_run();
 	current = rootp;
 
 	setup_tss();
@@ -161,14 +161,7 @@ int main(void)
 			"addl $0x4, %esp\n\t" \
 			"iret\n\t");
 
-	for(;;){
-		__asm__ ("movb	%%al, 0xb8000+160*24"::"a"(wheel[i]));
-		if(i == sizeof wheel)
-			i = 0;
-		else
-			i++;
-	}
-
+	wheel();
 	return 0;
 }
 

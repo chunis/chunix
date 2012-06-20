@@ -12,7 +12,7 @@
 enum TS_STATE {
 	TS_UNUSED = 0,
 	TS_RUNNING,
-	TS_RUNABLE,
+	TS_RUNNABLE,
 	TS_STOPPED,
 	TS_ZOMBIE,
 };
@@ -58,7 +58,7 @@ typedef struct {
 } STACK_FRAME;
 
 typedef struct _task {
-	STACK_FRAME regs;
+	STACK_FRAME *tf;
 
 	DESCRIPTOR ldt[LDT_SIZE];
 	uint16_t ldt_sel;
@@ -66,19 +66,13 @@ typedef struct _task {
 	uint32_t ppid;	// parent's id
 	char name[24];
 	pde_t *pgdir;
-	STACK_FRAME *tf;
+	char *kstack;	// bottom of kernel stack for this task
 	struct file_desp *fdp[OFILE];
 	enum TS_STATE state;
 	int priority;
 	struct _task *next;
 } TASK_STRUCT;
 
-extern TASK_STRUCT task0;
-TASK_STRUCT task1, task2;
 TASK_STRUCT *rootp, *current;
-
-void new_task(TASK_STRUCT *task, const char *name, uint32_t eip, uint32_t stack3, uint32_t sel);
-void taskA(void);
-void taskB(void);
 
 #endif
