@@ -50,6 +50,8 @@ void init_gdt(void)
 			0xfffff, (0xC0<<8 | DA_DPL3 | DA_CR));
 	set_descriptor((DESCRIPTOR *)&gdt[USR_DATA], 0,
 			0xfffff, (0xC0<<8 | DA_DPL3 | DA_DRW));
+	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss,
+			sizeof(tss)-1, DA_386TSS);
 
 	gdt_base = (uint32_t *)(&gdt_ptr[2]);
 	gdt_lim = (uint16_t *)(&gdt_ptr[0]);

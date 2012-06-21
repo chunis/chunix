@@ -53,7 +53,7 @@ TASK_STRUCT *task_alloc(void)
 	tp->tf->ss = USR_DATA | SA_RPL3;
 
 	tp->tf->eflags = FL_IF;
-	tp->tf->esp = PGSIZE;
+	tp->tf->esp = USTACKTOP;
 	// we will set tp->tf->eip later.
 
 	tp->state = TS_RUNNABLE;
@@ -73,6 +73,7 @@ static void region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
 	int _va = PGROUNDDOWN((uint32_t)va);
 	int _va_end = PGROUNDUP((uint32_t)va+len);
 
+	printf("_va: %x, _va_end: %x\n", _va, _va_end);
 	while(_va < _va_end){
 		pte = pgdir_walk(tp->pgdir, (void *)_va, 1);
 		if(!pte)
@@ -81,6 +82,7 @@ static void region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
 		if(!p)
 			panic("region_alloc failed!");
 		*pte = PTE_ADDR(V2P((uint32_t)p)) | PTE_U | PTE_W | PTE_P;
+		printf("pte: %x, *pte: %x\n", pte, *pte);
 		_va += PGSIZE;
 	}
 }
@@ -112,7 +114,7 @@ static void load_icode(TASK_STRUCT *tp, uint8_t *binary, uint32_t size)
 	tp->tf->eip = elfhdr->e_entry;
 
 	// map one page for the program's initial stack
-	region_alloc(tp, (void*)USTACKTOP - PGSIZE, PGSIZE);
+	region_alloc(tp, (void *)USTACKTOP - PGSIZE, PGSIZE);
 }
 
 // allocates a new task with task_alloc(), loads the named elf
@@ -134,14 +136,13 @@ TASK_STRUCT *task_create(uint8_t *binary, uint32_t size)
 // This exits the kernel and starts executing some task's code.
 void task_pop_tf(STACK_FRAME *tf)
 {
-	printf("Stop here\n");
-	for(;;);
-
 	__asm __volatile("movl %0,%%esp\n"
-		"\tpopal\n"
+		"\tpopl %%gs\n"
+		"\tpopl %%fs\n"
 		"\tpopl %%es\n"
 		"\tpopl %%ds\n"
-		"\taddl $0x8,%%esp\n" /* skip tf_trapno and tf_errcode */
+		"\tpopal\n"
+		"\taddl $0xC,%%esp\n" //skip trapno, err and ret_addr
 		"\tiret"
 		: : "g" (tf) : "memory");
 	panic("iret failed");
@@ -157,10 +158,13 @@ void task_run(TASK_STRUCT *tp)
 		current = tp;
 		current->state = TS_RUNNING;
 		current->priority--;
+		tss.ss0 = KER_DATA;
+		tss.esp0 = current->kstack + KSTACKSIZE;
+		__asm__ __volatile__("ltrw  %%ax\n\t"::"a"(KER_TSS));
 		lcr3((uint32_t *)P2V((uint32_t)current->pgdir));
 	}
 
-	task_pop_tf(&current->tf);
+	task_pop_tf(current->tf);
 }
 
 void task_destroy(TASK_STRUCT *tp)
