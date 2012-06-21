@@ -70,10 +70,9 @@ static void region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
 {
 	pte_t *pte;
 	char *p;
-	int _va = PGROUNDDOWN((uint32_t)va);
-	int _va_end = PGROUNDUP((uint32_t)va+len);
+	uint32_t _va = PGROUNDDOWN((uint32_t)va);
+	uint32_t _va_end = PGROUNDUP((uint32_t)va+len);
 
-	printf("_va: %x, _va_end: %x\n", _va, _va_end);
 	while(_va < _va_end){
 		pte = pgdir_walk(tp->pgdir, (void *)_va, 1);
 		if(!pte)
@@ -82,7 +81,6 @@ static void region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
 		if(!p)
 			panic("region_alloc failed!");
 		*pte = PTE_ADDR(V2P((uint32_t)p)) | PTE_U | PTE_W | PTE_P;
-		printf("pte: %x, *pte: %x\n", pte, *pte);
 		_va += PGSIZE;
 	}
 }
