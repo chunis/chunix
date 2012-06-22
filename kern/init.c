@@ -37,6 +37,7 @@ static void init_8259A(void)
 	outb(0xa1, 0xff);
 }
 
+// add items to gdt, include kernel/user code/data segment and tss
 void init_gdt(void)
 {
 	uint32_t *gdt_base;
@@ -65,17 +66,6 @@ void init_gdt(void)
 	__asm__ __volatile__("lgdt gdt_ptr");
 }
 
-void idt_entry(uint8_t *idtp, int_handler handler, uint16_t sel)
-{
-	uint32_t offset = (uint32_t)handler;
-	uint16_t *p = (uint16_t *)idtp;
-
-	*(p+0) = offset & 0xffff;
-	*(p+1) = (uint16_t)sel;
-	*(p+2) = 0x8e00;	// attributes
-	*(p+3) = (offset >> 16) & 0xffff;
-}
-
 void init_idt(void)
 {
 	uint32_t *idt_base;
@@ -96,17 +86,6 @@ void init_idt(void)
 	*idt_base = (uint32_t)&idt;
 	*idt_lim = IDT_NUM * 8 - 1;
 	__asm__ __volatile__("lidt idt_ptr");
-}
-
-// add tss to gdt
-void setup_tss(void)
-{
-	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss, sizeof(tss)-1, DA_386TSS);
-	memset(&tss, 0, sizeof(tss));
-	tss.ss0 = KER_DATA;
-	//tss.iobase = sizeof(tss);
-
-	__asm__ ("ltrw  %%ax\n\t"::"a"(KER_TSS));
 }
 
 void dump_gdt(void)
@@ -154,23 +133,9 @@ int main(void)
 	task_run(mytask);
 	current = rootp;
 
-	setup_tss();
-	tss.esp0 = current->ldt;
-
 	// we should setup all things before sti()
 	__asm__("sti\n");
 	printf("After sti()\n");
-	for(;;);
-
-	__asm__ ("lldt %%ax\n\t"::"a"(current->ldt_sel));
-	__asm__ ("movl %%eax, %%esp\n\t"::"a"((uint32_t)current));
-	__asm__ ("popl %gs\n\t" \
-			"popl %fs\n\t" \
-			"popl %es\n\t" \
-			"popl %ds\n\t" \
-			"popal\n\t" \
-			"addl $0x4, %esp\n\t" \
-			"iret\n\t");
 
 	wheel();
 	return 0;
