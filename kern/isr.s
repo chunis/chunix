@@ -17,6 +17,7 @@ isr\en:
 .endm
 
 isr_comm:
+	subl	$0x4, %esp
 	pushal
 	pushl	%ds
 	pushl	%es
@@ -32,7 +33,8 @@ isr_comm:
 	call	trap
 	addl	$0x4, %esp
 
-	# return from trap() will just drop to trap_ret
+	# after return from trap(), just drop to trap_ret
+	jmp	trap_ret
 
 .globl trap_ret
 trap_ret:
@@ -41,7 +43,7 @@ trap_ret:
 	popl	%es
 	popl	%ds
 	popal
-	addl	$0xC, %esp		# for isr_nr and errno
+	addl	$0xC, %esp		# for isr_nr, errno and ret_addr
 	iret
 
 
@@ -96,6 +98,9 @@ isr_noerr	0x2D
 isr_noerr	0x2E
 isr_noerr	0x2F
 
+# for syscall
+isr_noerr	0x30
+
 .data
 .globl isr_table
 isr_table:
@@ -111,3 +116,4 @@ isr_table:
 	.long	isr0x24, isr0x25, isr0x26, isr0x27
 	.long	isr0x28, isr0x29, isr0x2A, isr0x2B
 	.long	isr0x2C, isr0x2D, isr0x2E, isr0x2F
+	.long	isr0x30

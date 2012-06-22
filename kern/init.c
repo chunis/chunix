@@ -51,9 +51,13 @@ void init_gdt(void)
 			0xfffff, (0xC0<<8 | DA_DPL3 | DA_CR));
 	set_descriptor((DESCRIPTOR *)&gdt[USR_DATA], 0,
 			0xfffff, (0xC0<<8 | DA_DPL3 | DA_DRW));
+	// for tss
+	memset(&tss, 0, sizeof(tss));
+	tss.ss0 = KER_DATA;
 	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss,
 			sizeof(tss)-1, DA_386TSS);
 
+	// load gdt
 	gdt_base = (uint32_t *)(&gdt_ptr[2]);
 	gdt_lim = (uint16_t *)(&gdt_ptr[0]);
 	*gdt_base = (uint32_t)&gdt;

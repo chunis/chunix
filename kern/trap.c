@@ -57,6 +57,14 @@ void trap(STACK_FRAME *tf)
 		dump_tf(tf);
 	}
 
+	if(tf->trapno == T_SYSCALL){
+		printf("Enter SYSCALL now!!\n");
+		for(;;){
+			printf("Enter SYSCALL now!!\n");
+		}
+		return;
+	}
+
 	if(tf->trapno == IRQ_IDE){
 		printf("IDE read/write interrupt\n");
 		return;
