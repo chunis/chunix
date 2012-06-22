@@ -41,7 +41,7 @@ trap_ret:
 	popl	%es
 	popl	%ds
 	popal
-	addl	$0x8, %esp		# for isr_nr and errno
+	addl	$0xC, %esp		# for isr_nr and errno
 	iret
 
 

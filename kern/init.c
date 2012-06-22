@@ -10,6 +10,7 @@
 #include "descriptor.h"
 #include "const.h"
 #include "mm.h"
+#include <trap.h>
 
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];
@@ -80,11 +81,11 @@ void init_idt(void)
 	memset(idt, 0, sizeof(idt));
 
 	for(i=0; i<ISR_NUM; i++){
-		set_gate(&idt[i<<3], isr_table[i], 0x8e, KER_CODE);
+		set_gate(&idt[i], isr_table[i], 0x8e, KER_CODE);
 	}
 
 	// syscall, DPL=3
-	// set_gate(&idt[SYSCALL<<3], isr_table[SYSCALL], 0xee, KER_CODE);
+	set_gate(&idt[T_SYSCALL], isr_table[T_SYSCALL], 0xef, KER_CODE);
 
 	idt_base = (uint32_t *)(&idt_ptr[2]);
 	idt_lim = (uint16_t *)(&idt_ptr[0]);

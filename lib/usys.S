@@ -2,7 +2,7 @@
 #include "../inc/trap.h"
 
 .macro SYSCALL name sn
-.globl \name;
+.globl \name
 \name:
 	movl	$\sn, %eax
 	int	$T_SYSCALL
