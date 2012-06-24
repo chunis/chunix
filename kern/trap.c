@@ -45,10 +45,17 @@ void dump_tf(STACK_FRAME *tf)
 }
 void trap(STACK_FRAME *tf)
 {
-	printf("tf->trapno: %d\n", tf->trapno);
-	if(tf->trapno == T_IRQ0){
-		printf("timer interrupt\n");
+	if(tf->trapno == T_IRQ0 + IRQ_TIMER){
 		timer_isr();
+		return;
+	}
+	if(tf->trapno == T_IRQ0 + IRQ_KBD){
+		keyboard_isr();
+		return;
+	}
+	if(tf->trapno == T_IRQ0 + IRQ_IDE){
+		printf("IDE read/write interrupt\n");
+		hd_isr();
 		return;
 	}
 
@@ -59,17 +66,11 @@ void trap(STACK_FRAME *tf)
 
 	if(tf->trapno == T_SYSCALL){
 		printf("Enter SYSCALL now!!\n");
-		for(;;){
-			printf("Enter SYSCALL now!!\n");
-		}
 		return;
 	}
 
-	if(tf->trapno == IRQ_IDE){
-		printf("IDE read/write interrupt\n");
-		return;
-	}
-
+	// something wrong happened
+	printf("tf->trapno: %d\n", tf->trapno);
 	dump_tf(tf);
 
 	return;

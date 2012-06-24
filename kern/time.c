@@ -37,12 +37,5 @@ void timer_isr(void)
 	printf("time: %d\n", timer_ticks++);
 	set_cursor(x, y);
 
-	current = current->next;
-	if(current == 0)
-		current = rootp;
-
-	tss.esp0 = current->ldt;
-	__asm__ ("lldt %%ax\n\t"::"a"(current->ldt_sel));
-
 	--reent;
 }
