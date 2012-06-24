@@ -1,4 +1,4 @@
-#include "syscall.h"
+#include "../inc/syscall.h"
 #include "../inc/trap.h"
 
 .macro SYSCALL name sn

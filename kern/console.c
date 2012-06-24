@@ -54,6 +54,7 @@ void get_cursor(int *x, int *y)
 void set_cursor(int x, int y)
 {
 	cons_pos = y * CONS_COLS + x;
+	put_cursor(cons_pos);
 }
 
 void cons_init(void)
