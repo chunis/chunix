@@ -1,15 +1,17 @@
 #include <types.h>
 #include <x86.h>
-#include "console.h"
 #include <mmu.h>
-
-static uint16_t *cons_buf;
-static uint16_t cons_pos;
+#include "console.h"
+#include "string.h"
 
 #define CEIL(num, base)	(((num)/(base)+1)*(base))
 #define TAB_WIDTH	8
 #define BRIGHT_GREEN	0xa
 #define BLANK_CHAR	(BRIGHT_GREEN << 0x8 | 0x20)
+
+static uint16_t *cons_buf;
+static uint16_t cons_pos;
+static dcolor = BRIGHT_GREEN;
 
 static uint16_t locate_cursor(void)
 {
@@ -66,39 +68,50 @@ void cons_init(void)
 
 void put_color_c(char color, char c)
 {
-	int x = (color << 0x8 | c);
+	char oldcolor;
 
-	if(cons_pos >= CONS_SIZE)
-		cons_pos = 0;
-
-	cons_buf[cons_pos++] = x;
-	put_cursor(cons_pos);
+	oldcolor = dcolor;
+	dcolor = color;
+	put_c(c);
+	dcolor = oldcolor;
 }
 
 void put_c(char c)
 {
 	int cnt;
 	char blank = 0x20;
+	uint16_t color = dcolor << 8;
 
 	switch(c){
 		case '\b':
-			cons_buf[--cons_pos] = BLANK_CHAR;
-			put_cursor(cons_pos);
+			if(cons_pos > 0)
+				cons_buf[--cons_pos] = BLANK_CHAR;
 			break;
 		case '\n':
-			cnt = CEIL(cons_pos, CONS_COLS) - cons_pos;
-			for(; cnt>0; cnt--)
-				put_color_c(BRIGHT_GREEN, blank);
+			cons_pos += CONS_COLS;
+			cons_pos -= (cons_pos % CONS_COLS);
 			break;
 		case '\t':
 			cnt = CEIL(cons_pos, TAB_WIDTH) - cons_pos;
 			for(; cnt>0; cnt--)
-				put_color_c(BRIGHT_GREEN, blank);
+				cons_buf[cons_pos++] = (color | blank);
 			break;
 		default:
-			put_color_c(BRIGHT_GREEN, c);
+			cons_buf[cons_pos++] = (color | c);
 			break;
 	}
+
+	// scroll if necessory. we leave the top row as 'statusbar'
+	if(cons_pos >= CONS_SIZE){
+		memmove(cons_buf + CONS_COLS, cons_buf + CONS_COLS * 2,
+			(CONS_SIZE - CONS_COLS * 2) * sizeof(uint16_t));
+		for(cnt = CONS_SIZE - CONS_COLS; cnt < CONS_SIZE; cnt++)
+			cons_buf[cnt] = (color | blank);
+		cons_pos -= CONS_COLS;
+	}
+
+	// move cursor to follow
+	put_cursor(cons_pos);
 }
 
 char get_c(void)

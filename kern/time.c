@@ -33,7 +33,7 @@ void timer_isr(void)
 	outb(0x20, 0x20);
 
 	get_cursor(&x, &y);
-	set_cursor(62, 24);
+	set_cursor(64, 0);
 	printf("time: %d\n", timer_ticks++);
 	set_cursor(x, y);
 

@@ -17,6 +17,7 @@
 
 void cons_init(void);
 void put_c(char c);
+void put_color_c(char color, char c);
 char get_c(void);
 
 struct console_buf {
