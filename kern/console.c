@@ -1,4 +1,5 @@
 #include <types.h>
+#include <x86.h>
 #include "console.h"
 #include <mmu.h>
 
@@ -10,6 +11,25 @@ static uint16_t cons_pos;
 #define BRIGHT_GREEN	0xa
 #define BLANK_CHAR	(BRIGHT_GREEN << 0x8 | 0x20)
 
+static uint16_t locate_cursor(void)
+{
+	uint16_t pos;
+
+	outb(CGA_BASE, 14);
+	pos = inb(CGA_BASE + 1) << 8;
+	outb(CGA_BASE, 15);
+	pos |= inb(CGA_BASE + 1);
+	return pos;
+}
+
+static void put_cursor(uint16_t pos)
+{
+	outb(CGA_BASE, 14);
+	outb(CGA_BASE + 1, pos >> 8);
+	outb(CGA_BASE, 15);
+	outb(CGA_BASE + 1, pos);
+
+}
 
 // clean screen, write all of cons_buf[] with space chars.
 void clean_screen(void)
@@ -20,6 +40,7 @@ void clean_screen(void)
 
 	// reset cons_pos to the start
 	cons_pos = 0;
+	put_cursor(cons_pos);
 }
 
 void get_cursor(int *x, int *y)
@@ -51,6 +72,7 @@ void put_color_c(char color, char c)
 		cons_pos = 0;
 
 	cons_buf[cons_pos++] = x;
+	put_cursor(cons_pos);
 }
 
 void put_c(char c)
@@ -61,6 +83,7 @@ void put_c(char c)
 	switch(c){
 		case '\b':
 			cons_buf[--cons_pos] = BLANK_CHAR;
+			put_cursor(cons_pos);
 			break;
 		case '\n':
 			cnt = CEIL(cons_pos, CONS_COLS) - cons_pos;

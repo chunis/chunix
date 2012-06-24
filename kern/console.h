@@ -5,6 +5,7 @@
 #define MDA_SIZE	0x02000	//  8K
 #define CGA_START	0xB8000
 #define CGA_SIZE	0x04000	// 16K
+#define CGA_BASE	0x3D4
 #define EGA_START	0xA0000
 #define EGA_SIZE	0x08000	// 32K
 #define EGA_START	0xA0000
