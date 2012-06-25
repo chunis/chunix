@@ -1,6 +1,7 @@
 #include <syscall.h>
 #include <types.h>
 #include "task.h"
+#include "printf.h"
 
 // return the int at addr from task p.
 int getint(TASK_STRUCT *tp, uint32_t addr)
@@ -41,4 +42,29 @@ int argstr(int n, char **pp)
 
 	addr = argint(n);
 	return (char *)getstr(current, addr, pp);
+}
+
+int sys_write(xx)
+{
+	printf("Enter sys_write now...\n");
+	return 0;
+}
+
+static int (*syscalls[])(void) = {
+	[SYS_write] = sys_write,
+};
+
+void syscall(void)
+{
+	int num;
+
+	// get syscall number
+	num = current->tf->eax;
+
+	if(syscalls[num]){
+		current->tf->eax = syscalls[num]();
+	} else {
+		printf("Unknown syscall number: %d\n", num);
+		current->tf->eax = -1;
+	}
 }

@@ -65,7 +65,7 @@ void trap(STACK_FRAME *tf)
 	}
 
 	if(tf->trapno == T_SYSCALL){
-		printf("Enter SYSCALL now!!\n");
+		syscall();
 		return;
 	}
 
