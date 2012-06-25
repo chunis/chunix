@@ -5,7 +5,7 @@
 
 // process keyboard input
 // TODO: scan code for "Print Screen" and "Pause"
-const char norm_map[128] = {
+const uint8_t norm_map[128] = {
 	0x0, 0x0, '1', '2', '3', '4', '5', '6',
 	'7', '8', '9', '0', '-', '=', '\b', '\t',
 	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',
@@ -17,7 +17,7 @@ const char norm_map[128] = {
 	F6, F7, F8, F9, F10
 };
 
-const char shift_map[128] = {
+const uint8_t shift_map[128] = {
 	0x0, 0x0, '!', '@', '#', '$', '%', '^',
 	'&', '*', '(', ')', '_', '+', '\b', '\t',
 	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',
@@ -30,7 +30,7 @@ const char shift_map[128] = {
 
 #define C(x) (x - '@')
 
-const char ctrl_map[128] = {
+const uint8_t ctrl_map[128] = {
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 	C('Q'), C('W'), C('E'), C('R'), C('T'), C('Y'), C('U'), C('I'),
@@ -40,7 +40,7 @@ const char ctrl_map[128] = {
 	C('B'), C('N'), C('M'), 0x0, 0x0, C('/'), 0x0, 0x0,
 };
 
-const char e0_map[128] = {
+const uint8_t e0_map[128] = {
 	[0x1C] = '\n', //*KP_Enter
 	[0x1D] = KEY_RCTRL, //*KP_Enter
 	[0x35] = '/',  //*KP_Div
@@ -59,7 +59,22 @@ const char e0_map[128] = {
 	[0x5C] = KEY_RGUI,
 };
 
-const char *kb_map[4] = {
+static uint8_t shiftmap[128] =
+{
+	[0x1D] = CTL,
+	[0x2A] = SHIFT,
+	[0x36] = SHIFT,
+	[0x38] = ALT,
+};
+
+static uint8_t togglemap[128] =
+{
+	[0x3A] = CAPSLOCK,
+	[0x45] = NUMLOCK,
+	[0x46] = SCROLLLOCK
+};
+
+const uint8_t *kb_map[4] = {
 	norm_map,
 	shift_map,
 	ctrl_map,
@@ -71,28 +86,42 @@ const char *kb_map[4] = {
 int read_kbd(void)
 {
 	char val;
-	int scode;	// scan code
+	int sc, _sc;	// scan code
 	static uint32_t flag;  // flag used to record 'Ctrl/Alt/Shift'
+	int e0_flag = 0;
 
 	// no data in keyboard buffer
 	if ((inb(0x64) & KBS_DIB) == 0)
 		return -1;
 
-	scode = inb(0x60);
+	sc = inb(0x60);
+	_sc = (sc & 0x7f);
 
-	if(scode == 0xE0){
+	if(sc == 0xE0){
 		flag |= E0ESC;
 		return 0;
+	} else if(sc & 0x80){	// key released
+		flag &= ~(shiftmap[_sc] | E0ESC);
+		return 0;
 	} else if(flag & E0ESC){
-		;
+		flag &= ~E0ESC;
+		e0_flag = 1;
 	}
 
+	flag |= shiftmap[_sc];
+	flag ^= togglemap[_sc];
 
-	if(! (scode & 0x80)){
-		val = norm_map[scode&0x7f];
-		return val;
+	if(e0_flag)
+		return e0_map[_sc];
+
+	val = kb_map[flag & (CTL | SHIFT)][_sc];
+	if (flag & CAPSLOCK) {
+		if ('a' <= val && val <= 'z')
+			val += 'A' - 'a';
+		else if ('A' <= val && val <= 'Z')
+			val += 'a' - 'A';
 	}
-	return 0;
+	return val;
 }
 
 char read_char(void)
@@ -120,9 +149,11 @@ char read_char(void)
 }
 
 // process char. At here, we can process inputs like ''C-c' and 'F1'.
-void process_char(char c)
+void process_char(uint8_t c)
 {
-	put_c(c);
+	// only output ascii characters now
+	if(c <= 0x7f)
+		put_c(c);
 }
 
 void keyboard_isr(void)
@@ -134,4 +165,3 @@ void init_keyboard(void)
 {
 	outb(0x21, inb(0x21)&0xfd);
 }
-
