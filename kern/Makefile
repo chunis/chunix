@@ -2,7 +2,7 @@ include ../make.inc
 
 all: kernel
 
-OBJS = isr.o init.o string.o console.o printf.o time.o \
+OBJS = isr.o init.o string.o console.o printf.o time.o syscall.o \
 		keyboard.o task.o descriptor.o fs.o hd.o tools.o mm.o trap.o
 
 kernel: entry.o $(OBJS) ../user/hello ../user/todo
