@@ -44,9 +44,30 @@ int argstr(int n, char **pp)
 	return (char *)getstr(current, addr, pp);
 }
 
+#define DBG 0
 int sys_write(xx)
 {
+	int fd, len;
+	char *p;
+	int s;
+
+	fd = argint(0);
+	len = argstr(1, &p);
+
+#if(DBG)
 	printf("Enter sys_write now...\n");
+
+	printf("fd: %d\n", fd);
+	printf("p: %s\n", p);
+	printf("len: %d\n", len);
+
+	len = argint(2);
+	printf("len: %d\n", len);
+#endif
+
+	if(fd == 1 || fd == 2)  // print to stdout
+		printf("%s", p);
+
 	return 0;
 }
 
