@@ -58,4 +58,12 @@ lcr3(uint32_t val)
 	__asm__ __volatile__("movl %0, %%cr3" :: "r"(val));
 }
 
+static __inline uint32_t
+read_eflags(void)
+{
+	uint32_t val;
+	__asm __volatile("pushfl; popl %0" : "=r" (val));
+	return val;
+}
+
 #endif

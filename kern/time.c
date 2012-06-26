@@ -2,6 +2,7 @@
 #include <x86.h>
 #include "task.h"
 #include "global.h"
+#include "sched.h"
 
 void install_timer(int freq)
 {
@@ -38,4 +39,5 @@ void timer_isr(void)
 	set_cursor(x, y);
 
 	--reent;
+	sched_yield();
 }

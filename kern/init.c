@@ -11,6 +11,7 @@
 #include "const.h"
 #include "mm.h"
 #include <trap.h>
+#include "sched.h"
 
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];
@@ -66,6 +67,7 @@ void init_gdt(void)
 	__asm__ __volatile__("lgdt gdt_ptr");
 }
 
+// all isrs are Interrupt Gate
 void init_idt(void)
 {
 	uint32_t *idt_base;
@@ -79,7 +81,7 @@ void init_idt(void)
 	}
 
 	// syscall, DPL=3
-	set_gate(&idt[T_SYSCALL], isr_table[T_SYSCALL], 0xef, KER_CODE);
+	set_gate(&idt[T_SYSCALL], isr_table[T_SYSCALL], 0xee, KER_CODE);
 
 	idt_base = (uint32_t *)(&idt_ptr[2]);
 	idt_lim = (uint16_t *)(&idt_ptr[0]);
@@ -105,8 +107,10 @@ int main(void)
 {
 	char *os_str = "Welcome to ChuniX! :)\n";
 	extern uint32_t edata[], end[];
-	TASK_STRUCT *mytask;
+	TASK_STRUCT *mytask1;
+	TASK_STRUCT *mytask2;
 	extern char _binary____user_hello_start[], _binary____user_hello_size[];
+	extern char _binary____user_todo_start[], _binary____user_todo_size[];
 
 	// clear BSS section
 	memset(edata, 0, end - edata);
@@ -128,15 +132,25 @@ int main(void)
 	init_fs();
 
 	rootp = 0;
-	mytask = task_create(_binary____user_hello_start,
-			(uint32_t)_binary____user_hello_size);
-	task_run(mytask);
 	current = rootp;
+	mytask1 = task_create(_binary____user_hello_start,
+			(uint32_t)_binary____user_hello_size);
+	mytask2 = task_create(_binary____user_todo_start,
+			(uint32_t)_binary____user_todo_size);
+	//task_run(mytask1);
+	//task_run(mytask2);
+	if(!current)
+		current = rootp;
 
-	// we should setup all things before sti()
-	__asm__("sti\n");
-	printf("After sti()\n");
+	// we would disable interrupt in kernel to make things simple
+	// Hope we can enable it in the future
+	//__asm__("sti\n");
 
+	// loop forever, drop here whenever no task to run
+	while(1)
+		sched_yield();
+
+	// would never get here. So we'll wait forever...
 	wheel();
 	return 0;
 }

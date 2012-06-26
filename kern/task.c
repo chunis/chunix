@@ -150,6 +150,8 @@ void task_pop_tf(STACK_FRAME *tf)
 // Note: if this is the first call to task_run, current is NULL.
 void task_run(TASK_STRUCT *tp)
 {
+	static int ltrflag = 0;
+
 	if(tp != current){
 		if(current && current->state == TS_RUNNING)
 			current->state = TS_RUNNABLE;
@@ -158,7 +160,10 @@ void task_run(TASK_STRUCT *tp)
 		current->priority--;
 		tss.ss0 = KER_DATA;
 		tss.esp0 = current->kstack + KSTACKSIZE;
-		__asm__ __volatile__("ltrw  %%ax\n\t"::"a"(KER_TSS));
+		if(ltrflag == 0){  // TODO: better to move 'ltrw' to other place
+			__asm__ __volatile__("ltrw  %%ax\n\t"::"a"(KER_TSS));
+			ltrflag = 1;
+		}
 		lcr3((uint32_t *)P2V((uint32_t)current->pgdir));
 	}
 
