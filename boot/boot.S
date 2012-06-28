@@ -1,4 +1,4 @@
-#include <../inc/asm.h>
+#include "asm.h"
 
 # switch to 32-bit protected mode, and jump into C
 
