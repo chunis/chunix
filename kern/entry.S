@@ -1,9 +1,8 @@
 #include "../inc/mmu.h"
 
 .text
-.globl _start, va_start
-.extern init_gdt, main
-.extern gdt_ptr
+.globl _start
+.extern main
 
 .equ KSTACKSIZE, 4096
 .equ KERN_CS,	0x08

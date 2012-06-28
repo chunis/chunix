@@ -2,7 +2,7 @@
 #include <x86.h>
 #include <mmu.h>
 #include "console.h"
-#include "string.h"
+#include "../kern/string.h"
 
 #define CEIL(num, base)	(((num)/(base)+1)*(base))
 #define TAB_WIDTH	8

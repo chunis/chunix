@@ -4,11 +4,11 @@
 
 #include "global.h"
 #include "string.h"
-#include "console.h"
+#include <console.h>
 #include "printf.h"
 #include "task.h"
 #include "descriptor.h"
-#include "const.h"
+#include <const.h>
 #include "mm.h"
 #include <trap.h>
 #include "sched.h"
@@ -109,8 +109,8 @@ int main(void)
 	extern uint32_t edata[], end[];
 	TASK_STRUCT *mytask1;
 	TASK_STRUCT *mytask2;
-	extern char _binary____user_hello_start[], _binary____user_hello_size[];
-	extern char _binary____user_todo_start[], _binary____user_todo_size[];
+	extern char _binary_user_hello_start[], _binary_user_hello_size[];
+	extern char _binary_user_todo_start[], _binary_user_todo_size[];
 
 	// clear BSS section
 	memset(edata, 0, end - edata);
@@ -133,10 +133,10 @@ int main(void)
 
 	rootp = 0;
 	current = rootp;
-	mytask1 = task_create(_binary____user_hello_start,
-			(uint32_t)_binary____user_hello_size);
-	mytask2 = task_create(_binary____user_todo_start,
-			(uint32_t)_binary____user_todo_size);
+	mytask1 = task_create(_binary_user_hello_start,
+			(uint32_t)_binary_user_hello_size);
+	mytask2 = task_create(_binary_user_todo_start,
+			(uint32_t)_binary_user_todo_size);
 	//task_run(mytask1);
 	//task_run(mytask2);
 	if(!current)

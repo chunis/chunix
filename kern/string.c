@@ -1,5 +1,5 @@
 #include "string.h"
-#include "const.h"
+#include <const.h>
 #include <x86.h>
 
 void *memmove(void *dst, const void *src, uint32_t n)

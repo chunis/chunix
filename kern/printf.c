@@ -1,4 +1,5 @@
 #include <types.h>
+#include <console.h>
 #include "printf.h"
 
 #define BUF_LEN		(64+3)

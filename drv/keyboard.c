@@ -1,6 +1,6 @@
 #include <types.h>
 #include <x86.h>
-#include "console.h"
+#include <console.h>
 #include "kbd.h"
 
 // process keyboard input

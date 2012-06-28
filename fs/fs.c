@@ -7,10 +7,10 @@ limits:
 */
 
 #include <types.h>
-#include "hd.h"
+#include <hd.h>
 #include "fs.h"
-#include "const.h"
-#include "task.h"
+#include <const.h>
+#include "../kern/task.h"
 
 char buf[SECT_SIZE];
 char buf2[SECT_SIZE*2];

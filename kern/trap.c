@@ -2,7 +2,7 @@
 #include "task.h"
 #include <trap.h>
 #include <x86.h>
-#include "const.h"
+#include <const.h>
 
 static const char *exceptions[] = {
 	"Divide error",
