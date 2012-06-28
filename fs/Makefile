@@ -1,6 +1,6 @@
 include ../make.inc
 
-all: fs.o
+all: sfs.o
 
 %.o: %.c
 	${CC} ${CFLAGS} -c -o $@ $<

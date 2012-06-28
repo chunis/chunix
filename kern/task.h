@@ -3,7 +3,7 @@
 
 #include <types.h>
 #include "descriptor.h"
-#include <fs.h>
+#include <sfs.h>
 
 #define INIT_PRIO	20
 #define LDT_SIZE	2

@@ -8,7 +8,7 @@ limits:
 
 #include <types.h>
 #include <hd.h>
-#include "fs.h"
+#include "sfs.h"
 #include <const.h>
 #include <console.h>
 #include <x86.h>
