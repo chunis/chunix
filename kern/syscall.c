@@ -2,6 +2,7 @@
 #include <types.h>
 #include "task.h"
 #include "printf.h"
+#include "sched.h"
 
 // return the int at addr from task p.
 int getint(TASK_STRUCT *tp, uint32_t addr)
@@ -44,6 +45,11 @@ int argstr(int n, char **pp)
 	return (char *)getstr(current, addr, pp);
 }
 
+uint32_t sys_gticks(void)
+{
+	return timer_ticks;
+}
+
 #define DBG 0
 int sys_write(xx)
 {
@@ -73,6 +79,7 @@ int sys_write(xx)
 
 static int (*syscalls[])(void) = {
 	[SYS_write] = sys_write,
+	[SYS_get_ticks] = sys_gticks,
 };
 
 void syscall(void)

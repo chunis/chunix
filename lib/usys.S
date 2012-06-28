@@ -10,3 +10,4 @@
 .endm
 
 SYSCALL write SYS_write
+SYSCALL get_ticks SYS_get_ticks

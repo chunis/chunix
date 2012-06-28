@@ -1,19 +1,24 @@
 #include <user.h>
 
+void mytodo(void);
+
+void sleep(int sec)
+{
+	int start;
+
+	start = get_ticks();
+
+	while(1){
+		if(get_ticks() - start > sec * 100)
+			break;
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	mytodo();
 
 	return 0;
-}
-
-static void delay(int time)
-{
-	int i, j, k;
-	for(i=0; i<time; i++)
-		for(j=0; j<100; j++)
-			for(k=0; k<1000; k++)
-				;
 }
 
 void mytodo(void)
@@ -27,6 +32,7 @@ void mytodo(void)
 	char *str = "Todo: tool used to keep things need to do";
 
 	for(;;){
+		sleep(1);
 		write(1, str, 30);
 		write(1, "\n", 1);
 	}

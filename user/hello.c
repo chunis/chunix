@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
 	write(1, str, 6);
 
-	for(;;)
+	//for(;;)
 		write(1, "Hello, chunix\n", 20);
 
 	return 0;
