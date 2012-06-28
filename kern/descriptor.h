@@ -3,6 +3,7 @@
 
 #include <types.h>
 
+#define ISR_NUM		0x30
 #define GDT_NUM		128
 #define IDT_NUM		256
 

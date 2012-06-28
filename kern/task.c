@@ -1,6 +1,5 @@
 #include <types.h>
 #include "task.h"
-#include "global.h"
 #include "descriptor.h"
 #include "printf.h"
 #include <const.h>

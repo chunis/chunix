@@ -73,6 +73,7 @@ typedef struct _task {
 	struct _task *next;
 } TASK_STRUCT;
 
+TSS_STRUCT tss;
 TASK_STRUCT *rootp, *current;
 TASK_STRUCT *task_create(uint8_t *binary, uint32_t size);
 void task_run(TASK_STRUCT *tp);

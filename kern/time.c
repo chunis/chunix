@@ -1,7 +1,6 @@
 #include <types.h>
 #include <x86.h>
 #include "task.h"
-#include "global.h"
 #include "sched.h"
 #include <console.h>
 

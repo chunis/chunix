@@ -4,7 +4,6 @@
 #include <console.h>
 #include <kbd.h>
 
-#include "global.h"
 #include "string.h"
 #include "printf.h"
 #include "task.h"

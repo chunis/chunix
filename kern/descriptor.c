@@ -1,8 +1,8 @@
 #include <types.h>
 #include <const.h>
 #include <trap.h>
-#include "global.h"
 
+#include "task.h"
 #include "descriptor.h"
 #include "printf.h"
 #include "string.h"

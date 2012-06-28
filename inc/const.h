@@ -3,6 +3,13 @@
 
 #define NULL  ((void *)0)
 
+#define KER_NULL	0x00
+#define KER_CODE	0x08
+#define KER_DATA	0x10
+#define USR_CODE	0x18
+#define USR_DATA	0x20
+#define KER_TSS 	0x28
+
 // some params for kernel
 #define NPROC		64	// maximum number of processes (tasks)
 #define NOFILE		16	// maximum opened files each process
