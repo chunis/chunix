@@ -3,6 +3,9 @@
 
 #include <types.h>
 
+#define GDT_NUM		128
+#define IDT_NUM		256
+
 typedef struct {
 	uint16_t lim_low;
 	uint16_t base_low;
@@ -19,6 +22,11 @@ typedef struct {
 	uint8_t attr;
 	uint16_t offset_high;
 } GATE;
+
+uint8_t gdt[GDT_NUM*8];
+GATE idt[IDT_NUM];
+uint8_t gdt_ptr[6];
+uint8_t idt_ptr[6];
 
 void set_descriptor(DESCRIPTOR *desp, uint32_t base, uint32_t lim, uint16_t attr);
 void set_gate(GATE *gatep, uint32_t offset, uint8_t attr, uint16_t sel);
