@@ -1,7 +1,9 @@
 #include <types.h>
 #include <x86.h>
 #include <console.h>
-#include "kbd.h"
+#include <kbd.h>
+
+static void process_char(uint8_t c);
 
 // process keyboard input
 // TODO: scan code for "Print Screen" and "Pause"
@@ -124,7 +126,7 @@ int read_kbd(void)
 	return val;
 }
 
-char read_char(void)
+void read_char(void)
 {
 	int c;
 	char val;
@@ -149,7 +151,7 @@ char read_char(void)
 }
 
 // process char. At here, we can process inputs like ''C-c' and 'F1'.
-void process_char(uint8_t c)
+static void process_char(uint8_t c)
 {
 	// only output ascii characters now
 	if(c <= 0x7f)

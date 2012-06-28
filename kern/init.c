@@ -12,6 +12,7 @@
 #include "mm.h"
 #include <trap.h>
 #include "sched.h"
+#include <kbd.h>
 
 extern uint8_t gdt[];
 extern uint8_t gdt_ptr[];

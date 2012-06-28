@@ -10,6 +10,8 @@ limits:
 #include <hd.h>
 #include "fs.h"
 #include <const.h>
+#include <console.h>
+#include <x86.h>
 #include "../kern/task.h"
 
 char buf[SECT_SIZE];

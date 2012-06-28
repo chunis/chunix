@@ -3,6 +3,7 @@
 #include "task.h"
 #include "global.h"
 #include "sched.h"
+#include <console.h>
 
 void install_timer(int freq)
 {
