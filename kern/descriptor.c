@@ -1,7 +1,13 @@
 #include <types.h>
+#include <const.h>
+#include <trap.h>
+#include "global.h"
 
 #include "descriptor.h"
 #include "printf.h"
+#include "string.h"
+
+extern uint32_t isr_table[ISR_NUM];
 
 // add an descriptor entry to GDT
 void set_descriptor(DESCRIPTOR *desp, uint32_t base,
@@ -36,4 +42,69 @@ void dump_descriptor(DESCRIPTOR *desp)
 	attr = desp->attr1 | ((desp->attr2_lim_high &0xf0) << 8);
 
 	printf("base: %x, lim: %x, attr: %x\n", base, lim, attr);
+}
+
+// add items to gdt, include kernel/user code/data segment and tss
+void init_gdt(void)
+{
+	uint32_t *gdt_base;
+	uint16_t *gdt_lim;
+
+	memset(gdt, 0, sizeof(gdt));
+	set_descriptor((DESCRIPTOR *)&gdt[KER_CODE], 0,
+			0xfffff, 0xC0<<8 | DA_CR);
+	set_descriptor((DESCRIPTOR *)&gdt[KER_DATA], 0,
+			0xfffff, 0xC0<<8 | DA_DRW);
+	set_descriptor((DESCRIPTOR *)&gdt[USR_CODE], 0,
+			0xfffff, (0xC0<<8 | DA_DPL3 | DA_CR));
+	set_descriptor((DESCRIPTOR *)&gdt[USR_DATA], 0,
+			0xfffff, (0xC0<<8 | DA_DPL3 | DA_DRW));
+	// for tss
+	memset(&tss, 0, sizeof(tss));
+	tss.ss0 = KER_DATA;
+	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss,
+			sizeof(tss)-1, DA_386TSS);
+
+	// load gdt
+	gdt_base = (uint32_t *)(&gdt_ptr[2]);
+	gdt_lim = (uint16_t *)(&gdt_ptr[0]);
+	*gdt_base = (uint32_t)&gdt;
+	*gdt_lim = GDT_NUM * 8 - 1;
+	__asm__ __volatile__("lgdt gdt_ptr");
+}
+
+// all isrs are Interrupt Gate
+void init_idt(void)
+{
+	uint32_t *idt_base;
+	uint16_t *idt_lim;
+	int i;
+
+	memset(idt, 0, sizeof(idt));
+
+	for(i=0; i<ISR_NUM; i++){
+		set_gate(&idt[i], isr_table[i], 0x8e, KER_CODE);
+	}
+
+	// syscall, DPL=3
+	set_gate(&idt[T_SYSCALL], isr_table[T_SYSCALL], 0xee, KER_CODE);
+
+	idt_base = (uint32_t *)(&idt_ptr[2]);
+	idt_lim = (uint16_t *)(&idt_ptr[0]);
+	*idt_base = (uint32_t)&idt;
+	*idt_lim = IDT_NUM * 8 - 1;
+	__asm__ __volatile__("lidt idt_ptr");
+}
+
+void dump_gdt(void)
+{
+	int i;
+	uint32_t *gp = (uint32_t *)&gdt;
+
+	printf("\n------- dump_gdt() start ------\n");
+	for(i=0; i<6; i++) {
+		dump_descriptor((DESCRIPTOR *)gp);
+		gp += 2;
+	}
+	printf("------- dump_gdt() end --------\n");
 }

@@ -23,5 +23,8 @@ typedef struct {
 void set_descriptor(DESCRIPTOR *desp, uint32_t base, uint32_t lim, uint16_t attr);
 void set_gate(GATE *gatep, uint32_t offset, uint8_t attr, uint16_t sel);
 void dump_descriptor(DESCRIPTOR *desp);
+void init_gdt(void);
+void init_idt(void);
+void dump_gdt(void);
 
 #endif

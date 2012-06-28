@@ -1,24 +1,17 @@
 #include <types.h>
 #include <x86.h>
 #include <mmu.h>
+#include <console.h>
+#include <kbd.h>
 
 #include "global.h"
 #include "string.h"
-#include <console.h>
 #include "printf.h"
 #include "task.h"
 #include "descriptor.h"
-#include <const.h>
 #include "mm.h"
-#include <trap.h>
 #include "sched.h"
-#include <kbd.h>
 
-extern uint8_t gdt[];
-extern uint8_t gdt_ptr[];
-extern uint32_t isr_table[ISR_NUM];
-
-typedef void (*int_handler)(void);
 
 static uint32_t task1_stack3[USR_STACK_SIZE];
 static uint32_t task2_stack3[USR_STACK_SIZE];
@@ -37,71 +30,6 @@ static void init_8259A(void)
 	// disable all interrupts
 	outb(0x21, (0xff & ~(1<<2)));  // enable IRQ2 for slave 8259A
 	outb(0xa1, 0xff);
-}
-
-// add items to gdt, include kernel/user code/data segment and tss
-void init_gdt(void)
-{
-	uint32_t *gdt_base;
-	uint16_t *gdt_lim;
-
-	memset(gdt, 0, sizeof(gdt));
-	set_descriptor((DESCRIPTOR *)&gdt[KER_CODE], 0,
-			0xfffff, 0xC0<<8 | DA_CR);
-	set_descriptor((DESCRIPTOR *)&gdt[KER_DATA], 0,
-			0xfffff, 0xC0<<8 | DA_DRW);
-	set_descriptor((DESCRIPTOR *)&gdt[USR_CODE], 0,
-			0xfffff, (0xC0<<8 | DA_DPL3 | DA_CR));
-	set_descriptor((DESCRIPTOR *)&gdt[USR_DATA], 0,
-			0xfffff, (0xC0<<8 | DA_DPL3 | DA_DRW));
-	// for tss
-	memset(&tss, 0, sizeof(tss));
-	tss.ss0 = KER_DATA;
-	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss,
-			sizeof(tss)-1, DA_386TSS);
-
-	// load gdt
-	gdt_base = (uint32_t *)(&gdt_ptr[2]);
-	gdt_lim = (uint16_t *)(&gdt_ptr[0]);
-	*gdt_base = (uint32_t)&gdt;
-	*gdt_lim = GDT_NUM * 8 - 1;
-	__asm__ __volatile__("lgdt gdt_ptr");
-}
-
-// all isrs are Interrupt Gate
-void init_idt(void)
-{
-	uint32_t *idt_base;
-	uint16_t *idt_lim;
-	int i;
-
-	memset(idt, 0, sizeof(idt));
-
-	for(i=0; i<ISR_NUM; i++){
-		set_gate(&idt[i], isr_table[i], 0x8e, KER_CODE);
-	}
-
-	// syscall, DPL=3
-	set_gate(&idt[T_SYSCALL], isr_table[T_SYSCALL], 0xee, KER_CODE);
-
-	idt_base = (uint32_t *)(&idt_ptr[2]);
-	idt_lim = (uint16_t *)(&idt_ptr[0]);
-	*idt_base = (uint32_t)&idt;
-	*idt_lim = IDT_NUM * 8 - 1;
-	__asm__ __volatile__("lidt idt_ptr");
-}
-
-void dump_gdt(void)
-{
-	int i;
-	uint32_t *gp = (uint32_t *)&gdt;
-
-	printf("\n------- dump_gdt() start ------\n");
-	for(i=0; i<6; i++) {
-		dump_descriptor((DESCRIPTOR *)gp);
-		gp += 2;
-	}
-	printf("------- dump_gdt() end --------\n");
 }
 
 int main(void)
