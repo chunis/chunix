@@ -16,19 +16,21 @@ USEROBJ = $(patsubst %,user/%,$(USER))
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 
-all: chunix.img hd.img
+HD = hd.img
 
-qemu: chunix.img hd.img
-	qemu -m 32 -hda chunix.img -hdb hd.img
+all: chunix.img $(HD)
 
-qemu-gdb: chunix.img hd.img .gdbinit
-	qemu -m 32 -hda chunix.img -hdb hd.img -S -gdb tcp::1234
+qemu: chunix.img $(HD)
+	qemu -m 32 -hda chunix.img -hdb $(HD)
 
-bochs: chunix.img hd.img
+qemu-gdb: chunix.img $(HD) .gdbinit
+	qemu -m 32 -hda chunix.img -hdb $(HD) -S -gdb tcp::1234
+
+bochs: chunix.img $(HD)
 	bochs -f hd.bxrc
 
-hd.img: tools/hd.img.bz2
-	@bzcat tools/hd.img.bz2 > hd.img
+$(HD): tools/$(HD).bz2
+	@bzcat tools/$(HD).bz2 > $(HD)
 
 chunix.img: bootsect kern/kernel tools/blank_hd.img.bz2
 	@cat boot/bootsect kern/kernel > tmp.img
@@ -72,4 +74,4 @@ clean:
 	(cd fs && make clean)
 	(cd lib && make clean)
 	(cd user && make clean)
-	@rm -f chunix.img hd.img
+	@rm -f chunix.img #$(HD)
