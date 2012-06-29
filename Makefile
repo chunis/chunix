@@ -37,10 +37,16 @@ chunix.img: bootsect kern/kernel tools/blank_hd.img.bz2
 	@dd if=tmp.img of=chunix.img conv=notrunc
 	@rm -f tmp.img
 
-kern/kernel: kern/entry.o $(KERNOBJ) $(USEROBJ) kern/kernel.ld $(FSOBJ) $(DRVOBJ)
+kern/kernel: buildall kern/kernel.ld
 	$(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary $(USEROBJ)
 	${OBJDUMP} -d $@ > $@.asm
 	${NM} -n $@ > $@.sym
+
+buildall:
+	(cd drv && make)
+	(cd fs && make)
+	(cd kern && make)
+	(cd user && make)
 
 bootsect:
 	(cd tools && make)
@@ -53,11 +59,9 @@ $(FSOBJ):
 	(cd fs && make)
 
 $(KERNOBJ) kern/entry.o:
-	@echo "start building kernel now..."
 	(cd kern && make)
 
 $(USEROBJ):
-	@echo "build user apps..."
 	(cd user && make)
 
 clean:
