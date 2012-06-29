@@ -33,8 +33,7 @@ void mytodo(void)
 
 	for(;;){
 		sleep(1);
-		write(1, str, 30);
-		write(1, "\n", 1);
+		printf("str: %s\n", str);
 	}
 #if 0
 	fd = open(file, O_CREAT);

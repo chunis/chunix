@@ -50,7 +50,6 @@ uint32_t sys_gticks(void)
 	return timer_ticks;
 }
 
-#define DBG 0
 int sys_write(xx)
 {
 	int fd, len;
@@ -59,20 +58,14 @@ int sys_write(xx)
 
 	fd = argint(0);
 	len = argstr(1, &p);
-
-#if(DBG)
-	printf("Enter sys_write now...\n");
-
-	printf("fd: %d\n", fd);
-	printf("p: %s\n", p);
-	printf("len: %d\n", len);
-
 	len = argint(2);
-	printf("len: %d\n", len);
-#endif
 
-	if(fd == 1 || fd == 2)  // print to stdout
-		printf("%s", p);
+	if(fd == 1 || fd == 2){  // print to stdout
+		if(len == 1)
+			put_c(*p);
+		else
+			printf("%s", p);
+	}
 
 	return 0;
 }
