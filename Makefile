@@ -16,7 +16,8 @@ USEROBJ = $(patsubst %,user/%,$(USER))
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 
-HD = hd.img
+#HD = hd.img
+HD = minixfs.img
 
 all: chunix.img $(HD)
 
@@ -75,3 +76,6 @@ clean:
 	(cd lib && make clean)
 	(cd user && make clean)
 	@rm -f chunix.img #$(HD)
+
+cleanall: clean
+	@rm -f $(HD) *.img bochs.log

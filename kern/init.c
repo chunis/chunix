@@ -55,9 +55,11 @@ int main(void)
 	init_8259A();
 	install_timer(100);
 	init_keyboard();
+	/*
 	init_hd();
 	mkfs();
 	init_fs();
+	*/
 
 	rootp = 0;
 	current = rootp;
