@@ -1,6 +1,6 @@
 include ../make.inc
 
-LIB_OBJS = libmain.o usys.o printf.o
+LIB_OBJS = libmain.o usys.o printf.o utils.o
 
 all: libcx.a entry.o
 

@@ -2,18 +2,6 @@
 
 void mytodo(void);
 
-void sleep(int sec)
-{
-	int start;
-
-	start = get_ticks();
-
-	while(1){
-		if(get_ticks() - start > sec * 100)
-			break;
-	}
-}
-
 int main(int argc, char *argv[])
 {
 	mytodo();
@@ -33,7 +21,7 @@ void mytodo(void)
 
 	for(;;){
 		sleep(1);
-		printf("str: %s\n", str);
+		printf("in todo: i = %d\n", i++);
 	}
 #if 0
 	fd = open(file, O_CREAT);

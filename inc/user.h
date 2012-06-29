@@ -10,4 +10,7 @@ uint32_t get_ticks(void);
 // printf.c
 void printf(char *fmt, ...);
 
+// utils.c
+void sleep(int sec);
+
 #endif
