@@ -82,6 +82,21 @@ void mk_minixfs(void)
 	panic("In mk_minixfs");
 }
 
+void dump_superblock(struct superblock *sb)
+{
+	printf("sb.s_ninodes:\t%d\n", (uint16_t)sb->s_ninodes);
+	printf("sb.s_nzones:\t%d\n", (uint16_t)sb->s_nzones);
+	printf("sb.s_imap_blks:\t%x\n", (uint16_t)sb->s_imap_blks);
+	printf("sb.s_zmap_blks:\t%x\n", (uint16_t)sb->s_zmap_blks);
+	printf("sb.s_firstdatazone:\t%d\n", (uint16_t)sb->s_firstdatazone);
+	printf("sb.s_log_zone_size:\t%d\n", (uint16_t)sb->s_log_zone_size);
+	printf("sb.s_max_size:\t%x\n", sb->s_max_size);
+	printf("sb.s_magic:\t%x\n", (uint16_t)sb->s_magic);
+	printf("sb.s_dev:\t%d\n", (uint16_t)sb->s_dev);
+	printf("sb.s_flag:\t%d\n", (uint16_t)sb->s_flag);
+	printf("sb.s_time:\t%d\n", sb->s_time);
+}
+
 void check_minixfs(void)
 {
 	char sum;
@@ -93,6 +108,7 @@ void check_minixfs(void)
 	printf("magic: %x\n", sb.s_magic);
 	if(sb.s_magic == MINIX_MAGIC || sb.s_magic == MINIX_MAGIC2){
 		printf("The fs is a minix fs\n");
+		dump_superblock(&sb);
 	} else {  // make a clean minix fs
 		mk_minixfs();
 	}
