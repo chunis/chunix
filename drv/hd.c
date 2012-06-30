@@ -66,7 +66,7 @@ void init_hd(void)
 	outb(0xa1, 0xbf);   // IRQ 14 (IDE) locates at slave 5259A
 	printf("IRQ mask = %b, %b\n", inb(0xa1), inb(0x21));
 
-	hd_identify(0);
+	//hd_identify(0);
 }
 
 void hd_isr(void)

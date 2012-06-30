@@ -4,7 +4,7 @@ include make.inc
 
 
 DRV  = console.o hd.o keyboard.o
-FS   = sfs.o
+FS   = fs.o
 KERN = isr.o init.o string.o printf.o time.o syscall.o sched.o \
 		task.o descriptor.o tools.o mm.o trap.o
 USER = hello todo

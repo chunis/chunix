@@ -1,10 +1,10 @@
 /*
-  fs.c: A trival implement for SFS (Simple File System).
+  sfs.c: A trival implement for SFS (Simple File System).
   Refer to: http://dimensionalrift.homelinux.net/combuster/vdisk/sfs.html
 */
 
-#ifndef __FS_H__
-#define __FS_H__
+#ifndef __SFS_H__
+#define __SFS_H__
 
 #include <types.h>
 
