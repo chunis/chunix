@@ -4,9 +4,11 @@
 #include <types.h>
 
 void init_hd(void);
-void hd_rw(int cmd, int nb, int offset, char *buf);
+void hd_rw(int cmd, int offset, int nb, char *buf);
 
-#define SECT_SIZE 512
+#define SECT_SIZE  512
+#define BLOCK_SIZE 1024
+
 #define HD_READ   0x20
 #define HD_WRITE  0x30
 

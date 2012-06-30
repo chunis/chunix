@@ -9,11 +9,9 @@
 #include "fs.h"
 
 extern void printf(char *fmt, ...);
-void hd_rw(int cmd, int nb, int offset, char *buf);
 
-uint8_t fbuf[SECT_SIZE];
+uint8_t fbuf[BLOCK_SIZE];
 struct superblock sb;
-
 
 
 int open(const char *pathname, int flags)
@@ -91,7 +89,7 @@ void check_minixfs(void)
 	struct d_superblock *sb;
 
 	printf("Enter check_fs now\n");
-	hd_rw(HD_READ, 1, 2, fbuf);
+	hd_rw(HD_READ, 2, 1, fbuf);
 
 	/*
 	// TODO: why below loop will output all 0x0s?

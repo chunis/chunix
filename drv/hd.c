@@ -13,11 +13,11 @@ void hdwait(void)
 
 /* read/write to hard disk
  * cmd: HD_READ/HD_WRITE
- * nb: number of blocks
  * offset: operate start location
+ * nb: number of blocks
  * buf: buffer for read to or write from
  */
-void hd_rw(int cmd, int nb, int offset, char *buf)
+void hd_rw(int cmd, int offset, int nb, char *buf)
 {
 	int rw;
 	int dev = 0xe0 | (1 << 4);	// we use the slave hd currently
@@ -52,11 +52,11 @@ static void hd_identify(int drv)
 
 	printf("Hello, in hd_identify now\n");
 
-	hd_rw(HD_READ, 1, 0, buf);
+	hd_rw(HD_READ, 0, 1, buf);
 	printf("before write: %s\n", buf);
 
-	hd_rw(HD_WRITE, 1, 0, str);
-	hd_rw(HD_READ, 1, 0, buf);
+	hd_rw(HD_WRITE, 0, 1, str);
+	hd_rw(HD_READ, 0, 1, buf);
 	printf("after write: %s\n", buf);
 }
 
