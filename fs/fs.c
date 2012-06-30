@@ -86,23 +86,12 @@ void check_minixfs(void)
 {
 	char sum;
 	int i;
-	struct d_superblock *sb;
 
-	printf("Enter check_fs now\n");
-	hd_rw(HD_READ, 2, 1, fbuf);
-
-	/*
-	// TODO: why below loop will output all 0x0s?
-	// maybe something wrong in printf() with %x
-	for(i=0; i<sizeof(fbuf); i++)
-		printf("%x ", fbuf[i]);
-	printf("\n%x\n", fbuf[0]);  // but this is right: it isn't 0x0
-	*/
+	hd_rw(HD_READ, 2, 1, (char *)&sb);
 
 	// check minix magic number
-	sb = (struct d_superblock *)fbuf;
-	printf("magic: %x\n", sb->s_magic);
-	if(sb->s_magic == MINIX_MAGIC || sb->s_magic == MINIX_MAGIC2){
+	printf("magic: %x\n", sb.s_magic);
+	if(sb.s_magic == MINIX_MAGIC || sb.s_magic == MINIX_MAGIC2){
 		printf("The fs is a minix fs\n");
 	} else {  // make a clean minix fs
 		mk_minixfs();
