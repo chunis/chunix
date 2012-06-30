@@ -20,7 +20,7 @@ void mytodo(void)
 	char *str = "Todo: tool used to keep things need to do";
 
 	for(;;){
-		sleep(1);
+		sleep(30);
 		printf("in todo: i = %d\n", i++);
 	}
 #if 0

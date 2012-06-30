@@ -17,7 +17,7 @@ limits:
 char buf[SECT_SIZE];
 char buf2[SECT_SIZE*2];
 
-struct superblock sb;
+struct sfs_superblock sb;
 int ibufs[4] = { IBUF1, IBUF2, IBUF3, IBUF4 };
 
 void hd_rw(int cmd, int nb, int offset, char *buf);
@@ -201,7 +201,7 @@ static char calc_checksum(char *sb)
 	return sum;
 }
 
-void init_superblock(void)
+static void init_superblock(void)
 {
 	struct sfs_vol_id *idp;
 	struct sfs_mark *markp;

@@ -29,21 +29,39 @@ struct buf {
 #define O_CREAT   1
 #define O_RDWR    2
 
+#define MINIX_MAGIC	0x137F    // minix v1 fs, 14 char names
+#define MINIX_MAGIC2	0x138F    // minix v1 fs, 30 char names
+
+struct d_superblock {
+	uint16_t s_ninodes;
+	uint16_t s_nzones;
+	uint16_t s_imap_blks;
+	uint16_t s_zmap_blks;
+	uint16_t s_firstdatazone;
+	uint16_t s_log_zone_size;
+	uint32_t s_max_size;
+	uint16_t s_magic;
+};
+
 struct superblock {
-	uint8_t  rev_boot1[11];
-	uint8_t  rev_bios[21];
-	uint8_t  rev_boot2[372];
-	uint64_t time_stamp;
-	uint64_t da_blk;
-	uint64_t ia_size;
-	uint8_t  magic_num[3];
-	uint8_t  fs_version;
-	uint64_t total_blk;
-	uint32_t rev_blk;
-	uint8_t  blk_size;
-	uint8_t  checksum;
-	uint8_t  rev_pt[64];  // partition table
-	uint8_t  rev_boot_sig[2];  // boot signature
+	uint16_t s_ninodes;
+	uint16_t s_nzones;
+	uint16_t s_imap_blks;
+	uint16_t s_zmap_blks;
+	uint16_t s_firstdatazone;
+	uint16_t s_log_zone_size;
+	uint32_t s_max_size;
+	uint16_t s_magic;
+
+	// below members only in memory
+	uint16_t s_dev;
+	uint16_t s_flag;
+	uint32_t s_time;
+	//struct buf *s_imap[8];
+	//struct buf *s_zmap[8];
+	//struct m_inode *s_isup;
+	//struct m_inode *s_imount;
+	//struct task_struct *s_wait;
 }__attribute__((packed));
 
 #endif

@@ -53,7 +53,7 @@ int close(int fd);
 #define T_FILE   FILE_ENTRY
 #define T_DIR    DIR_ENTRY
 
-struct superblock {
+struct sfs_superblock {
 	uint8_t  rev_boot1[11];
 	uint8_t  rev_bios[21];
 	uint8_t  rev_boot2[372];
