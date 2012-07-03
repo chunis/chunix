@@ -1,5 +1,8 @@
 #include <user.h>
 
+#define O_CREAT   1
+#define O_RDWR    2
+
 void mytodo(void);
 
 int main(int argc, char *argv[])
@@ -19,16 +22,21 @@ void mytodo(void)
 	char *file = "/todo";
 	char *str = "Todo: tool used to keep things need to do";
 
-	for(;;){
-		sleep(30);
-		printf("in todo: i = %d\n", i++);
-	}
-#if 0
+	// check if read /README works or not
+	fd = open("/README", O_RDWR);
+	printf("fd = %d\n", fd);
+	read(fd, buf, len);
+	buf[len] = '\0';
+	close(fd);
+	printf("In todo, buf = %s\n", buf);
+
+	// check if creat() works or not
 	fd = open(file, O_CREAT);
 	printf("fd = %d\n", fd);
-	write(fd, str, strlen(str));
+	write(fd, str, len);
 	close(fd);
 
+	// read out to check if write works or not
 	fd = open(file, O_RDWR);
 	printf("fd = %d\n", fd);
 	read(fd, buf, len);
@@ -36,9 +44,8 @@ void mytodo(void)
 	close(fd);
 	printf("In todo, buf = %s\n", buf);
 
-	while(1){
-		printf("%xA.", i++);
-		delay(120);
+	for(;;){
+		sleep(30);
+		printf("in todo: i = %d\n", i++);
 	}
-#endif
 }

@@ -22,6 +22,10 @@ void hd_rw(int cmd, int offset, int nb, char *buf)
 	int rw;
 	int dev = 0xe0 | (1 << 4);	// we use the slave hd currently
 
+	// TODO: each command only apply to 512 Bytes, don't know why
+	// Anyway, we just set nb = 1 now, which means nb is useless!!
+	nb = 1;
+
 	if(cmd != HD_READ && cmd != HD_WRITE){
 		printf("ERROR! cmd '%d' doesn't support!\n", cmd);
 		return;
@@ -38,6 +42,7 @@ void hd_rw(int cmd, int offset, int nb, char *buf)
 	outb(HDR_DEVICE, (dev | ((offset >> 24) & 0x0f)));   // 0x1f6
 	outb(HDR_STATUS, cmd);   // 0x1f7
 
+	hdwait();
 	if(cmd == HD_READ)
 		insl(HDR_DATA, buf, SECT_SIZE*nb/4);  // 0x1f0
 	else

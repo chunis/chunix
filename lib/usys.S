@@ -9,5 +9,9 @@
 	ret
 .endm
 
-SYSCALL write SYS_write
+SYSCALL open	SYS_open
+SYSCALL creat	SYS_creat
+SYSCALL read	SYS_read
+SYSCALL write	SYS_write
+SYSCALL close	SYS_close
 SYSCALL get_ticks SYS_get_ticks

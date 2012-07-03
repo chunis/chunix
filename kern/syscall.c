@@ -50,7 +50,22 @@ uint32_t sys_gticks(void)
 	return timer_ticks;
 }
 
-int sys_write(xx)
+int sys_open(void)
+{
+	return 0;
+}
+
+int sys_creat(void)
+{
+	return 0;
+}
+
+int sys_read(void)
+{
+	return 0;
+}
+
+int sys_write(void)
 {
 	int fd, len;
 	char *p;
@@ -70,8 +85,17 @@ int sys_write(xx)
 	return 0;
 }
 
+int sys_close(void)
+{
+	return 0;
+}
+
 static int (*syscalls[])(void) = {
+	[SYS_open] = sys_open,
+	[SYS_creat] = sys_creat,
+	[SYS_read] = sys_read,
 	[SYS_write] = sys_write,
+	[SYS_close] = sys_close,
 	[SYS_get_ticks] = sys_gticks,
 };
 

@@ -107,7 +107,7 @@ struct file {
 struct dirent {
 	uint16_t inum;
 	int8_t name[DIR_LEN];
-}
+};
 
 int open(const char *pathname, int flags);
 int creat(const char *pathname, int flags);
