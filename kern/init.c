@@ -12,9 +12,6 @@
 #include "sched.h"
 
 
-static uint32_t task1_stack3[USR_STACK_SIZE];
-static uint32_t task2_stack3[USR_STACK_SIZE];
-
 static void init_8259A(void)
 {
 	outb(0x20, 0x11);
@@ -40,8 +37,9 @@ int main(void)
 	extern char _binary_user_hello_start[], _binary_user_hello_size[];
 	extern char _binary_user_todo_start[], _binary_user_todo_size[];
 
+	// TODO: memset will make system crash, why?
 	// clear BSS section
-	memset(edata, 0, end - edata);
+	// memset(edata, 0, end - edata);
 
 	cons_init();
 	printf("%s\n", os_str);

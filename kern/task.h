@@ -61,8 +61,6 @@ typedef struct {
 typedef struct _task {
 	STACK_FRAME *tf;
 
-	//DESCRIPTOR ldt[LDT_SIZE];
-	//uint16_t ldt_sel;
 	uint32_t pid;
 	uint32_t ppid;	// parent's id
 	char name[24];
