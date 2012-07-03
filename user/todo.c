@@ -22,6 +22,14 @@ void mytodo(void)
 	char *file = "/todo";
 	char *str = "Todo: tool used to keep things need to do";
 
+#if 1
+	int fdo[10];
+
+	for(i=0; i<10; i++)
+		fdo[i] = open("/README", O_RDWR);
+	for(i=0; i<10; i++)
+		printf("fdo[%d] = %d\n", i, fdo[i]);
+#else
 	// check if read /README works or not
 	fd = open("/README", O_RDWR);
 	printf("fd = %d\n", fd);
@@ -43,6 +51,7 @@ void mytodo(void)
 	buf[len] = '\0';
 	close(fd);
 	printf("In todo, buf = %s\n", buf);
+#endif
 
 	for(;;){
 		sleep(30);

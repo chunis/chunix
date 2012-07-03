@@ -12,7 +12,9 @@
 
 // some params for kernel
 #define NPROC		64	// maximum number of processes (tasks)
-#define NOFILE		16	// maximum opened files each process
+#define NOFILE		16	// maximum opened files each tasks
+#define NFILE		256	// opened files for all tasks
+#define NINODE		128	// maximum number of active inodes
 #define KSTACKSIZE	4096	// per-task kernel stack size
 
 #define FL_IF	0x00000200

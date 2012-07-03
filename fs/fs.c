@@ -10,6 +10,9 @@
 
 extern void printf(char *fmt, ...);
 
+struct file file[NFILE];	// global file table
+//struct inode inode[NINODE];	// global inode table
+
 uint8_t fbuf[BLOCK_SIZE];
 struct superblock sb;
 
