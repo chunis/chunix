@@ -22,6 +22,7 @@
 #define NDINDIRECT	1	// number of double indirect blocks
 #define ADDR_LEN	(NDIRECT + NINDIRECT + NDINDIRECT)
 
+#define ROOTDEV		1	// dev number of fs root disk
 #define ROOTINO		1	// root inode number
 
 struct buf {
@@ -109,10 +110,10 @@ struct dirent {
 	int8_t name[DIR_LEN];
 };
 
-int open(const char *pathname, int flags);
-int creat(const char *pathname, int flags);
-int read(int fd, void *buf, int n);
-int write(int fd, const void *buf, int n);
-int close(int fd);
+int fileopen(const char *pathname, int flags);
+int filecreat(const char *pathname, int flags);
+int fileread(int fd, void *buf, int n);
+int filewrite(int fd, const void *buf, int n);
+int fileclose(int fd);
 
 #endif

@@ -17,44 +17,66 @@ uint8_t fbuf[BLOCK_SIZE];
 struct superblock sb;
 
 
-int open(const char *pathname, int flags)
+//
+// Inode process
+//
+struct inode *iget(uint32_t dev, uint32_t inum)
+{
+	struct inode *ip = NULL;
+
+	return ip;
+}
+
+struct inode* namei(char *path)
+{
+	struct inode *ip;
+
+	ip = iget(ROOTDEV, ROOTINO);
+}
+
+//
+// File process
+//
+int fileopen(const char *pathname, int flags)
 {
 	int fd = -1;
 	int i;
-	struct inode1 *inp;
+	struct inode *inp = NULL;
 
-	printf("In open\n");
-	printf("pathname: %s\n", pathname);
+	printf("In open: pathname: %s\n", pathname);
 
-#if 0
 	// search free slot in fdp[]
-	for(i = 0; i < OFILE; i++){
+	for(i = 0; i < NOFILE; i++){
 		if(current->fdp[i] == 0){
 			fd = i;
 			break;
 		}
 	}
-	if(fd < 0 || fd >= OFILE)
+	if(fd < 0 || fd >= NOFILE)
 		panic("open: fdp[] is full!");
 
-	// search free slot in fdtable[]
-	for(i = 0; i < FDT_SIZE; i++){
-		if(fdtable[i].fd_inode == 0)
+	// search free slot in file[]
+	for(i = 0; i < NFILE; i++){
+		if(file[i].inode == 0)
 			break;
 	}
-	if(i >= FDT_SIZE)
-		panic("open: fdtable[] is full!");
+	if(i >= NFILE)
+		panic("open: file[] is full!");
 
-	current->fdp[fd] = &fdtable[i];
-	fdtable[i].fd_inode = inp;
-	fdtable[i].fd_mode = flags;
-	fdtable[i].fd_off = 0;
+	current->fdp[fd] = &file[i];
+	file[i].inode = inp;
+	file[i].mode = flags;
+	file[i].pos = 0;
 
-#endif
 	return fd;
 }
 
-int read(int fd, void *buf, int n)
+int filecreat(const char *pathname, int flags)
+{
+	return 0;
+}
+
+int fileread(int fd, void *buf, int n)
 {
 	int count;
 
@@ -62,7 +84,7 @@ int read(int fd, void *buf, int n)
 	return count;
 }
 
-int write(int fd, const void *buf, int n)
+int filewrite(int fd, const void *buf, int n)
 {
 	int count;
 
@@ -70,7 +92,7 @@ int write(int fd, const void *buf, int n)
 	return count;
 }
 
-int close(int fd)
+int fileclose(int fd)
 {
 	int ret;
 
