@@ -4,6 +4,12 @@
 #include "printf.h"
 #include "sched.h"
 
+extern int sf_open(const char *path, int flags);
+extern int sf_creat(const char *path, int flags);
+extern int sf_read(int fd, void *buf, int n);
+extern int sf_write(int fd, const void *buf, int n);
+extern int sf_close(int fd);
+
 // return the int at addr from task p.
 int getint(TASK_STRUCT *tp, uint32_t addr)
 {
@@ -52,17 +58,41 @@ uint32_t sys_gticks(void)
 
 int sys_open(void)
 {
-	return 0;
+	int flag;
+	char *path;
+
+	argstr(0, &path);
+	flag = argint(1);
+
+	printf("path: %s\n", path);
+	printf("flag: %d\n", flag);
+	sf_open(path, flag);
 }
 
 int sys_creat(void)
 {
-	return 0;
+	int flag;
+	char *path;
+
+	argstr(0, &path);
+	flag = argint(1);
+
+	printf("path: %s\n", path);
+	printf("flag: %d\n", flag);
+	sf_creat(path, flag);
 }
 
 int sys_read(void)
 {
-	return 0;
+	int fd, len;
+	char *p;
+	int s;
+
+	fd = argint(0);
+	len = argstr(1, &p);
+	len = argint(2);
+
+	sf_read(fd, p, len);
 }
 
 int sys_write(void)
@@ -80,6 +110,8 @@ int sys_write(void)
 			put_c(*p);
 		else
 			printf("%s", p);
+	} else {
+		sf_write(fd, p, len);
 	}
 
 	return 0;
@@ -87,7 +119,9 @@ int sys_write(void)
 
 int sys_close(void)
 {
-	return 0;
+	int fd = argint(0);
+
+	sf_close(fd);
 }
 
 static int (*syscalls[])(void) = {
