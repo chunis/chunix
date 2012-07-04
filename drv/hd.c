@@ -1,6 +1,6 @@
 #include <types.h>
 #include <x86.h>
-#include "hd.h"
+#include <hd.h>
 
 // wait until hard disk is ready
 void hdwait(void)

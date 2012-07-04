@@ -1,0 +1,72 @@
+#include <const.h>
+#include <hd.h>
+#include "fs.h"
+
+struct buf fsbuf[NBUF];
+struct buf bhead;
+
+// init buffer cache
+void binit(void)
+{
+	struct buf *bp;
+
+	bhead.next = &bhead;
+	bhead.prev = &bhead;
+
+	for(bp = fsbuf; bp < fsbuf+NBUF; bp++){
+		bp->next = bhead.next;
+		bp->prev = &bhead;
+		bhead.next->prev = bp;
+		bhead.next = bp;
+	}
+}
+
+struct buf *getblk(uint32_t dev, uint32_t nblk)
+{
+	struct buf *bp;
+
+repeat:
+	for(bp = bhead.next; bp != &bhead; bp = bp->next){
+		if(bp->dev == dev && bp->num == nblk){
+			if((bp->flag & BUF_BUSY) == 0){
+				bp->flag |= BUF_BUSY;
+				return bp;
+			}
+			//sleep(xxx);
+			goto repeat;
+		}
+	}
+
+
+	// block not cached yet
+	for(bp = bhead.prev; bp != &bhead; bp = bp->prev){
+		if((bp->flag & (BUF_BUSY | BUF_DIRTY)) == 0){
+			bp->flag |= BUF_BUSY;
+			bp->dev = dev;
+			bp->num = nblk;
+			return bp;
+		}
+	}
+
+	// not cache available
+	panic("getblk: no buffers available");
+}
+
+struct buf *bread(uint32_t dev, uint32_t nblk)
+{
+	struct buf *bp;
+
+	bp = getblk(dev, nblk);
+	if((bp->flag & BUF_VALID) == 0)	// data invalid
+		hd_rw(HD_READ, 2, 1, bp->data);
+
+	return bp;
+}
+
+void bwrite(void)
+{
+}
+
+void brelse(void)
+{
+}

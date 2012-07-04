@@ -29,7 +29,7 @@ struct buf {
 	int flag;
 	uint32_t dev;
 	uint32_t num;
-	uint32_t data[512];
+	uint8_t data[512];
 
 	struct buf *prev;
 	struct buf *next;
