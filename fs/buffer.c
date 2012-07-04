@@ -58,15 +58,34 @@ struct buf *bread(uint32_t dev, uint32_t nblk)
 
 	bp = getblk(dev, nblk);
 	if((bp->flag & BUF_VALID) == 0)	// data invalid
-		hd_rw(HD_READ, 2, 1, bp->data);
+		hd_rw(HD_READ, bp->num, 1, bp->data);
 
 	return bp;
 }
 
-void bwrite(void)
+void bwrite(struct buf *bp)
 {
+	if((bp->flag & BUF_BUSY) == 0)
+		panic("bwrite: buffer isn't busy");
+
+	bp->flag |= BUF_DIRTY;
+	hd_rw(HD_WRITE, bp->num, 1, bp->data);
+	bp->flag &= ~(BUF_BUSY | BUF_DIRTY);
 }
 
-void brelse(void)
+// release a BUF_BUSY buffer, move it to the start of buffer list
+void brelse(struct buf *bp)
 {
+	if((bp->flag & BUF_BUSY) == 0)
+		panic("bwrite: buffer isn't busy");
+
+	bp->next->prev = bp->prev;
+	bp->prev->next = bp->next;
+	bp->next = bhead.next;
+	bp->prev = &bhead;
+	bhead.next->prev = bp;
+	bhead.next = bp;
+
+	bp->flag &= ~BUF_BUSY;
+	//wakeup(bp);
 }
