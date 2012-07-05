@@ -6,9 +6,10 @@
 #include <console.h>
 #include <x86.h>
 #include "../kern/task.h"
+#include "../kern/printf.h"
+#include "../kern/string.h"
 #include "fs.h"
 
-extern void printf(char *fmt, ...);
 
 struct file file[NFILE];	// global file table
 struct inode inode[NINODE];	// global inode table
@@ -126,8 +127,12 @@ void check_minixfs(void)
 {
 	char sum;
 	int i;
+	struct buf *sbuf;
 
-	hd_rw(HD_READ, 2, 1, (char *)&sb);
+#if 0
+	sbuf = bread(ROOTDEV, 2);
+	dump_superblock(sbuf->data);
+	memmove((char *)&sb, sbuf->data, sizeof(sb));
 
 	// check minix magic number
 	printf("magic: %x\n", sb.s_magic);
@@ -137,6 +142,7 @@ void check_minixfs(void)
 	} else {  // make a clean minix fs
 		mk_minixfs();
 	}
+#endif
 }
 
 void init_minixfs(void)

@@ -1,68 +1,96 @@
 #include <types.h>
 #include <x86.h>
 #include <hd.h>
+#include "../fs/fs.h"
+
+extern void panic(char *str);
+
+static int dev = 0xe0 | (1 << 4);  // we always use the slave hd currently
+static struct buf *hdqueue;  // hard disk queue, keep all requested buffers
 
 // wait until hard disk is ready
 void hdwait(void)
 {
 	int status;
 
-	while( (status = inb(HDR_STATUS)) & (0x80 | 0x40) != 0x40)
+	while( ((status = inb(HDR_STATUS)) & (0x80 | 0x40)) != 0x40)
 		;
 }
 
-/* read/write to hard disk
- * cmd: HD_READ/HD_WRITE
- * offset: operate start location
- * nb: number of blocks
- * buf: buffer for read to or write from
- */
-void hd_rw(int cmd, int offset, int nb, char *buf)
+// hard disk do the real read/write work here
+static void hd_dorw(struct buf *bp)
 {
-	int rw;
-	int dev = 0xe0 | (1 << 4);	// we use the slave hd currently
-
-	// TODO: each command only apply to 512 Bytes, don't know why
-	// Anyway, we just set nb = 1 now, which means nb is useless!!
-	nb = 1;
-
-	if(cmd != HD_READ && cmd != HD_WRITE){
-		printf("ERROR! cmd '%d' doesn't support!\n", cmd);
-		return;
-	}
+	if(!bp)
+		panic("hd_dorw: bp is NULL");
 
 	hdwait();
 
 	outb(HDR_ALTER_STATUS, 0); // generate interrupt
+	outb(HDR_NSECT, 1);   // 0x1f2
+	outb(HDR_LBA_LOW, (bp->num & 0xff));  // 0x1f3
+	outb(HDR_LBA_MID, (bp->num >> 8) & 0xff);  // 0x1f4
+	outb(HDR_LBA_HI, (bp->num >> 16) & 0xff);   // 0x1f5
+	outb(HDR_DEVICE, (dev | ((bp->num >> 24) & 0x0f)));   // 0x1f6
 
-	outb(HDR_NSECT, nb);   // 0x1f2
-	outb(HDR_LBA_LOW, (offset & 0xff));  // 0x1f3
-	outb(HDR_LBA_MID, (offset >> 8) & 0xff);  // 0x1f4
-	outb(HDR_LBA_HI, (offset >> 16) & 0xff);   // 0x1f5
-	outb(HDR_DEVICE, (dev | ((offset >> 24) & 0x0f)));   // 0x1f6
-	outb(HDR_STATUS, cmd);   // 0x1f7
-
-	hdwait();
-	if(cmd == HD_READ)
-		insl(HDR_DATA, buf, SECT_SIZE*nb/4);  // 0x1f0
-	else
-		outsl(HDR_DATA, buf, SECT_SIZE*nb/4);  // 0x1f0
+	if(bp->flag & BUF_DIRTY){  // write
+		outb(HDR_STATUS, HD_WRITE);   // 0x1f7
+		outsl(HDR_DATA, bp->data, SECT_SIZE/4);  // 0x1f0
+	} else {
+		outb(HDR_STATUS, HD_READ);   // 0x1f7
+		// copy data happened after hd issues interrupt
+	}
 }
 
-// test basic hard disk read and write
-static void hd_identify(int drv)
+// issue read/write request to hard disk
+// just append bp to hdqueue, and call hd_dorw() if necessory
+void hd_rw(struct buf *bp)
 {
-	char buf[512];
-	char str[512] = "Hello, chunix";
+	struct buf **bpp;
 
-	printf("Hello, in hd_identify now\n");
+	if(!(bp->flag & BUF_BUSY))
+		panic("hd_rw: buf is not busy");
+	if((bp->flag & (BUF_VALID|BUF_DIRTY)) == BUF_VALID)
+		panic("hd_rw: need do nothing");
 
-	hd_rw(HD_READ, 0, 1, buf);
-	printf("before write: %s\n", buf);
+	// just append bp to hdqueue.
+	bp->hdnext = 0;
+	for(bpp=&hdqueue; *bpp; bpp=&(*bpp)->hdnext)
+		;
+	*bpp = bp;
 
-	hd_rw(HD_WRITE, 0, 1, str);
-	hd_rw(HD_READ, 0, 1, buf);
-	printf("after write: %s\n", buf);
+	// Start disk if necessary.
+	if(hdqueue == bp)
+		hd_dorw(bp);
+
+	// Wait for request to finish.
+	while((bp->flag & (BUF_VALID|BUF_DIRTY)) != BUF_VALID){
+		; // sleep(bp, TODO);
+	}
+}
+
+// hd interrupt handler
+void hd_isr(void)
+{
+	struct buf *bp;
+
+	if((bp = hdqueue) == 0)  // hdqueue is empty
+		return;
+
+	// remove bp from hdqueue and process bp
+	hdqueue = bp->hdnext;
+
+	if((bp->flag & BUF_DIRTY) == 0){
+		hdwait();
+		insl(HDR_DATA, bp->data, SECT_SIZE/4);  // 0x1f0
+	}
+
+	bp->flag |= BUF_VALID;
+	bp->flag &= ~BUF_DIRTY;
+	// wakeup(bp);
+
+	// start next buffer in hdqueue
+	if(hdqueue)
+		hd_dorw(hdqueue);
 }
 
 // enable interrupt, and setup isr, then do something else
@@ -70,11 +98,4 @@ void init_hd(void)
 {
 	outb(0xa1, 0xbf);   // IRQ 14 (IDE) locates at slave 5259A
 	printf("IRQ mask = %b, %b\n", inb(0xa1), inb(0x21));
-
-	//hd_identify(0);
-}
-
-void hd_isr(void)
-{
-	uint8_t sta = inb(HDR_STATUS);
 }

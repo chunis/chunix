@@ -58,7 +58,7 @@ struct buf *bread(uint32_t dev, uint32_t nblk)
 
 	bp = getblk(dev, nblk);
 	if((bp->flag & BUF_VALID) == 0)	// data invalid
-		hd_rw(HD_READ, bp->num, 1, bp->data);
+		hd_rw(bp);
 
 	return bp;
 }
@@ -69,7 +69,7 @@ void bwrite(struct buf *bp)
 		panic("bwrite: buffer isn't busy");
 
 	bp->flag |= BUF_DIRTY;
-	hd_rw(HD_WRITE, bp->num, 1, bp->data);
+	hd_rw(bp);
 	bp->flag &= ~(BUF_BUSY | BUF_DIRTY);
 }
 

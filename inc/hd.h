@@ -2,9 +2,10 @@
 #define __HD_H__
 
 #include <types.h>
+#include "../fs/fs.h"
 
 void init_hd(void);
-void hd_rw(int cmd, int offset, int nb, char *buf);
+void hd_rw(struct buf *bp);
 
 #define SECT_SIZE  512
 #define BLOCK_SIZE 1024

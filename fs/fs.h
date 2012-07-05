@@ -33,7 +33,7 @@ struct buf {
 
 	struct buf *prev;
 	struct buf *next;
-	struct buf *fnext;
+	struct buf *hdnext;
 };
 
 // superblock saved in disk
