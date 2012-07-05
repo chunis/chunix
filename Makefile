@@ -28,6 +28,7 @@ qemu-gdb: chunix.img $(HD) .gdbinit
 	qemu -m 32 -hda chunix.img -hdb $(HD) -S -gdb tcp::1234
 
 bochs: chunix.img $(HD)
+	sed -i 's/hd.img/$(HD)/' hd.bxrc
 	bochs -f hd.bxrc
 
 $(HD): tools/$(HD).bz2
