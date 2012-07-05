@@ -54,6 +54,7 @@ int main(void)
 	install_timer(100);
 	init_keyboard();
 	init_hd();
+	init_buffer();
 	init_minixfs();
 
 	rootp = 0;

@@ -23,11 +23,11 @@ void mytodo(void)
 	char *str = "Todo: tool used to keep things need to do";
 
 #if 1
-	int fdo[10];
+	int fdo[4];
 
-	for(i=0; i<10; i++)
+	for(i=0; i<4; i++)
 		fdo[i] = open("/README", O_RDWR);
-	for(i=0; i<10; i++)
+	for(i=0; i<4; i++)
 		printf("fdo[%d] = %d\n", i, fdo[i]);
 #else
 	// check if read /README works or not

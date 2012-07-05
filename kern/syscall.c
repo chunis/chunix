@@ -64,8 +64,6 @@ int sys_open(void)
 	argstr(0, &path);
 	flag = argint(1);
 
-	printf("path: %s\n", path);
-	printf("flag: %d\n", flag);
 	sf_open(path, flag);
 }
 
@@ -77,8 +75,6 @@ int sys_creat(void)
 	argstr(0, &path);
 	flag = argint(1);
 
-	printf("path: %s\n", path);
-	printf("flag: %d\n", flag);
 	sf_creat(path, flag);
 }
 

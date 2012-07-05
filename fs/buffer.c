@@ -6,7 +6,7 @@ struct buf fsbuf[NBUF];
 struct buf bhead;
 
 // init buffer cache
-void binit(void)
+void init_buffer(void)
 {
 	struct buf *bp;
 
