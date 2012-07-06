@@ -55,7 +55,6 @@ int main(void)
 	init_keyboard();
 	init_hd();
 	init_buffer();
-	init_minixfs();
 
 	rootp = 0;
 	current = rootp;
@@ -68,11 +67,13 @@ int main(void)
 	if(!current)
 		current = rootp;
 
-	// we would disable interrupt in kernel to make things simple
-	// Hope we can enable it in the future
-	//__asm__("sti\n");
+	// we need to read superblock and sleep, so we need to have
+	// some task availabe for sched_yield(). that's why we
+	// do 'init_minixfs()' here instead of after init_buffer().
+	init_minixfs();
 
 	// loop forever, drop here whenever no task to run
+	// we enable interrupt ("sti")  in sched_yield()
 	while(1)
 		sched_yield();
 

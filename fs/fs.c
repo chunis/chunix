@@ -129,11 +129,11 @@ void check_minixfs(void)
 	int i;
 	struct buf *sbuf;
 
-#if 0
 	sbuf = bread(ROOTDEV, 2);
 	dump_superblock(sbuf->data);
 	memmove((char *)&sb, sbuf->data, sizeof(sb));
 
+#if 0
 	// check minix magic number
 	printf("magic: %x\n", sb.s_magic);
 	if(sb.s_magic == MINIX_MAGIC || sb.s_magic == MINIX_MAGIC2){

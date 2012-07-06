@@ -2,6 +2,7 @@
 #include <x86.h>
 #include <hd.h>
 #include "../fs/fs.h"
+#include "../kern/sched.h"
 
 extern void panic(char *str);
 
@@ -64,7 +65,7 @@ void hd_rw(struct buf *bp)
 
 	// Wait for request to finish.
 	while((bp->flag & (BUF_VALID|BUF_DIRTY)) != BUF_VALID){
-		; // sleep(bp, TODO);
+		sched_yield(); // TODO: use sleep(bp, xx) instead here
 	}
 }
 
