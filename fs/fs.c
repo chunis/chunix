@@ -63,7 +63,7 @@ void ifree(uint32_t dev, uint32_t bn)
 // find inode with number 'in' on 'dev', and return its memory copy.
 struct inode *iget(uint32_t dev, uint32_t in)
 {
-	struct inode *ip;
+	struct inode *ip, *ifree = 0;
 
 	// check if the inode is already cached
 	for(ip = inode; ip < inode + NINODE; ip++){
@@ -71,14 +71,15 @@ struct inode *iget(uint32_t dev, uint32_t in)
 			ip->ref++;
 			return ip;
 		}
-		if(ip->ref == 0){
-			break;
+		if(ifree == 0 && ip->ref == 0){
+			ifree = ip;
 		}
 	}
 
-	if(ip == inode + NINODE)  // no inode cache available
+	if(ifree == 0)  // no inode cache available
 		panic("iget: no inodes caches");
 
+	ip = ifree;
 	ip->dev = dev;
 	ip->inum = in;
 	ip->ref = 1;
@@ -126,8 +127,8 @@ static char* path_down(char *path, char *name)
 	int len;
 
 	pp = path;
-	while(*pp++ == '/')
-		; // do nothing
+	while(*pp == '/')
+		pp++;
 	if(*pp == 0)
 		return 0;
 
@@ -142,8 +143,8 @@ static char* path_down(char *path, char *name)
 		name[len] = 0;
 	}
 
-	while(*pp++ == '/')
-		; // do nothing
+	while(*pp == '/')
+		pp++;
 
 	return pp;
 }
@@ -214,8 +215,10 @@ struct inode *search_dir(struct inode *dp, char *name)
 
 	desz = sizeof(de);
 
+	/*
 	if(dp->type != T_DIR)
 		panic("search_dir: not DIR");
+	*/
 
 	for(len = 0; len < dp->size; len += desz){
 		if(readi(dp, (char *)&de, len, desz) != desz)
@@ -229,6 +232,13 @@ struct inode *search_dir(struct inode *dp, char *name)
 	return 0;
 }
 
+void dump_inode(struct inode *ip)
+{
+	printf("ip->type(d): %d\n", ip->type);
+	printf("ip->size(x): %x\n", ip->size);
+	printf("ip->count(x): %x\n", ip->count);
+}
+
 // name to inode translate
 struct inode* namei(char *path)
 {
@@ -239,14 +249,21 @@ struct inode* namei(char *path)
 		ip = iget(ROOTDEV, ROOTINO);
 	else
 		ip = idup(current->cwd);
+	//dump_inode(ip);
 
 	while((path = path_down(path, name)) != 0){
-		printf("path: %s, name: %s\n", path, name);
-		if(ip->type != T_DIR)
+		printf("namei: path: %s, name: %s\n", path, name);
+		/*
+		if(ip->type != T_DIR){
+			printf("ip isn't a dir\n");
 			return 0;
+		}
+		*/
 
-		if((next = search_dir(ip, name)) == 0)
+		if((next = search_dir(ip, name)) == 0){
+			printf("file not found\n");
 			return 0;
+		}
 
 		ip = next;
 	}
