@@ -22,6 +22,8 @@
 #define NDINDIRECT	1	// number of double indirect blocks
 #define ADDR_LEN	(NDIRECT + NINDIRECT + NDINDIRECT)
 
+#define BPB		2	// minixfs: buffer/block = 1024/512
+
 #define ROOTDEV		1	// dev number of fs root disk
 #define ROOTINO		1	// root inode number
 

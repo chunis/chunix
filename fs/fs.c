@@ -17,10 +17,50 @@ struct inode inode[NINODE];	// global inode table
 uint8_t fbuf[BLOCK_SIZE];
 struct superblock sb;
 
+#define min(a, b)	((a) < (b) ? (a) : (b))
+// read the super block
+void readsb(uint32_t dev, struct d_superblock *sb)
+{
+	struct buf *bp;
 
-//
-// Inode process
-//
+	bp = bread(dev, 1*BPB);
+	memmove(sb, bp->data, sizeof(struct d_superblock));
+	brelse(bp);
+}
+
+/*
+** Bitmap/blocks process
+*/
+uint32_t balloc(uint32_t dev)
+{
+	return 0;
+}
+
+void bfree(uint32_t dev, uint32_t bn)
+{
+	return;
+}
+
+/*
+** Inode process
+*/
+
+struct inode *ialloc(uint32_t dev, uint32_t type)
+{
+	int in;
+	struct buf *bp;
+	struct d_inode dp;
+	struct superblock sb;
+
+	return 0;
+}
+
+void ifree(uint32_t dev, uint32_t bn)
+{
+	return;
+}
+
+// find inode with number 'in' on 'dev', and return its memory copy.
 struct inode *iget(uint32_t dev, uint32_t in)
 {
 	struct inode *ip;
@@ -45,6 +85,37 @@ struct inode *iget(uint32_t dev, uint32_t in)
 	ip->flag = 0;
 
 	return ip;
+}
+
+struct inode *idup(struct inode *ip)
+{
+	ip->ref++;
+	return ip;
+}
+
+// drop a reference to in-memory inode.
+// recycled the inode cache entry if it's the last reference
+// free inode and its content on disk if necessory
+void iput(struct inode *ip)
+{
+	// TODO: check if need to free inode and content by 'ifree()'
+	ip->ref--;
+}
+
+// return the disk block address of the bn-th block in inode,
+// allocates one if needed.
+uint32_t bmap(struct inode *ip, uint32_t bn)
+{
+	uint32_t addr;
+
+	if(bn < NDIRECT){
+		if((addr = ip->addr[bn]) == 0)
+			ip->addr[bn] = addr = balloc(ip->dev);
+		return addr;
+	}
+
+	// TODO: process indirect blocks
+	panic("bmap: TODO");
 }
 
 // search path, skip leading '/', save path's first element to 'name',
@@ -77,9 +148,62 @@ static char* path_down(char *path, char *name)
 	return pp;
 }
 
+// read data from inode
 int readi(struct inode *ip, char *dst, uint32_t off, uint32_t n)
 {
-	return -1;
+	uint32_t s = 0, m;
+	struct buf *bp;
+
+	if(ip->type == T_DEV)
+		panic("readi: TODO");
+
+	if(n < 0 || off > ip->size){
+		printf("readi: arguments wrong");
+		return -1;
+	}
+
+	if(off + n > ip->size)
+		n = ip->size - off;
+
+	while(s < n){
+		bp = bread(ip->dev, bmap(ip, off/SECT_SIZE));
+		m = min(n-s, SECT_SIZE - off%SECT_SIZE);
+		memmove(dst, bp->data + off%SECT_SIZE, m);
+		brelse(bp);
+		s += m;
+		off += m;
+		dst += m;
+	}
+
+	return n;
+}
+
+// write data to inode
+int writei(struct inode *ip, char *src, uint32_t off, uint32_t n)
+{
+	uint32_t s = 0, m;
+	struct buf *bp;
+
+	if(ip->type == T_DEV)
+		panic("writei: TODO");
+
+	if(n < 0 || off > ip->size){
+		printf("writei: arguments wrong");
+		return -1;
+	}
+
+	while(s < n){
+		bp = bread(ip->dev, bmap(ip, off/SECT_SIZE));
+		m = min(n-s, SECT_SIZE - off%SECT_SIZE);
+		memmove(bp->data + off%SECT_SIZE, src, m);
+		bwrite(bp);
+		brelse(bp);
+		s += m;
+		off += m;
+		src += m;
+	}
+
+	return n;
 }
 
 // look for dirent 'name' in dir whose inode is 'dp'.
@@ -114,7 +238,7 @@ struct inode* namei(char *path)
 	if(*path == '/')
 		ip = iget(ROOTDEV, ROOTINO);
 	else
-		ip = current->cwd;
+		ip = idup(current->cwd);
 
 	while((path = path_down(path, name)) != 0){
 		printf("path: %s, name: %s\n", path, name);
