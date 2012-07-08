@@ -29,7 +29,7 @@ void mytodo(void)
 		fdo[i] = open("/README", O_RDWR);
 	for(i=0; i<4; i++)
 		printf("fdo[%d] = %d\n", i, fdo[i]);
-#else
+
 	// check if read /README works or not
 	fd = open("/README", O_RDWR);
 	printf("fd = %d\n", fd);
@@ -38,6 +38,7 @@ void mytodo(void)
 	close(fd);
 	printf("In todo, buf = %s\n", buf);
 
+#else
 	// check if creat() works or not
 	fd = open(file, O_CREAT);
 	printf("fd = %d\n", fd);

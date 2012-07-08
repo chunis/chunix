@@ -3,7 +3,6 @@
 #include <console.h>
 #include "string.h"
 #include "sys.h"
-#include "sfs.h"
 
 char monbuf[1024];  // monitor buffer
 

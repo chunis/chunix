@@ -21,30 +21,128 @@ struct superblock sb;
 //
 // Inode process
 //
-struct inode *iget(uint32_t dev, uint32_t inum)
+struct inode *iget(uint32_t dev, uint32_t in)
 {
-	struct inode *ip = NULL;
+	struct inode *ip;
+
+	// check if the inode is already cached
+	for(ip = inode; ip < inode + NINODE; ip++){
+		if(ip->ref > 0 && ip->dev == dev && ip->inum == in){
+			ip->ref++;
+			return ip;
+		}
+		if(ip->ref == 0){
+			break;
+		}
+	}
+
+	if(ip == inode + NINODE)  // no inode cache available
+		panic("iget: no inodes caches");
+
+	ip->dev = dev;
+	ip->inum = in;
+	ip->ref = 1;
+	ip->flag = 0;
 
 	return ip;
 }
 
+// search path, skip leading '/', save path's first element to 'name',
+// return the start of following element without any leading '/'.
+static char* path_down(char *path, char *name)
+{
+	char *pp;
+	int len;
+
+	pp = path;
+	while(*pp++ == '/')
+		; // do nothing
+	if(*pp == 0)
+		return 0;
+
+	path = pp;
+	while(*pp != '/' && *pp != 0)
+		pp++;
+	len = pp - path;
+	if(len >= DIR_LEN){
+		memmove(name, path, DIR_LEN);
+	} else {
+		memmove(name, path, len);
+		name[len] = 0;
+	}
+
+	while(*pp++ == '/')
+		; // do nothing
+
+	return pp;
+}
+
+int readi(struct inode *ip, char *dst, uint32_t off, uint32_t n)
+{
+	return -1;
+}
+
+// look for dirent 'name' in dir whose inode is 'dp'.
+struct inode *search_dir(struct inode *dp, char *name)
+{
+	uint32_t len, in, desz;
+	struct dirent de;
+
+	desz = sizeof(de);
+
+	if(dp->type != T_DIR)
+		panic("search_dir: not DIR");
+
+	for(len = 0; len < dp->size; len += desz){
+		if(readi(dp, (char *)&de, len, desz) != desz)
+			panic("search_dir: readi fail");
+		if(strncmp(name, de.name, DIR_LEN) == 0){  // found
+			in = de.inum;
+			return iget(dp->dev, in);
+		}
+	}
+
+	return 0;
+}
+
+// name to inode translate
 struct inode* namei(char *path)
 {
-	struct inode *ip;
+	char name[DIR_LEN];
+	struct inode *ip, *next;
 
-	ip = iget(ROOTDEV, ROOTINO);
+	if(*path == '/')
+		ip = iget(ROOTDEV, ROOTINO);
+	else
+		ip = current->cwd;
+
+	while((path = path_down(path, name)) != 0){
+		printf("path: %s, name: %s\n", path, name);
+		if(ip->type != T_DIR)
+			return 0;
+
+		if((next = search_dir(ip, name)) == 0)
+			return 0;
+
+		ip = next;
+	}
+	return ip;
 }
 
 //
 // File process
 //
-int fileopen(const char *pathname, int flags)
+int fileopen(const char *path, int flags)
 {
 	int fd = -1;
 	int i;
 	struct inode *inp = NULL;
 
-	printf("In open: pathname: %s\n", pathname);
+	printf("In open: path: %s\n", path);
+
+	// get inode for path
+	if((inp = namei(path)) == 0)
+		return -1;
 
 	// search free slot in fdp[]
 	for(i = 0; i < NOFILE; i++){
@@ -72,7 +170,7 @@ int fileopen(const char *pathname, int flags)
 	return fd;
 }
 
-int filecreat(const char *pathname, int flags)
+int filecreat(const char *path, int flags)
 {
 	return 0;
 }

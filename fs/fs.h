@@ -25,6 +25,10 @@
 #define ROOTDEV		1	// dev number of fs root disk
 #define ROOTINO		1	// root inode number
 
+#define T_FILE		1   // file
+#define T_DIR		2   // directory
+#define T_DEV		3   // special device
+
 struct buf {
 	int flag;
 	uint32_t dev;
@@ -95,6 +99,7 @@ struct inode {
 	uint16_t dev;
 	uint16_t inum;
 	uint16_t ref;
+	uint32_t flag;
 };
 
 struct file {
@@ -110,8 +115,8 @@ struct dirent {
 	int8_t name[DIR_LEN];
 };
 
-int fileopen(const char *pathname, int flags);
-int filecreat(const char *pathname, int flags);
+int fileopen(const char *path, int flags);
+int filecreat(const char *path, int flags);
 int fileread(int fd, void *buf, int n);
 int filewrite(int fd, const void *buf, int n);
 int fileclose(int fd);

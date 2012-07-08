@@ -3,7 +3,6 @@
 
 #include <types.h>
 #include "descriptor.h"
-#include <sfs.h>
 #include <const.h>
 
 #define INIT_PRIO	20
