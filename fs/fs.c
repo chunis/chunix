@@ -279,6 +279,9 @@ int fileopen(const char *path, int flags)
 	int i;
 	struct inode *inp = NULL;
 
+	void check_minixfs(void);
+	check_minixfs();
+
 	printf("In open: path: %s\n", path);
 
 	// get inode for path
@@ -368,11 +371,12 @@ void check_minixfs(void)
 	int i;
 	struct buf *sbuf;
 
+	printf("do some minixfs check...\n");
 	sbuf = bread(ROOTDEV, 2);
 	dump_superblock(sbuf->data);
 	memmove((char *)&sb, sbuf->data, sizeof(sb));
 
-#if 0
+#if 1
 	// check minix magic number
 	printf("magic: %x\n", sb.s_magic);
 	if(sb.s_magic == MINIX_MAGIC || sb.s_magic == MINIX_MAGIC2){
@@ -382,9 +386,4 @@ void check_minixfs(void)
 		mk_minixfs();
 	}
 #endif
-}
-
-void init_minixfs(void)
-{
-	check_minixfs();
 }

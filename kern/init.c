@@ -67,11 +67,6 @@ int main(void)
 	if(!current)
 		current = rootp;
 
-	// we need to read superblock and sleep, so we need to have
-	// some task availabe for sched_yield(). that's why we
-	// do 'init_minixfs()' here instead of after init_buffer().
-	init_minixfs();
-
 	// loop forever, drop here whenever no task to run
 	// we enable interrupt ("sti")  in sched_yield()
 	while(1)

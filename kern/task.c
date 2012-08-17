@@ -185,12 +185,14 @@ void sleep_on(void *chan)
 
 	// clean chan
 	current->chan = 0;
+	printf("finished sleep_on() now!!!!!!!!!\n");
 }
 
 void wakeup(void *chan)
 {
 	TASK_STRUCT *tp;
 
+	printf("Now I'm waked up...\n");
 	for(tp = rootp; tp; tp = tp->next){
 		if(tp->state == TS_STOPPED && tp->chan == chan)
 			tp->state = TS_RUNNABLE;

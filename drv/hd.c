@@ -42,6 +42,16 @@ static void hd_dorw(struct buf *bp)
 	}
 }
 
+void dump_data(char *p, int n)
+{
+	int i;
+
+	printf("---- dump_data begin ----\n");
+	for(i=0; i < n; i++)
+		printf("%x ", p[i]);
+	printf("\n---- dump_data end ----\n");
+}
+
 // issue read/write request to hard disk
 // just append bp to hdqueue, and call hd_dorw() if necessory
 void hd_rw(struct buf *bp)
@@ -59,13 +69,18 @@ void hd_rw(struct buf *bp)
 		;
 	*bpp = bp;
 
+	printf("hd_rw: bp->flag = %d\n", bp->flag);
+	dump_data(bp->data, 24);
+
 	// Start disk if necessary.
 	if(hdqueue == bp)
 		hd_dorw(bp);
 
 	// Wait for request to finish.
 	while((bp->flag & (BUF_VALID|BUF_DIRTY)) != BUF_VALID){
-		sched_yield(); // TODO: use sleep(bp, xx) instead here
+		dump_data(bp->data, 24);
+		sleep_on(&bp->bwait);
+		printf("I'm waked up!\n");
 	}
 }
 
@@ -81,13 +96,14 @@ void hd_isr(void)
 	hdqueue = bp->hdnext;
 
 	if((bp->flag & BUF_DIRTY) == 0){
+		printf("Read data out\n");
 		hdwait();
 		insl(HDR_DATA, bp->data, SECT_SIZE/4);  // 0x1f0
 	}
 
 	bp->flag |= BUF_VALID;
 	bp->flag &= ~BUF_DIRTY;
-	// wakeup(bp);
+	wakeup(&bp->bwait);
 
 	// start next buffer in hdqueue
 	if(hdqueue)

@@ -56,9 +56,14 @@ struct buf *bread(uint32_t dev, uint32_t nblk)
 	struct buf *bp;
 
 	bp = getblk(dev, nblk);
+	printf("bp->flag = %d\n", bp->flag);
 	if((bp->flag & BUF_VALID) == 0)	// data invalid
+	{
+		printf("need hd_rw()\n");
 		hd_rw(bp);
+	}
 
+	printf("bread() is done\n");
 	return bp;
 }
 
