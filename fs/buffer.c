@@ -32,11 +32,10 @@ repeat:
 				bp->flag |= BUF_BUSY;
 				return bp;
 			}
-			//sleep(xxx);
+			sleep_on(&bp->bwait);
 			goto repeat;
 		}
 	}
-
 
 	// block not cached yet
 	for(bp = bhead.prev; bp != &bhead; bp = bp->prev){
@@ -87,5 +86,5 @@ void brelse(struct buf *bp)
 	bhead.next = bp;
 
 	bp->flag &= ~BUF_BUSY;
-	//wakeup(bp);
+	wakeup(&bp->bwait);
 }

@@ -37,6 +37,7 @@ struct buf {
 	uint32_t num;
 	uint8_t data[512];
 
+	void *bwait;
 	struct buf *prev;
 	struct buf *next;
 	struct buf *hdnext;

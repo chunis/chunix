@@ -68,6 +68,7 @@ typedef struct _task {
 	struct file *fdp[NOFILE];  // file table for file descriptors
 	enum TS_STATE state;
 	int priority;
+	void *chan;	// if chan != 0, sleeping on it
 	struct inode *cwd;
 	struct _task *next;
 } TASK_STRUCT;
