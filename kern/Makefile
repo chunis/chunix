@@ -15,4 +15,4 @@ all: $(KERN)
 	${CC} ${CFLAGS} -c -o $@ $<
 
 clean:
-	@rm -f *.o kernel kernel.asm
+	@rm -f *.o

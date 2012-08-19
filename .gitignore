@@ -7,7 +7,7 @@ libcx.a
 
 boot/bootsect
 boot/bootsect.out
-kern/kernel
+kernel
 tools/mkboot
 bochs.*
 *.swp

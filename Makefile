@@ -34,14 +34,14 @@ bochs: chunix.img $(HD)
 $(HD): tools/$(HD).bz2
 	@bzcat tools/$(HD).bz2 > $(HD)
 
-chunix.img: bootsect kern/kernel tools/blank_hd.img.bz2
-	@cat boot/bootsect kern/kernel > tmp.img
+chunix.img: bootsect kernel tools/blank_hd.img.bz2
+	@cat boot/bootsect kernel > tmp.img
 	@rm -f chunix.img
 	@bzcat tools/blank_hd.img.bz2 > chunix.img
 	@dd if=tmp.img of=chunix.img conv=notrunc
 	@rm -f tmp.img
 
-kern/kernel: buildall kern/kernel.ld
+kernel: buildall kern/kernel.ld
 	$(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary $(USEROBJ)
 	${OBJDUMP} -d $@ > $@.asm
 	${NM} -n $@ > $@.sym
@@ -79,4 +79,4 @@ clean:
 	@rm -f chunix.img #$(HD)
 
 cleanall: clean
-	@rm -f $(HD) *.img bochs.log
+	@rm -f $(HD) *.img bochs.log *.asm *.sym
