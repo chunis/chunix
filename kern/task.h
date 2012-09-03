@@ -57,8 +57,22 @@ typedef struct {
 	uint32_t	ss;
 } STACK_FRAME;
 
+// saved registers for kernel context switches.
+// Contexts are stored at the bottom of the stack they
+// describe; the stack pointer is the address of the context.
+// The layout of the context matches the layout of the stack in swtch.S
+// at the "Switch stacks" comment. Switch doesn't save eip explicitly,
+struct context {
+	uint32_t edi;
+	uint32_t esi;
+	uint32_t ebx;
+	uint32_t ebp;
+	uint32_t eip;
+};
+
 typedef struct _task {
 	STACK_FRAME *tf;
+	struct context *context;     // saved in swtch()
 
 	uint32_t pid;
 	uint32_t ppid;	// parent's id

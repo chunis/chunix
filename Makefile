@@ -6,7 +6,7 @@ include make.inc
 DRV  = console.o hd.o keyboard.o
 FS   = fs.o sysfile.o buffer.o
 KERN = isr.o init.o string.o printf.o time.o syscall.o sched.o \
-		task.o descriptor.o tools.o mm.o trap.o
+		task.o descriptor.o tools.o mm.o trap.o swtch.o
 USER = hello todo
 
 DRVOBJ  = $(patsubst %,drv/%,$(DRV))

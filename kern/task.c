@@ -12,6 +12,12 @@
 TASK_STRUCT tasks[NPROC];
 int nextpid = 1;
 extern pde_t *kpgdir;
+extern void trap_ret(void);
+
+void do_nothing(void)
+{
+	return;
+}
 
 TASK_STRUCT *task_alloc(void)
 {
@@ -53,6 +59,16 @@ TASK_STRUCT *task_alloc(void)
 	tp->tf->eflags = FL_IF;
 	tp->tf->esp = USTACKTOP;
 	// we will set tp->tf->eip later.
+
+	// Set up new context to start executing at forkret,
+	// which returns to trap_ret.
+	sp -= 4;
+	*(uint32_t *)sp = (uint32_t)trap_ret;
+
+	sp -= sizeof *tp->context;
+	tp->context = (struct context *)sp;
+	memset(tp->context, 0, sizeof *tp->context);
+	tp->context->eip = (uint32_t)do_nothing;
 
 	tp->state = TS_RUNNABLE;
 	tp->next = rootp;
@@ -165,7 +181,8 @@ void task_run(TASK_STRUCT *tp)
 		lcr3((uint32_t *)P2V((uint32_t)current->pgdir));
 	}
 
-	task_pop_tf(current->tf);
+	// task_pop_tf(current->tf);
+	swtch(&tp->context, current->context);
 }
 
 void task_destroy(TASK_STRUCT *tp)
