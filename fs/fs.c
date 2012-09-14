@@ -373,10 +373,9 @@ void check_minixfs(void)
 
 	printf("do some minixfs check...\n");
 	sbuf = bread(ROOTDEV, 2);
-	dump_superblock(sbuf->data);
 	memmove((char *)&sb, sbuf->data, sizeof(sb));
+	brelse(sbuf);
 
-#if 1
 	// check minix magic number
 	printf("magic: %x\n", sb.s_magic);
 	if(sb.s_magic == MINIX_MAGIC || sb.s_magic == MINIX_MAGIC2){
@@ -385,5 +384,4 @@ void check_minixfs(void)
 	} else {  // make a clean minix fs
 		mk_minixfs();
 	}
-#endif
 }

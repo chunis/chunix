@@ -69,19 +69,17 @@ void hd_rw(struct buf *bp)
 		;
 	*bpp = bp;
 
-	printf("hd_rw: bp->flag = %d\n", bp->flag);
-	dump_data(bp->data, 24);
-
 	// Start disk if necessary.
 	if(hdqueue == bp)
 		hd_dorw(bp);
 
 	// Wait for request to finish.
 	while((bp->flag & (BUF_VALID|BUF_DIRTY)) != BUF_VALID){
-		dump_data(bp->data, 24);
 		sleep_on(&bp->bwait);
-		printf("I'm waked up!\n");
 	}
+
+	// check if read is OK
+	dump_data(bp->data, 24);
 }
 
 // hd interrupt handler
