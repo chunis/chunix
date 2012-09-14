@@ -67,8 +67,10 @@ int main(void)
 	if(!current)
 		current = rootp;
 
+	// now enable interrupt
+	asm("sti");
+
 	// loop forever, drop here whenever no task to run
-	// we enable interrupt ("sti")  in sched_yield()
 	while(1)
 		sched_yield();
 

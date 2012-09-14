@@ -5,7 +5,6 @@
 
 extern uint32_t timer_ticks;
 
-// This function does not return.
-void sched_yield(void) __attribute__((noreturn));
+void sched_yield(void);
 
 #endif

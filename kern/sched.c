@@ -6,8 +6,6 @@ void sched_yield(void)
 {
 	TASK_STRUCT *tp;
 
-	asm("sti");
-
 	if(!rootp)
 		panic("No task!");
 
