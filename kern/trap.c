@@ -26,19 +26,20 @@ static const char *exceptions[] = {
 
 void dump_tf(STACK_FRAME *tf)
 {
-	printf("Exception %d: %s\n\n", tf->trapno, exceptions[tf->trapno]);
-	printf("gs:\t%x,\tfs:\t%x\n", tf->gs, tf->fs);
-	printf("es:\t%x,\tds:\t%x\n", tf->es, tf->ds);
-	printf("edi:\t%x,\tesi:\t%x\n", tf->edi, tf->esi);
-	printf("ebp:\t%x\nold_esp:%x\n", tf->ebp, tf->old_esp);
-	printf("ebx:\t%x,\tedx:\t%x\n", tf->ebx, tf->edx);
-	printf("ecx:\t%x,\teax:\t%x\n", tf->ecx, tf->eax);
+	printf("----- Exception %d: %s -----\n",
+			tf->trapno, exceptions[tf->trapno]);
+	printf(" gs: %x\t fs: %x\t", tf->gs, tf->fs);
+	printf(" es: %x\t ds: %x\n", tf->es, tf->ds);
+	printf("edi: %x\tesi: %x\n", tf->edi, tf->esi);
+	printf("ebp: %x\told_esp: %x\n", tf->ebp, tf->old_esp);
+	printf("ebx: %x\tedx: %x\n", tf->ebx, tf->edx);
+	printf("ecx: %x\teax: %x\n", tf->ecx, tf->eax);
 
-	printf("trapno:\t%x,\terr:\t%x\n", tf->trapno, tf->err);
-	printf("ret_addr:%x\n", tf->ret_addr);
-	printf("eip:\t%x\tcs:\t%x\n", tf->eip, tf->cs);
-	printf("eflags:\t%x\n", tf->eflags);
-	printf("esp:\t%x\tss:\t%x\n", tf->esp, tf->ss);
+	printf("trapno: %x\terr: %x\t", tf->trapno, tf->err);
+	printf("ret_addr: %x\n", tf->ret_addr);
+	printf("eip: %x\t cs: %x\t", tf->eip, tf->cs);
+	printf("eflags: %x\n", tf->eflags);
+	printf("esp: %x\tss: %x\n", tf->esp, tf->ss);
 
 	panic("dump_tf");
 
