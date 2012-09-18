@@ -165,6 +165,7 @@ void task_pop_tf(STACK_FRAME *tf)
 void task_run(TASK_STRUCT *tp)
 {
 	static int ltrflag = 0;
+	TASK_STRUCT *old_tp = current;
 
 	if(tp != current){
 		if(current && current->state == TS_RUNNING)
@@ -182,7 +183,7 @@ void task_run(TASK_STRUCT *tp)
 	}
 
 	// task_pop_tf(current->tf);
-	swtch(&tp->context, current->context);
+	swtch(old_tp->context, current->context);
 }
 
 void task_destroy(TASK_STRUCT *tp)

@@ -39,7 +39,7 @@ void dump_tf(STACK_FRAME *tf)
 	printf("ret_addr: %x\n", tf->ret_addr);
 	printf("eip: %x\t cs: %x\t", tf->eip, tf->cs);
 	printf("eflags: %x\n", tf->eflags);
-	printf("esp: %x\tss: %x\n", tf->esp, tf->ss);
+	printf("esp: %x\t ss: %x\n", tf->esp, tf->ss);
 
 	panic("dump_tf");
 

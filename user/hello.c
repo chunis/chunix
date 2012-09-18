@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 	char *str = "Hello";
 
 	for(;;){
-		sleep(30);
+		sleep(3);
 		printf("in hello: I'm %s\n", str);
 	}
 

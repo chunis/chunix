@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	printf("fd = %d\n", fd);
 
 	for(;;){
-		sleep(30);
+		sleep(3);
 		printf("in todo: i = %d\n", i++);
 	}
 }
