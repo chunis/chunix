@@ -18,6 +18,7 @@ OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 
 #HD = hd.img
 HD = minixfs.img
+FD = floppy.img
 
 all: chunix.img $(HD)
 
@@ -33,6 +34,11 @@ bochs: chunix.img $(HD)
 
 $(HD): tools/$(HD).bz2
 	@bzcat tools/$(HD).bz2 > $(HD)
+
+grub: kernel tools/$(FD).bz2
+	@bzcat tools/$(FD).bz2 > $(FD)
+	tools/update_kernel.sh
+	qemu -m 32 -fda $(FD) -hdb $(HD)
 
 chunix.img: bootsect kernel tools/blank_hd.img.bz2
 	@cat boot/bootsect kernel > tmp.img

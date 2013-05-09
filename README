@@ -2,11 +2,14 @@ About ChuniX
 
 
 chunix is a small x86 os, used for learning osdev.
-The project was started in code.google.com, and the code was managed by hg.
+
+This project was started in code.google.com, and the code was managed by hg.
 But since it's difficult to push code to code.google.com in China,
-I move the code to github, and using git to manage the code instead of hg.
+I moved the code to github, and using git to manage the code instead of hg.
 But other files/wikis... will still keep in the old url as:
 	http://code.google.com/p/chunix/
+
+Please refer to doc/ for informations about run it.
 
 You may alse interested in my private Chinese blog: http://www.chunix.org
 and you can contact me by email: chunchengfh # gmail.com

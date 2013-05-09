@@ -16,3 +16,10 @@ or:
 or:
 * go to the root directory of chunix, and run:
 	>> qemu -hda chunix.img -hdb hd.img
+
+3. grub + qemu:
+* In root dir, just type 'make grub'. But first you need to add youself to
+sudoers, since it needs 'sudo' to update the floppy.img.
+
+
+Enjoy!  :-)
