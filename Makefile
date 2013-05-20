@@ -35,7 +35,7 @@ bochs: chunix.img $(HD)
 $(HD): tools/$(HD).bz2
 	@bzcat tools/$(HD).bz2 > $(HD)
 
-grub: kernel tools/$(FD).bz2
+grub: kernel initrd tools/$(FD).bz2 $(HD)
 	@bzcat tools/$(FD).bz2 > $(FD)
 	tools/update_kernel.sh
 	qemu -m 32 -fda $(FD) -hdb $(HD)
@@ -51,6 +51,10 @@ kernel: buildall kern/kernel.ld
 	$(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary $(USEROBJ)
 	${OBJDUMP} -d $@ > $@.asm
 	${NM} -n $@ > $@.sym
+
+initrd: tools/initrd.bz2
+	@bzcat $^ > $@
+	tools/mk_initrd.sh
 
 buildall:
 	(cd drv && make)
@@ -82,7 +86,7 @@ clean:
 	(cd fs && make clean)
 	(cd lib && make clean)
 	(cd user && make clean)
-	@rm -f chunix.img #$(HD)
+	@rm -f initrd chunix.img #$(HD)
 
 cleanall: clean
 	@rm -f $(HD) *.img bochs.log *.asm *.sym
