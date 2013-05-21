@@ -1,7 +1,8 @@
 include ../make.inc
 
 KERN = isr.o init.o string.o printf.o time.o syscall.o sched.o \
-		task.o descriptor.o tools.o mm.o trap.o entry.o swtch.o
+		task.o descriptor.o tools.o mm.o trap.o entry.o \
+		swtch.o multiboot.o
 
 all: $(KERN)
 

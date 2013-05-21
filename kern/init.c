@@ -3,6 +3,7 @@
 #include <mmu.h>
 #include <console.h>
 #include <kbd.h>
+#include <multiboot.h>
 
 #include "string.h"
 #include "printf.h"
@@ -28,7 +29,7 @@ static void init_8259A(void)
 	outb(0xa1, 0xff);
 }
 
-int main(void)
+int main(struct multiboot *mboot_ptr)
 {
 	char *os_str = "Welcome to ChuniX! :)\n";
 	extern uint32_t edata[], end[];
@@ -36,6 +37,10 @@ int main(void)
 	TASK_STRUCT *mytask2;
 	extern char _binary_user_hello_start[], _binary_user_hello_size[];
 	extern char _binary_user_todo_start[], _binary_user_todo_size[];
+	int eax;
+
+	// save %eax to check if booted from multiboot loader
+	__asm __volatile("movl %%eax, %0" : "=r" (eax));
 
 	// TODO: memset will make system crash, why?
 	// clear BSS section
@@ -43,6 +48,9 @@ int main(void)
 
 	cons_init();
 	printf("%s\n", os_str);
+
+	if(eax == MBT_BOOTLOADER_MAGIC)
+		dump_multiboot(mboot_ptr);
 
 	mem_init();
 	setupkvm();
@@ -56,6 +64,7 @@ int main(void)
 	init_hd();
 	init_buffer();
 
+#if 0
 	rootp = 0;
 	current = rootp;
 	mytask1 = task_create(_binary_user_hello_start,
@@ -73,6 +82,7 @@ int main(void)
 	// loop forever, drop here whenever no task to run
 	while(1)
 		sched_yield();
+#endif
 
 	// would never get here. So we'll wait forever...
 	wheel();

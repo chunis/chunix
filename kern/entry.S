@@ -24,6 +24,8 @@ multiboot_header:
 
 _start = V2P(va_start)
 va_start:
+	movl	%eax, %ecx	// save %eax for multiboot check
+
 	// turn on paging
 	movl	%cr4, %eax
 	orl	$0x10, %eax	// page size extention
@@ -48,6 +50,8 @@ pm_mode:
 	movw	%ax, %gs
 	movw	%ax, %ss
 
+	movl	%ecx, %eax	// restore %eax
+	pushl	%ebx
 	call	main
 
 loop:
