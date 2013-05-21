@@ -11,7 +11,8 @@
 
 static uint16_t *cons_buf;
 static uint16_t cons_pos;
-static dcolor = BRIGHT_GREEN;
+uint8_t default_color = BRIGHT_GREEN;
+static uint8_t dcolor = BRIGHT_GREEN;
 
 static uint16_t locate_cursor(void)
 {
@@ -65,6 +66,16 @@ void cons_init(void)
 	cbuf.rpos = 0;
 
 	clean_screen();
+}
+
+void settextcolor(uint8_t forecolor, uint8_t backcolor)
+{
+	dcolor = (backcolor << 4) | (forecolor & 0x0F);
+}
+
+void resettextcolor(void)
+{
+	dcolor = default_color;
 }
 
 void put_color_c(char color, char c)
