@@ -29,7 +29,7 @@ static void init_8259A(void)
 	outb(0xa1, 0xff);
 }
 
-int main(struct multiboot *mboot_ptr)
+int main(struct multiboot_info *mboot_ptr)
 {
 	char *os_str = "Welcome to ChuniX! :)\n";
 	extern uint32_t edata[], end[];
@@ -49,8 +49,12 @@ int main(struct multiboot *mboot_ptr)
 	cons_init();
 	printf("%s\n", os_str);
 
-	if(eax == MBT_BOOTLOADER_MAGIC)
+	if(eax == MBT_BOOTLOADER_MAGIC){
+		settextcolor(12, 0);
 		dump_multiboot(mboot_ptr);
+		dump_ext2((*(uint32_t*)mboot_ptr->mods_addr) + 1024);
+		resettextcolor();
+	}
 
 	mem_init();
 	setupkvm();
