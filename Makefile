@@ -16,6 +16,7 @@ KERNOBJ = $(patsubst %,kern/%,$(KERN))
 USEROBJ = $(patsubst %,user/%,$(USER))
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
+GDB_ARG = -S -gdb tcp::1234
 
 #HD = hd.img
 HD = minixfs.img
@@ -27,7 +28,7 @@ qemu: chunix.img $(HD)
 	qemu -m 32 -hda chunix.img -hdb $(HD)
 
 qemu-gdb: chunix.img $(HD) .gdbinit
-	qemu -m 32 -hda chunix.img -hdb $(HD) -S -gdb tcp::1234
+	qemu -m 32 -hda chunix.img -hdb $(HD) $(GDB_ARG)
 
 bochs: chunix.img $(HD)
 	sed -i 's/hd.img/$(HD)/' hd.bxrc
@@ -40,6 +41,11 @@ grub: kernel initrd tools/$(FD).bz2 $(HD)
 	@bzcat tools/$(FD).bz2 > $(FD)
 	tools/update_kernel.sh
 	qemu -m 32 -fda $(FD) -hdb $(HD)
+
+grub-gdb: kernel initrd tools/$(FD).bz2 $(HD) .gdbinit
+	@bzcat tools/$(FD).bz2 > $(FD)
+	tools/update_kernel.sh
+	qemu -m 32 -fda $(FD) -hdb $(HD) $(GDB_ARG)
 
 chunix.img: bootsect kernel tools/blank_hd.img.bz2
 	@cat boot/bootsect kernel > tmp.img
