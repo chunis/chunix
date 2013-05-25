@@ -6,12 +6,13 @@ void dump_ext2(uint32_t start_addr)
 {
 	struct ext2_super_block *sb_ptr;
 	struct ext2_bg_descriptor *bg_ptr;
-	struct ext2_inode *inodetable, *inode;
+	struct ext2_inode *inodetable, *inode, *inode_f;
 	struct ext2_dir_entry *dirent;
 	uint32_t dir_offset;
+	uint8_t *file_ptr;
 	char name[256];
 	int block_size;
-	int i;
+	int i, j;
 
 
 	sb_ptr = (struct ext2_super_block *)(start_addr + EXT2_SB_OFFSET);
@@ -66,8 +67,18 @@ void dump_ext2(uint32_t start_addr)
 					break;
 
 				printf("[offset: %d] name: %s [inode: %d]\n", dir_offset, dirent->name, dirent->inode);
-				if(! strncmp(dirent->name, "README", dirent->name_len)){
-					printf("Find README!!\n");
+				if(! strncmp(dirent->name, "motd", dirent->name_len)){
+					settextcolor(14, 0);
+					printf("Find file 'motd'. ");
+					inode_f = (struct ext2_inode *)((uint32_t)inodetable + sb_ptr->inode_size * (dirent->inode - 1));
+					printf("file size: %d, start from block %d.\n", inode_f->size, inode_f->block[0]);
+
+					printf("Its content:\n");
+					settextcolor(12, 0);
+					file_ptr = (uint8_t *)(start_addr + block_size * inode_f->block[0]);
+					for(j = 0; j < inode_f->size; j++)
+						printf("%c", file_ptr[j]);
+					settextcolor(13, 0);
 				}
 
 				dir_offset += dirent->rec_len;
