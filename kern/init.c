@@ -52,7 +52,8 @@ int main(struct multiboot_info *mboot_ptr)
 	if(eax == MBT_BOOTLOADER_MAGIC){
 		settextcolor(12, 0);
 		dump_multiboot(mboot_ptr);
-		dump_ext2((*(uint32_t*)mboot_ptr->mods_addr) + 1024);
+		settextcolor(13, 0);
+		dump_ext2(*(uint32_t*)mboot_ptr->mods_addr);
 		resettextcolor();
 	}
 

@@ -4,6 +4,10 @@
 
 #include <types.h>
 
+#define EXT2_SUPER_MAGIC 0xEF53
+#define EXT2_SB_OFFSET	1024	// offset of superblock from partition start
+#define EXT2_SB_SIZE	1024	// superblock size
+
 /* File Types */
 #define EXT2_S_IFSOCK   0xC000
 #define EXT2_S_IFLNK    0xA000
@@ -92,14 +96,14 @@ struct ext2_super_block {
 // blocks group descriptor
 struct ext2_bg_descriptor
 {
-	int32_t  bg_block_bitmap;
-	int32_t  bg_inode_bitmap;
-	int32_t  bg_inode_table;
-	int16_t  bg_free_blocks_count;
-	int16_t  bg_free_inodes_count;
-	int16_t  bg_used_dirs_count;
-	int16_t  bg_pad;
-	int32_t  bg_reserved[3];
+	int32_t  block_bitmap;
+	int32_t  inode_bitmap;
+	int32_t  inode_table;
+	int16_t  free_blocks_count;
+	int16_t  free_inodes_count;
+	int16_t  used_dirs_count;
+	int16_t  pad;
+	int32_t  reserved[3];
 } __attribute__((packed));
 
 struct ext2_inode {
@@ -126,8 +130,9 @@ struct ext2_inode {
 struct ext2_dir_entry {
 	uint32_t inode;
 	uint16_t rec_len;
-	uint16_t name_len;
-	uint8_t  name[255];
+	uint8_t  name_len;
+	uint8_t  file_type;
+	char     name[255];
 } __attribute__((packed));
 
 
