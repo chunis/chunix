@@ -69,6 +69,9 @@ void printf(char *fmt, ...)
 			case 'p':
 				printint(*ap++, 16, 0);
 				break;
+			case 'c':
+				put_c(*ap++);
+				break;
 			case 's':
 				for(s = (char *)*ap++; *s; s++)
 					put_c(*s);
