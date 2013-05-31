@@ -1,5 +1,5 @@
-#ifndef __FS_H__
-#define __FS_H__
+#ifndef __FS_MINIX_H__
+#define __FS_MINIX_H__
 
 #include <types.h>
 

@@ -3,13 +3,6 @@
 include make.inc
 
 
-DRV  = console.o hd.o keyboard.o
-FS   = fs.o sysfile.o buffer.o ext2.o
-KERN = isr.o init.o string.o printf.o time.o syscall.o sched.o \
-		task.o descriptor.o tools.o mm.o trap.o swtch.o \
-		multiboot.o
-USER = hello todo
-
 DRVOBJ  = $(patsubst %,drv/%,$(DRV))
 FSOBJ   = $(patsubst %,fs/%,$(FS))
 KERNOBJ = $(patsubst %,kern/%,$(KERN))
@@ -55,6 +48,7 @@ chunix.img: bootsect kernel tools/blank_hd.img.bz2
 	@rm -f tmp.img
 
 kernel: buildall kern/kernel.ld
+	echo xx $(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary $(USEROBJ)
 	$(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary $(USEROBJ)
 	${OBJDUMP} -d $@ > $@.asm
 	${NM} -n $@ > $@.sym

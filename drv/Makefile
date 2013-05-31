@@ -1,9 +1,9 @@
 include ../make.inc
 
-all: console.o hd.o keyboard.o
+all: ${DRV}
 
 %.o: %.c
 	${CC} ${CFLAGS} -c -o $@ $<
 
 clean:
-	@rm -f *.o
+	@rm -f ${DRV}

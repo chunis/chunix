@@ -8,11 +8,19 @@ limits:
 
 #include <types.h>
 #include <hd.h>
-#include "sfs.h"
+#include <sfs.h>
 #include <const.h>
+#include <fs.h>
 #include <console.h>
 #include <x86.h>
 #include "../kern/task.h"
+
+struct fs_node sfs_fs = {
+	NULL,
+	"sfs",
+	1,
+	NULL,
+};
 
 char buf[SECT_SIZE];
 char buf2[SECT_SIZE*2];
@@ -20,7 +28,9 @@ char buf2[SECT_SIZE*2];
 struct sfs_superblock sb;
 int ibufs[4] = { IBUF1, IBUF2, IBUF3, IBUF4 };
 
-void hd_rw(int cmd, int offset, int nb, char *buf);
+// TODO: work on this
+void sfs_hd_rw(int cmd, int offset, int nb, char *buf);
+void sfs_hd_rw(int cmd, int offset, int nb, char *buf) {}
 
 static struct inode1 *search_ibuf(void *bufp, const char *name, int scale)
 {
@@ -46,7 +56,7 @@ static struct inode1 *search_index(const char *name, int type)
 	struct sfs_index *ip;
 
 	for(ic = 0; ic <= nb; ic++){
-		hd_rw(HD_READ, sb.total_blk-1-ic, 1, buf);
+		sfs_hd_rw(HD_READ, sb.total_blk-1-ic, 1, buf);
 		ip = (struct sfs_index *)buf;
 		ip += 7;
 		for(j = 0; j<8; j++){
@@ -94,7 +104,7 @@ static struct inode1 *create_file(const char *f)
 	bi /= IE_SIZE;
 
 	printf("nie: %d, sb.total_blk: %d\n", nie, sb.total_blk);
-	hd_rw(HD_READ, bn-1, 2, buf2);	// read 2 blocks (end-of-index + free space)
+	sfs_hd_rw(HD_READ, bn-1, 2, buf2);	// read 2 blocks (end-of-index + free space)
 
 	sp = (struct sfs_file *)buf2;
 	sp += 16 - bi - nie + 1;  // begin from space used to be 'marker' entry
@@ -108,13 +118,13 @@ static struct inode1 *create_file(const char *f)
 	sp--;	// to setup 'marker' entry
 	sp->etype = START_MARK;
 
-	hd_rw(HD_WRITE, bn-1, 2, buf2);
+	sfs_hd_rw(HD_WRITE, bn-1, 2, buf2);
 
 	// save superblock changes to hd
 	printf("sb.da_blk: %d\n", sb.da_blk);
 	sb.da_blk += NB_INIT;
 	printf("sb.da_blk: %d\n", sb.da_blk);
-	hd_rw(HD_WRITE, 0, 1, (char *)&sb);
+	sfs_hd_rw(HD_WRITE, 0, 1, (char *)&sb);
 
 	return (struct inode1 *)(++sp);
 };
@@ -206,7 +216,7 @@ static void init_superblock(void)
 	struct sfs_vol_id *idp;
 	struct sfs_mark *markp;
 
-	hd_rw(HD_READ, 0, 1, (char *)&sb);
+	sfs_hd_rw(HD_READ, 0, 1, (char *)&sb);
 
 	sb.time_stamp = 0;
 	sb.da_blk = 0;			// by blocks
@@ -226,7 +236,7 @@ static void init_superblock(void)
 	sb.checksum = -calc_checksum((char *)&sb);
 	printf("sb.checksum = %d\n", sb.checksum);
 
-	hd_rw(HD_WRITE, 0, 1, (char *)&sb);
+	sfs_hd_rw(HD_WRITE, 0, 1, (char *)&sb);
 
 	memset(buf, 0, SECT_SIZE);
 	// vol id stay at the botton of hd area
@@ -243,7 +253,7 @@ static void init_superblock(void)
 	idp->etype = START_MARK;
 
 	// write it to the last block of hd
-	hd_rw(HD_WRITE, sb.total_blk-1, 1, buf);
+	sfs_hd_rw(HD_WRITE, sb.total_blk-1, 1, buf);
 }
 
 void mkfs(void)
@@ -255,7 +265,7 @@ void check_fs(void)
 {
 	char sum;
 
-	hd_rw(HD_READ, 0, 1, buf);
+	sfs_hd_rw(HD_READ, 0, 1, buf);
 
 	// check checksum
 	sum = calc_checksum(buf);

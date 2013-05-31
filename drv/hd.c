@@ -1,7 +1,7 @@
 #include <types.h>
 #include <x86.h>
 #include <hd.h>
-#include "../fs/fs.h"
+#include <fs_minix.h>
 #include "../kern/sched.h"
 
 extern void panic(char *str);

@@ -1,6 +1,6 @@
 #include <const.h>
 #include <hd.h>
-#include "fs.h"
+#include "fs_minix.h"
 
 struct buf fsbuf[NBUF];
 struct buf bhead;

@@ -1,8 +1,6 @@
 include ../make.inc
 
-USER_OBJS = hello todo
-
-all: ${USER_OBJS}
+all: ${USER}
 	echo "Build user apps is done"
 
 %: %.c ../lib/entry.o ../lib/libcx.a
@@ -18,4 +16,4 @@ all: ${USER_OBJS}
 	(cd ../lib && make)
 
 clean:
-	@rm -f *.o *.asm *.sym ${USER_OBJS}
+	@rm -f *.o *.asm *.sym ${USER}

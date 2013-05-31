@@ -2,7 +2,7 @@
 #define __HD_H__
 
 #include <types.h>
-#include "../fs/fs.h"
+#include <fs_minix.h>
 
 void init_hd(void);
 void hd_rw(struct buf *bp);

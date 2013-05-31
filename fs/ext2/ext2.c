@@ -1,6 +1,16 @@
 #include <types.h>
+#include <const.h>
+#include <fs.h>
 #include <ext2.h>
 #include "../kern/printf.h"
+
+
+struct fs_node ext2_fs = {
+	NULL,
+	"ext2",
+	1,
+	NULL,
+};
 
 void dump_ext2(uint32_t start_addr)
 {
