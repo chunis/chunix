@@ -1,8 +1,8 @@
-#include "printf.h"
-#include "task.h"
+#include <printf.h>
 #include <trap.h>
 #include <x86.h>
 #include <const.h>
+#include "task.h"
 
 static const char *exceptions[] = {
 	"Divide error",

@@ -1,5 +1,5 @@
 #include <multiboot.h>
-#include "printf.h"
+#include <printf.h>
 
 void dump_multiboot(struct multiboot_info *mb_ptr)
 {

@@ -1,11 +1,11 @@
 #include <types.h>
 #include <const.h>
 #include <trap.h>
+#include <printf.h>
+#include <string.h>
 
 #include "task.h"
 #include "descriptor.h"
-#include "printf.h"
-#include "string.h"
 
 extern uint32_t isr_table[ISR_NUM];
 

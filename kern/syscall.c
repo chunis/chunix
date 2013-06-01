@@ -1,7 +1,7 @@
 #include <syscall.h>
 #include <types.h>
+#include <printf.h>
 #include "task.h"
-#include "printf.h"
 #include "sched.h"
 
 extern int sf_open(const char *path, int flags);

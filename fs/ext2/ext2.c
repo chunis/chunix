@@ -2,7 +2,7 @@
 #include <const.h>
 #include <fs.h>
 #include <ext2.h>
-#include "../kern/printf.h"
+#include <printf.h>
 
 
 struct fs_node ext2_fs = {

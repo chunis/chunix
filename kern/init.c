@@ -4,9 +4,9 @@
 #include <console.h>
 #include <kbd.h>
 #include <multiboot.h>
+#include <string.h>
+#include <printf.h>
 
-#include "string.h"
-#include "printf.h"
 #include "task.h"
 #include "descriptor.h"
 #include "mm.h"

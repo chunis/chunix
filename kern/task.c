@@ -1,13 +1,13 @@
 #include <types.h>
-#include "task.h"
-#include "descriptor.h"
-#include "printf.h"
+#include <printf.h>
 #include <const.h>
-#include "string.h"
-#include "mm.h"
+#include <string.h>
 #include <mmu.h>
 #include <elf.h>
 #include <x86.h>
+#include "mm.h"
+#include "task.h"
+#include "descriptor.h"
 
 TASK_STRUCT tasks[NPROC];
 int nextpid = 1;

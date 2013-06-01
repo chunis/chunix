@@ -6,9 +6,9 @@
 #include <console.h>
 #include <x86.h>
 #include <fs.h>
+#include <printf.h>
+#include <string.h>
 #include "../kern/task.h"
-#include "../kern/printf.h"
-#include "../kern/string.h"
 #include "fs_minix.h"
 
 

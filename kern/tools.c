@@ -1,7 +1,7 @@
 #include <const.h>
-#include "tools.h"
 #include <console.h>
-#include "string.h"
+#include <string.h>
+#include "tools.h"
 #include "sys.h"
 
 char monbuf[1024];  // monitor buffer
