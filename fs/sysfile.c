@@ -1,3 +1,5 @@
+#include <printf.h>
+
 // syscalls in fs
 // do some arguments check, then call into fs.c
 

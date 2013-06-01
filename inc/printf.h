@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-//void printf(char *fmt, ...);
+void printf(char *fmt, ...);
 void panic(const char *str);
 void assert_failed(const char *file, uint32_t line, const char *desc);
 

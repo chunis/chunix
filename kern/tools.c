@@ -1,6 +1,7 @@
 #include <const.h>
 #include <console.h>
 #include <string.h>
+#include <printf.h>
 #include "tools.h"
 #include "sys.h"
 

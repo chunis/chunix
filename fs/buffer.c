@@ -1,4 +1,5 @@
 #include <const.h>
+#include <printf.h>
 #include <hd.h>
 #include "fs_minix.h"
 

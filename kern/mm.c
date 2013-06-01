@@ -1,6 +1,7 @@
 #include <x86.h>
 #include <types.h>
 #include <mmu.h>
+#include <printf.h>
 #include "mm.h"
 
 struct pglink *free_list;	// free page link

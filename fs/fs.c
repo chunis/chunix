@@ -1,4 +1,5 @@
 #include <fs.h>
+#include <printf.h>
 
 int register_filesystem(struct fs_node *fs)
 {

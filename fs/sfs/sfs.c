@@ -13,6 +13,7 @@ limits:
 #include <fs.h>
 #include <console.h>
 #include <x86.h>
+#include <printf.h>
 #include "../kern/task.h"
 
 struct fs_node sfs_fs = {

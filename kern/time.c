@@ -1,5 +1,6 @@
 #include <types.h>
 #include <x86.h>
+#include <printf.h>
 #include "task.h"
 #include "sched.h"
 #include <console.h>

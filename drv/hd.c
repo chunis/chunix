@@ -1,10 +1,10 @@
 #include <types.h>
 #include <x86.h>
 #include <hd.h>
+#include <printf.h>
 #include <fs_minix.h>
 #include "../kern/sched.h"
 
-extern void panic(char *str);
 
 static int dev = 0xe0 | (1 << 4);  // we always use the slave hd currently
 static struct buf *hdqueue;  // hard disk queue, keep all requested buffers
