@@ -47,7 +47,7 @@ int main(struct multiboot_info *mboot_ptr)
 	// memset(edata, 0, end - edata);
 
 	cons_init();
-	printf("%s\n", os_str);
+	printk("%s\n", os_str);
 
 	if(eax == MBT_BOOTLOADER_MAGIC){
 		settextcolor(12, 0);

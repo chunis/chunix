@@ -104,7 +104,7 @@ static struct inode1 *create_file(const char *f)
 	bi = sb.ia_size % SECT_SIZE;
 	bi /= IE_SIZE;
 
-	printf("nie: %d, sb.total_blk: %d\n", nie, sb.total_blk);
+	printk("nie: %d, sb.total_blk: %d\n", nie, sb.total_blk);
 	sfs_hd_rw(HD_READ, bn-1, 2, buf2);	// read 2 blocks (end-of-index + free space)
 
 	sp = (struct sfs_file *)buf2;
@@ -122,9 +122,9 @@ static struct inode1 *create_file(const char *f)
 	sfs_hd_rw(HD_WRITE, bn-1, 2, buf2);
 
 	// save superblock changes to hd
-	printf("sb.da_blk: %d\n", sb.da_blk);
+	printk("sb.da_blk: %d\n", sb.da_blk);
 	sb.da_blk += NB_INIT;
-	printf("sb.da_blk: %d\n", sb.da_blk);
+	printk("sb.da_blk: %d\n", sb.da_blk);
 	sfs_hd_rw(HD_WRITE, 0, 1, (char *)&sb);
 
 	return (struct inode1 *)(++sp);
@@ -136,7 +136,7 @@ int open(const char *pathname, int flags)
 	int i;
 	struct inode1 *inp;
 
-	printf("pathname: %s\n", pathname);
+	printk("pathname: %s\n", pathname);
 
 	// search free slot in fdp[]
 	for(i = 0; i < OFILE; i++){
@@ -161,7 +161,7 @@ int open(const char *pathname, int flags)
 		if(flags & O_CREAT){
 			inp = create_file(pathname);
 			if(!inp){
-				printf("Create file fail!\n");
+				printk("Create file fail!\n");
 				return -1;
 			}
 		} else {
@@ -181,7 +181,7 @@ int read(int fd, void *buf, int n)
 {
 	int count;
 
-	printf("In read\n");
+	printk("In read\n");
 	return count;
 }
 
@@ -189,7 +189,7 @@ int write(int fd, const void *buf, int n)
 {
 	int count;
 
-	printf("In write\n");
+	printk("In write\n");
 	return count;
 }
 
@@ -197,7 +197,7 @@ int close(int fd)
 {
 	int ret;
 
-	printf("In close\n");
+	printk("In close\n");
 	return 0;
 }
 
@@ -235,7 +235,7 @@ static void init_superblock(void)
 	// setup checksum
 	sb.checksum = 0;
 	sb.checksum = -calc_checksum((char *)&sb);
-	printf("sb.checksum = %d\n", sb.checksum);
+	printk("sb.checksum = %d\n", sb.checksum);
 
 	sfs_hd_rw(HD_WRITE, 0, 1, (char *)&sb);
 
@@ -271,7 +271,7 @@ void check_fs(void)
 	// check checksum
 	sum = calc_checksum(buf);
 	if(sum){
-		printf("ERROR! checksum = %d, not zero!\n", sum);
+		printk("ERROR! checksum = %d, not zero!\n", sum);
 	}
 
 	// TODO: check if 'versioin + magic_num' == '0x10534653'

@@ -37,7 +37,7 @@ static void printint(int n, int base, int sign)
 }
 
 // only understands %d, %b, %o, %x, %p, %s
-void printf(char *fmt, ...)
+void printk(char *fmt, ...)
 {
 	int i;
 	char c, *s;
@@ -86,7 +86,7 @@ void panic(const char *str)
 {
 	__asm__ __volatile__("cli");
 	settextcolor(14,4);
-	printf("Kernel PANIC!! --> %s\n", str);
+	printk("Kernel PANIC!! --> %s\n", str);
 
 	while(1) ;  // loop forever
 }
@@ -95,8 +95,8 @@ void assert_failed(const char *file, uint32_t line, const char *desc)
 {
 	__asm__ __volatile__("cli");
 	settextcolor(14,4);
-	printf("ASSERTION FAILED!!\n");
-	printf("File(%s: %d): %s\n", file, line, desc);
+	printk("ASSERTION FAILED!!\n");
+	printk("File(%s: %d): %s\n", file, line, desc);
 
 	while(1) ;  // loop forever
 }

@@ -10,7 +10,7 @@ void install_timer(int freq)
 	uint8_t mask;
 	uint32_t div = 1193180/freq;
 
-	printf("install timer now...\n");
+	printk("install timer now...\n");
 
 	outb(0x43, 0x36);
 	outb(0x40, div & 0xff);
@@ -37,7 +37,7 @@ void timer_isr(void)
 	if(timer_ticks++ % 100 == 0){
 		get_cursor(&x, &y);
 		set_cursor(64, 0);
-		printf("time: %d sec\n", timer_ticks/100);
+		printk("time: %d sec\n", timer_ticks/100);
 		set_cursor(x, y);
 	}
 

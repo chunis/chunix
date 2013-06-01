@@ -168,7 +168,7 @@ int readi(struct inode *ip, char *dst, uint32_t off, uint32_t n)
 		panic("readi: TODO");
 
 	if(n < 0 || off > ip->size){
-		printf("readi: arguments wrong");
+		printk("readi: arguments wrong");
 		return -1;
 	}
 
@@ -198,7 +198,7 @@ int writei(struct inode *ip, char *src, uint32_t off, uint32_t n)
 		panic("writei: TODO");
 
 	if(n < 0 || off > ip->size){
-		printf("writei: arguments wrong");
+		printk("writei: arguments wrong");
 		return -1;
 	}
 
@@ -243,9 +243,9 @@ struct inode *search_dir(struct inode *dp, char *name)
 
 void dump_inode(struct inode *ip)
 {
-	printf("ip->type(d): %d\n", ip->type);
-	printf("ip->size(x): %x\n", ip->size);
-	printf("ip->count(x): %x\n", ip->count);
+	printk("ip->type(d): %d\n", ip->type);
+	printk("ip->size(x): %x\n", ip->size);
+	printk("ip->count(x): %x\n", ip->count);
 }
 
 // name to inode translate
@@ -261,16 +261,16 @@ struct inode* namei(char *path)
 	//dump_inode(ip);
 
 	while((path = path_down(path, name)) != 0){
-		printf("namei: path: %s, name: %s\n", path, name);
+		printk("namei: path: %s, name: %s\n", path, name);
 		/*
 		if(ip->type != T_DIR){
-			printf("ip isn't a dir\n");
+			printk("ip isn't a dir\n");
 			return 0;
 		}
 		*/
 
 		if((next = search_dir(ip, name)) == 0){
-			printf("file not found\n");
+			printk("file not found\n");
 			return 0;
 		}
 
@@ -291,7 +291,7 @@ int fileopen(const char *path, int flags)
 	void check_minixfs(void);
 	check_minixfs();
 
-	printf("In open: path: %s\n", path);
+	printk("In open: path: %s\n", path);
 
 	// get inode for path
 	if((inp = namei(path)) == 0)
@@ -332,7 +332,7 @@ int fileread(int fd, void *buf, int n)
 {
 	int count;
 
-	printf("In read\n");
+	printk("In read\n");
 	return count;
 }
 
@@ -340,7 +340,7 @@ int filewrite(int fd, const void *buf, int n)
 {
 	int count;
 
-	printf("In write\n");
+	printk("In write\n");
 	return count;
 }
 
@@ -348,7 +348,7 @@ int fileclose(int fd)
 {
 	int ret;
 
-	printf("In close\n");
+	printk("In close\n");
 	return 0;
 }
 
@@ -361,17 +361,17 @@ void mk_minixfs(void)
 
 void dump_superblock(struct superblock *sb)
 {
-	printf("sb.s_ninodes:\t%d\n", (uint16_t)sb->s_ninodes);
-	printf("sb.s_nzones:\t%d\n", (uint16_t)sb->s_nzones);
-	printf("sb.s_imap_blks:\t%x\n", (uint16_t)sb->s_imap_blks);
-	printf("sb.s_zmap_blks:\t%x\n", (uint16_t)sb->s_zmap_blks);
-	printf("sb.s_firstdatazone:\t%d\n", (uint16_t)sb->s_firstdatazone);
-	printf("sb.s_log_zone_size:\t%d\n", (uint16_t)sb->s_log_zone_size);
-	printf("sb.s_max_size:\t%x\n", sb->s_max_size);
-	printf("sb.s_magic:\t%x\n", (uint16_t)sb->s_magic);
-	printf("sb.s_dev:\t%d\n", (uint16_t)sb->s_dev);
-	printf("sb.s_flag:\t%d\n", (uint16_t)sb->s_flag);
-	printf("sb.s_time:\t%d\n", sb->s_time);
+	printk("sb.s_ninodes:\t%d\n", (uint16_t)sb->s_ninodes);
+	printk("sb.s_nzones:\t%d\n", (uint16_t)sb->s_nzones);
+	printk("sb.s_imap_blks:\t%x\n", (uint16_t)sb->s_imap_blks);
+	printk("sb.s_zmap_blks:\t%x\n", (uint16_t)sb->s_zmap_blks);
+	printk("sb.s_firstdatazone:\t%d\n", (uint16_t)sb->s_firstdatazone);
+	printk("sb.s_log_zone_size:\t%d\n", (uint16_t)sb->s_log_zone_size);
+	printk("sb.s_max_size:\t%x\n", sb->s_max_size);
+	printk("sb.s_magic:\t%x\n", (uint16_t)sb->s_magic);
+	printk("sb.s_dev:\t%d\n", (uint16_t)sb->s_dev);
+	printk("sb.s_flag:\t%d\n", (uint16_t)sb->s_flag);
+	printk("sb.s_time:\t%d\n", sb->s_time);
 }
 
 void check_minixfs(void)
@@ -380,15 +380,15 @@ void check_minixfs(void)
 	int i;
 	struct buf *sbuf;
 
-	printf("do some minixfs check...\n");
+	printk("do some minixfs check...\n");
 	sbuf = bread(ROOTDEV, 2);
 	memmove((char *)&sb, sbuf->data, sizeof(sb));
 	brelse(sbuf);
 
 	// check minix magic number
-	printf("magic: %x\n", sb.s_magic);
+	printk("magic: %x\n", sb.s_magic);
 	if(sb.s_magic == MINIX_MAGIC || sb.s_magic == MINIX_MAGIC2){
-		printf("The fs is a minix fs\n");
+		printk("The fs is a minix fs\n");
 		dump_superblock(&sb);
 	} else {  // make a clean minix fs
 		mk_minixfs();

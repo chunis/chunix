@@ -12,7 +12,7 @@ char *readline(char *str)
 	int i = 0;
 
 	if(str != NULL)
-		printf("%s", str);
+		printk("%s", str);
 
 	while( (monbuf[i++] = get_c()) != '\n')
 		;  // do nothing
@@ -31,7 +31,7 @@ char *strip_lspace(char const *str)
 // a very simple calculator just works on +-*/%
 void bc(void)
 {
-	printf("Sorry, not done yet\n");
+	printk("Sorry, not done yet\n");
 }
 
 void clr(void)
@@ -41,18 +41,18 @@ void clr(void)
 
 void help(void)
 {
-	printf("Available commands:\n");
-	printf("    bc: a very simple calculator just works on +,-,*,/,%%\n");
-	printf("    clr: clean screen\n");
-	printf("    info: some info about chunix\n");
-	printf("    help: show available commands\n");
+	printk("Available commands:\n");
+	printk("    bc: a very simple calculator just works on +,-,*,/,%%\n");
+	printk("    clr: clean screen\n");
+	printk("    info: some info about chunix\n");
+	printk("    help: show available commands\n");
 }
 
 void sysinfo(void)
 {
-	printf("ChuniX, versioin: %s\n\n", sys_version);
-	printf("%s\n", sys_info);
-	printf("Build: %s\n\n", __DATE__);
+	printk("ChuniX, versioin: %s\n\n", sys_version);
+	printk("%s\n", sys_info);
+	printk("Build: %s\n\n", __DATE__);
 }
 
 void monitor(void)
@@ -77,7 +77,7 @@ void monitor(void)
 		} else if( !strncmp(cmd, "info", 4) ){
 			sysinfo();
 		} else{
-			printf("Error! no such command: '%s'. type 'help' for help\n", cmd);
+			printk("Error! no such command: '%s'. type 'help' for help\n", cmd);
 		}
 	}
 }
@@ -104,21 +104,21 @@ void test_fs(void)
 
 #if 0
 	fd = fileopen(file, O_CREAT);
-	printf("fd = %d\n", fd);
+	printk("fd = %d\n", fd);
 	filewrite(fd, str, strlen(str));
 	fileclose(fd);
 
 	fd = fileopen(file, O_RDWR);
-	printf("fd = %d\n", fd);
+	printk("fd = %d\n", fd);
 	fileread(fd, buf, len);
 	buf[len] = '\0';
 	fileclose(fd);
-	printf("In test_fs, buf = %s\n", buf);
+	printk("In test_fs, buf = %s\n", buf);
 #endif
 
 #if 1
 	while(1){
-		printf("%xA.", i++);
+		printk("%xA.", i++);
 		delay(120);
 	}
 #endif

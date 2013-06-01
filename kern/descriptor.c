@@ -41,7 +41,7 @@ void dump_descriptor(DESCRIPTOR *desp)
 	lim = desp->lim_low | ((desp->attr2_lim_high & 0x0f) << 16);
 	attr = desp->attr1 | ((desp->attr2_lim_high &0xf0) << 8);
 
-	printf("base: %x, lim: %x, attr: %x\n", base, lim, attr);
+	printk("base: %x, lim: %x, attr: %x\n", base, lim, attr);
 }
 
 // add items to gdt, include kernel/user code/data segment and tss
@@ -101,10 +101,10 @@ void dump_gdt(void)
 	int i;
 	uint32_t *gp = (uint32_t *)&gdt;
 
-	printf("\n------- dump_gdt() start ------\n");
+	printk("\n------- dump_gdt() start ------\n");
 	for(i=0; i<6; i++) {
 		dump_descriptor((DESCRIPTOR *)gp);
 		gp += 2;
 	}
-	printf("------- dump_gdt() end --------\n");
+	printk("------- dump_gdt() end --------\n");
 }

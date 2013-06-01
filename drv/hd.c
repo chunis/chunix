@@ -46,10 +46,10 @@ void dump_data(char *p, int n)
 {
 	int i;
 
-	printf("---- dump_data begin ----\n");
+	printk("---- dump_data begin ----\n");
 	for(i=0; i < n; i++)
-		printf("%x ", p[i]);
-	printf("\n---- dump_data end ----\n");
+		printk("%x ", p[i]);
+	printk("\n---- dump_data end ----\n");
 }
 
 // issue read/write request to hard disk
@@ -94,7 +94,7 @@ void hd_isr(void)
 	hdqueue = bp->hdnext;
 
 	if((bp->flag & BUF_DIRTY) == 0){
-		printf("Read data out\n");
+		printk("Read data out\n");
 		hdwait();
 		insl(HDR_DATA, bp->data, SECT_SIZE/4);  // 0x1f0
 	}
@@ -112,5 +112,5 @@ void hd_isr(void)
 void init_hd(void)
 {
 	outb(0xa1, 0xbf);   // IRQ 14 (IDE) locates at slave 5259A
-	printf("IRQ mask = %b, %b\n", inb(0xa1), inb(0x21));
+	printk("IRQ mask = %b, %b\n", inb(0xa1), inb(0x21));
 }

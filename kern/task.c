@@ -73,7 +73,7 @@ TASK_STRUCT *task_alloc(void)
 	tp->state = TS_RUNNABLE;
 	tp->next = rootp;
 	rootp = tp;
-	printf("Added new task: %d\n", tp->pid);
+	printk("Added new task: %d\n", tp->pid);
 
 	return tp;
 }

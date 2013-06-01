@@ -105,7 +105,7 @@ int sys_write(void)
 		if(len == 1)
 			put_c(*p);
 		else
-			printf("%s", p);
+			printk("%s", p);
 	} else {
 		sf_write(fd, p, len);
 	}
@@ -139,7 +139,7 @@ void syscall(void)
 	if(syscalls[num]){
 		current->tf->eax = syscalls[num]();
 	} else {
-		printf("Unknown syscall number: %d\n", num);
+		printk("Unknown syscall number: %d\n", num);
 		current->tf->eax = -1;
 	}
 }

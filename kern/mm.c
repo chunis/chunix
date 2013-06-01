@@ -85,7 +85,7 @@ void kfree(void *v)
 	struct pglink *fp;
 
 	if((uint32_t)v % PGSIZE || v < end || v > V2P(memsz*1024)){
-		printf("kfree: v = %x\n", v);
+		printk("kfree: v = %x\n", v);
 		panic("kfree");
 	}
 
@@ -149,7 +149,7 @@ static uint32_t detect_mem(void)
 void mem_init(void)
 {
 	memsz = detect_mem() + 1024;
-	printf("memory size: %d KB\n\n", memsz);
+	printk("memory size: %d KB\n\n", memsz);
 
 	kinit(end, P2V(4*1024*1024));
 }
