@@ -1,10 +1,24 @@
 #include <const.h>
 #include <fs.h>
 
+
+extern enum fs_type root_fs_type;
+
+static struct super_block *initrd_read_super(struct super_block *sb)
+{
+	printk("In initrd_read_super\n");
+
+	if(root_fs_type != INITRD)
+		return NULL;
+
+	printk("Enter initrd_read_super now\n");
+	return sb;
+}
+
 struct fs_node initrd_ext2_fs = {
-	NULL,
+	initrd_read_super,
 	"initrd",
-	0,
+	1,	// set to 1 temporarily
 	NULL,
 };
 

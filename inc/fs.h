@@ -17,8 +17,18 @@
 #define NR_SUPER 32
 #define BLOCK_SIZE 1024
 
+#define MAJOR(a) (int)((dev_t)(a) >> 8)
+#define MINOR(a) (int)((dev_t)(a) & 0xFF)
 
-typedef struct super_block *(*read_super_t) (struct super_block *, void *, int);
+enum fs_type {
+	INITRD = 0,
+	EXT2,
+	MINIXFS,
+	FAT32,
+	SFS,
+};
+
+typedef struct super_block *(*read_super_t) (struct super_block *);
 
 struct fs_node {
 	read_super_t read_super;
@@ -85,7 +95,6 @@ struct super_operations {
 	void (*put_inode) (struct inode *);
 	void (*write_super) (struct super_block *);
 	void (*put_super) (struct super_block *);
-	void (*statfs) (struct super_block *, struct statfs *);
 	int (*remount_fs) (struct super_block *, int *, char *);
 };
 

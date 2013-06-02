@@ -5,8 +5,21 @@
 #include <printf.h>
 
 
+extern enum fs_type root_fs_type;
+
+static struct superblock *ext2_read_super(struct super_block *sb)
+{
+	printk("In ext2_read_super\n");
+
+	if(root_fs_type != EXT2)
+		return NULL;
+
+	printk("Enter ext2_read_super now\n");
+	return sb;
+}
+
 struct fs_node ext2_fs = {
-	NULL,
+	ext2_read_super,
 	"ext2",
 	1,
 	NULL,

@@ -6,12 +6,15 @@
 #include <multiboot.h>
 #include <string.h>
 #include <printf.h>
+#include <fs.h>
 
 #include "task.h"
 #include "descriptor.h"
 #include "mm.h"
 #include "sched.h"
 
+
+enum fs_type root_fs_type = INITRD;	// the root is located in INITRD fs
 
 static void init_8259A(void)
 {
