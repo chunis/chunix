@@ -14,8 +14,8 @@
 
 #define min(a, b)	((a) < (b) ? (a) : (b))
 
-struct file file[NFILE];	// global file table
-struct inode inode[NINODE];	// global inode table
+struct minix_file file[NFILE];	// global file table
+struct minix_inode inode[NINODE];	// global inode table
 
 uint8_t fbuf[BLOCK_SIZE];
 struct superblock sb;
@@ -54,7 +54,7 @@ void bfree(uint32_t dev, uint32_t bn)
 ** Inode process
 */
 
-struct inode *ialloc(uint32_t dev, uint32_t type)
+struct minix_inode *ialloc(uint32_t dev, uint32_t type)
 {
 	int in;
 	struct buf *bp;
@@ -70,9 +70,9 @@ void ifree(uint32_t dev, uint32_t bn)
 }
 
 // find inode with number 'in' on 'dev', and return its memory copy.
-struct inode *iget(uint32_t dev, uint32_t in)
+struct minix_inode *iget(uint32_t dev, uint32_t in)
 {
-	struct inode *ip, *ifree = 0;
+	struct minix_inode *ip, *ifree = 0;
 
 	// check if the inode is already cached
 	for(ip = inode; ip < inode + NINODE; ip++){
@@ -97,7 +97,7 @@ struct inode *iget(uint32_t dev, uint32_t in)
 	return ip;
 }
 
-struct inode *idup(struct inode *ip)
+struct minix_inode *idup(struct minix_inode *ip)
 {
 	ip->ref++;
 	return ip;
@@ -106,7 +106,7 @@ struct inode *idup(struct inode *ip)
 // drop a reference to in-memory inode.
 // recycled the inode cache entry if it's the last reference
 // free inode and its content on disk if necessory
-void iput(struct inode *ip)
+void iput(struct minix_inode *ip)
 {
 	// TODO: check if need to free inode and content by 'ifree()'
 	ip->ref--;
@@ -114,7 +114,7 @@ void iput(struct inode *ip)
 
 // return the disk block address of the bn-th block in inode,
 // allocates one if needed.
-uint32_t bmap(struct inode *ip, uint32_t bn)
+uint32_t bmap(struct minix_inode *ip, uint32_t bn)
 {
 	uint32_t addr;
 
@@ -159,7 +159,7 @@ static char* path_down(char *path, char *name)
 }
 
 // read data from inode
-int readi(struct inode *ip, char *dst, uint32_t off, uint32_t n)
+int readi(struct minix_inode *ip, char *dst, uint32_t off, uint32_t n)
 {
 	uint32_t s = 0, m;
 	struct buf *bp;
@@ -188,8 +188,8 @@ int readi(struct inode *ip, char *dst, uint32_t off, uint32_t n)
 	return n;
 }
 
-// write data to inode
-int writei(struct inode *ip, char *src, uint32_t off, uint32_t n)
+// write data to minix_inode
+int writei(struct minix_inode *ip, char *src, uint32_t off, uint32_t n)
 {
 	uint32_t s = 0, m;
 	struct buf *bp;
@@ -216,8 +216,8 @@ int writei(struct inode *ip, char *src, uint32_t off, uint32_t n)
 	return n;
 }
 
-// look for dirent 'name' in dir whose inode is 'dp'.
-struct inode *search_dir(struct inode *dp, char *name)
+// look for dirent 'name' in dir whose minix_inode is 'dp'.
+struct minix_inode *search_dir(struct minix_inode *dp, char *name)
 {
 	uint32_t len, in, desz;
 	struct dirent de;
@@ -241,18 +241,18 @@ struct inode *search_dir(struct inode *dp, char *name)
 	return 0;
 }
 
-void dump_inode(struct inode *ip)
+void dump_inode(struct minix_inode *ip)
 {
 	printk("ip->type(d): %d\n", ip->type);
 	printk("ip->size(x): %x\n", ip->size);
 	printk("ip->count(x): %x\n", ip->count);
 }
 
-// name to inode translate
-struct inode* namei(char *path)
+// name to minix_inode translate
+struct minix_inode* namei(char *path)
 {
 	char name[DIR_LEN];
-	struct inode *ip, *next;
+	struct minix_inode *ip, *next;
 
 	if(*path == '/')
 		ip = iget(ROOTDEV, ROOTINO);
@@ -286,14 +286,14 @@ int fileopen(const char *path, int flags)
 {
 	int fd = -1;
 	int i;
-	struct inode *inp = NULL;
+	struct minix_inode *inp = NULL;
 
 	void check_minixfs(void);
 	check_minixfs();
 
 	printk("In open: path: %s\n", path);
 
-	// get inode for path
+	// get minix_inode for path
 	if((inp = namei(path)) == 0)
 		return -1;
 

@@ -2,15 +2,8 @@
 #define __FS_MINIX_H__
 
 #include <types.h>
+#include <fs.h>
 
-// buffer flag
-#define BUF_BUSY  0x1	// buffer is locked
-#define BUF_VALID 0x2	// buffer data is valid
-#define BUF_DIRTY 0x4	// buffer data needs to be written to disk
-
-// file mode
-#define O_CREAT   1
-#define O_RDWR    2
 
 #define MINIX_MAGIC	0x137F    // minix v1 fs, 14 char names
 #define MINIX_MAGIC2	0x138F    // minix v1 fs, 30 char names
@@ -89,7 +82,7 @@ struct d_inode {
 };
 
 // inode data maintained in memory
-struct inode {
+struct minix_inode {
 	uint16_t type;
 	uint16_t uid;
 	uint32_t size;
@@ -105,7 +98,7 @@ struct inode {
 	uint32_t flag;
 };
 
-struct file {
+struct minix_file {
 	uint32_t mode;
 	uint32_t flags;
 	uint32_t ref;	// reference count

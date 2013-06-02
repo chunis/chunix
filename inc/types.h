@@ -13,4 +13,12 @@ typedef unsigned long long uint64_t;
 typedef uint32_t pde_t;
 typedef uint32_t pte_t;
 
+typedef int32_t pid_t;
+typedef int32_t off_t;
+typedef int32_t time_t;
+
+typedef uint16_t uid_t;
+typedef uint16_t gid_t;
+typedef uint16_t dev_t;
+
 #endif

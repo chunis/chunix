@@ -3,10 +3,11 @@
   Refer to: http://dimensionalrift.homelinux.net/combuster/vdisk/sfs.html
 */
 
-#ifndef __SFS_H__
-#define __SFS_H__
+#ifndef __FS_SFS_H__
+#define __FS_SFS_H__
 
 #include <types.h>
+#include <fs.h>
 
 int open(const char *pathname, int flags);
 int read(int fd, void *buf, int n);
@@ -28,9 +29,6 @@ int close(int fd);
 #define IBUF2  30
 #define IBUF3  8
 #define IBUF4  4
-
-#define O_CREAT   1
-#define O_RDWR    2
 
 // Layout of areas
 #define SUPER_BLOCK   0x1

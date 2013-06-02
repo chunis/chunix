@@ -8,9 +8,9 @@ limits:
 
 #include <types.h>
 #include <hd.h>
-#include <sfs.h>
 #include <const.h>
 #include <fs.h>
+#include <fs_sfs.h>
 #include <console.h>
 #include <x86.h>
 #include <printf.h>
