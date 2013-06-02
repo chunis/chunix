@@ -277,7 +277,7 @@ void check_fs(void)
 	// TODO: check if 'versioin + magic_num' == '0x10534653'
 }
 
-void init_fs(void)
+void init_sfs(void)
 {
 	check_fs();
 }

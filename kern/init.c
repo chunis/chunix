@@ -68,6 +68,7 @@ int main(struct multiboot_info *mboot_ptr)
 	init_keyboard();
 	init_hd();
 	init_buffer();
+	init_fs();
 
 #if 0
 	rootp = 0;

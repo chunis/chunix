@@ -96,3 +96,13 @@ void dump_ext2(uint32_t start_addr)
 		}
 	}
 }
+
+void add_ext2_fs(void)
+{
+	register_filesystem(&ext2_fs);
+}
+
+void del_ext2_fs(void)
+{
+	unregister_filesystem(&ext2_fs);
+}
