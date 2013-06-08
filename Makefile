@@ -48,7 +48,6 @@ chunix.img: bootsect kernel tools/blank_hd.img.bz2
 	@rm -f tmp.img
 
 kernel: buildall kern/kernel.ld
-	echo xx $(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary $(USEROBJ)
 	$(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary $(USEROBJ)
 	${OBJDUMP} -d $@ > $@.asm
 	${NM} -n $@ > $@.sym
