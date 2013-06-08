@@ -36,7 +36,7 @@ TASK_STRUCT *task_alloc(void)
 		return NULL;
 	}
 	if((tp->pgdir = mapkvm()) == NULL){
-		kfree(tp->kstack);
+		kfree_page(tp->kstack);
 		return NULL;
 	}
 

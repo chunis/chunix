@@ -76,17 +76,17 @@ void kfree_range(void *start, void *end)
 	uint8_t *p = (uint8_t *)PGROUNDUP((uint32_t)start);
 
 	for(; p + PGSIZE <= end; p += PGSIZE)
-		kfree(p);
+		kfree_page(p);
 }
 
 // free page pointed by v. v must aligned to PGSIZE
-void kfree(void *v)
+void kfree_page(void *v)
 {
 	struct pglink *fp;
 
 	if((uint32_t)v % PGSIZE || v < end || v > V2P(memsz*1024)){
-		printk("kfree: v = %x\n", v);
-		panic("kfree");
+		printk("kfree_page: v = %x\n", v);
+		panic("kfree_page");
 	}
 
 	memset(v, 1, PGSIZE);
