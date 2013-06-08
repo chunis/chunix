@@ -1,7 +1,6 @@
 #ifndef __CONST_H__
 #define __CONST_H__
 
-#define NULL  ((void *)0)
 
 #define KER_NULL	0x00
 #define KER_CODE	0x08
