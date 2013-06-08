@@ -36,7 +36,7 @@ pde_t *mapkvm(void)
 {
 	pde_t *pgdir;
 
-	if(!(pgdir = kalloc()))
+	if(!(pgdir = kalloc_page()))
 		return 0;
 
 	memset(pgdir, 0, PGSIZE);
@@ -98,7 +98,7 @@ void kfree_page(void *v)
 
 // Allocate one 4096-bytes Page.
 // Return pointer to the page if success, or NULL if out of memory
-char *kalloc(void)
+char *kalloc_page(void)
 {
 	struct pglink *fp;
 
@@ -123,7 +123,7 @@ pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc)
 		return (pte_t *)(pte + PTX(va));
 	}
 
-	if(!alloc || (pte = (pte_t *)kalloc()) == 0)
+	if(!alloc || (pte = (pte_t *)kalloc_page()) == 0)
 		return 0;
 
 	memset(pte, 0, PGSIZE);

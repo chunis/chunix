@@ -12,7 +12,7 @@ struct pglink {
 uint32_t cmos_read(uint32_t r);
 void kinit(void *vastart, void *vaend);
 void kfree_range(void *start, void *end);
-char *kalloc(void);
+char *kalloc_page(void);
 void kfree_page(void *v);
 pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
 void mem_init(void);

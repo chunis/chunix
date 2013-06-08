@@ -32,7 +32,7 @@ TASK_STRUCT *task_alloc(void)
 	if(tp == tasks + NPROC)
 		return NULL;
 
-	if((tp->kstack = kalloc()) == NULL){
+	if((tp->kstack = kalloc_page()) == NULL){
 		return NULL;
 	}
 	if((tp->pgdir = mapkvm()) == NULL){
@@ -91,7 +91,7 @@ static void region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
 		pte = pgdir_walk(tp->pgdir, (void *)_va, 1);
 		if(!pte)
 			panic("region_alloc failed!");
-		p = kalloc();
+		p = kalloc_page();
 		if(!p)
 			panic("region_alloc failed!");
 		*pte = PTE_ADDR(V2P((uint32_t)p)) | PTE_U | PTE_W | PTE_P;
