@@ -7,8 +7,9 @@
 struct pglink *free_list;	// free page link
 static uint32_t memsz;		// memory size by KB
 extern char data[], end[];	// defined in kernel.ld
-pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
 pde_t *kpgdir;
+
+pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
 
 // create PTEs for va which refer to physical address pa.
 // Note: va and size might not be page-aligned.
@@ -30,6 +31,22 @@ int mappages(pde_t *pgdir, void *va, uint32_t pa, int sz, int perm)
 		pa += PGSIZE;
 	}
 	return 0;
+}
+
+// unmap PTE for va. va must be page-aligned.
+void unmap_page(pde_t *pgdir, void *va)
+{
+	pte_t *pte;
+	uint32_t pa;
+
+	if((pte = pgdir_walk(pgdir, va, 0)) == 0)
+		panic("unmap_page: not mapped");
+	if(!(*pte & PTE_P))
+		panic("unmap_page: not present");
+
+	pa = V2P(PTE_ADDR(*pte));
+	*pte = 0;
+	kfree_page(pa);
 }
 
 pde_t *mapkvm(void)
