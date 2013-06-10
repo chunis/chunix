@@ -3,6 +3,7 @@
 #include <mmu.h>
 #include <printf.h>
 #include "mm.h"
+#include "task.h"
 
 struct pglink *free_list;	// free page link
 static uint32_t memsz;		// memory size by KB
@@ -169,4 +170,18 @@ void mem_init(void)
 	printk("memory size: %d KB\n\n", memsz);
 
 	kinit(end, P2V(4*1024*1024));
+}
+
+void page_fault(STACK_FRAME *tf)
+{
+	int present  = tf->err & 0x1 ? 1 : 0;
+	int rw       = tf->err & 0x2 ? 1 : 0;
+	int user     = tf->err & 0x4 ? 1 : 0;
+	int reserved = tf->err & 0x8 ? 1 : 0;
+	uint32_t fault_addr;
+
+	__asm__ __volatile__("mov %%cr2, %0" : "=r" (fault_addr));
+	printk("\npage fault! (flags: p:%d, rw:%d, user:%d, res:%d)\n",
+			present, rw, user, reserved);
+	printk("eip = %x, faulting address %x\n", tf->eip, fault_addr);
 }

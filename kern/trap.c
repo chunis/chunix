@@ -69,7 +69,7 @@ void trap(STACK_FRAME *tf)
 	}
 
 	if(tf->trapno == T_PGFLT){
-		printk("page fault\n");
+		page_fault(tf);
 		dump_tf(tf);
 	}
 
