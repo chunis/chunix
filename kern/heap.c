@@ -4,7 +4,6 @@
 #include <printf.h>
 
 uint32_t heap_top = HEAP_START;
-uint32_t heap_bot = HEAP_START;
 struct heap_head *heap_start = NULL;
 extern pde_t *kpgdir;
 
@@ -49,7 +48,10 @@ void *kmalloc(uint32_t n)
 	curp->next = NULL;
 	curp->free = 0;
 	curp->len = n;
-	prevp->next = curp;
+
+	if(prevp)
+		prevp->next = curp;
+
 	return (void *)(chunk_start + sizeof(struct heap_head));
 }
 
@@ -68,7 +70,7 @@ static void alloc_chunk (uint32_t start, uint32_t len)
 	pte_t *page;
 
 	while(start + len > heap_top){
-		page = kalloc_page();
+		page = V2P(PTE_ADDR(kalloc_page()));
 		mappages(kpgdir, heap_top, page, PGSIZE, PTE_P | PTE_W);
 		heap_top += PGSIZE;
 	}
@@ -78,16 +80,17 @@ static void free_chunk (struct heap_head *chunk)
 {
 	pte_t *page;
 
-	chunk->prev->next = NULL;
 	if(chunk->prev == NULL)
 		heap_start = NULL;
+	else
+		chunk->prev->next = NULL;
 
 	while((uint32_t)chunk <= (heap_top - PGSIZE)){
 		heap_top -= PGSIZE;
 		page = pgdir_walk(kpgdir, heap_top, 0);
 		assert(page);
-		kfree_page(page);
 		unmap_page(kpgdir, heap_top);
+		kfree_page(page);
 	}
 }
 
@@ -125,11 +128,86 @@ static void glue_chunk (struct heap_head *chunk)
 	if(chunk->prev && chunk->prev->free == 1){
 		chunk->prev->len += chunk->len;
 		chunk->prev->next = chunk->next;
-		chunk->next->prev = chunk->prev;
+		if(chunk->next)
+			chunk->next->prev = chunk->prev;
 		chunk = chunk->prev;
 	}
 
 	// check if chunk is on the top of heap. if so, try to free it.
 	if(chunk->next == NULL)
 		free_chunk(chunk);
+}
+
+void dump_heap(void)
+{
+	struct heap_head *p = heap_start;
+
+	printk("dump heap:\n");
+	while(p){
+		printk("addr: %x, offset: %d, len = %d = 12 + %d, free: %d\n",
+				(uint32_t)p, ((uint32_t)p - HEAP_START),
+				p->len, (p->len - 12), p->free);
+		if(p->next == NULL)
+			break;
+		p = (struct heap_head *)((uint32_t)p + p->len);
+	}
+}
+
+void test_kmalloc_1(void)
+{
+	char *p, *q;
+
+	p = kmalloc(20);
+	dump_heap();
+	q = kmalloc(10);
+	dump_heap();
+
+	kfree(p);
+	dump_heap();
+	kfree(q);
+	dump_heap();
+
+	printk("done\n");
+}
+
+void test_kmalloc_2(void)
+{
+	char *p, *q, *r, *s, *t;
+
+	p = kmalloc(32);
+	printk("&p = %x\n", p);
+	strcpy(p, "hello kmalloc, hello kmalloc");
+	printk("p = %s\n", p);
+
+	q = kmalloc(40);
+	printk("&q = %x\n", q);
+	strcpy(q, "test again");
+	printk("q = %s\n", q);
+
+	kfree(p);
+	printk("p = %s\n", p);	// not overwrited yet
+
+	r = kmalloc(10);
+	printk("&r = %x\n", r);
+	strcpy(r, "check r");
+	printk("r = %s\n", r);
+
+	s = kmalloc(15);	// s should go after q
+	printk("&s = %x\n", s);
+	strcpy(s, "how about s?");
+	printk("s = %s\n", s);
+
+	printk("p = %s\n", p);	// should be the same as r
+
+	t = kmalloc(8);
+	printk("&t = %x\n", t);	// t should between r and q
+	printk("t = %s\n", t);	// should equal to "malloc"
+
+	dump_heap();
+	kfree(r);
+	kfree(s);
+	dump_heap();
+	kfree(q);
+	kfree(t);
+	printk("kmalloc() works\n");
 }
