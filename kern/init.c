@@ -66,10 +66,6 @@ int main(struct multiboot_info *mboot_ptr)
 	//dump_gdt();
 	init_idt();
 
-	// test kmalloc()
-	test_kmalloc_1();
-	test_kmalloc_2();
-
 	init_8259A();
 	install_timer(100);
 	init_keyboard();

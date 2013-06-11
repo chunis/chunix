@@ -3,7 +3,6 @@ This file gives a brief list of some TODO and Done things of Chunix OS.
 
 TODO:
 
-* heap: kmalloc, kfree
 * driver for hd/ram/cd...
 * buffer
 * vfs, fs: minixfs, ext2, initrd, fat32, sfs
@@ -18,6 +17,8 @@ TODO:
 
 
 DONE:
+
+* heap: kmalloc, kfree
 
 * keyboard
 * printk
