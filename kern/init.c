@@ -41,6 +41,7 @@ int main(struct multiboot_info *mboot_ptr)
 	extern char _binary_user_hello_start[], _binary_user_hello_size[];
 	extern char _binary_user_todo_start[], _binary_user_todo_size[];
 	int eax;
+	uint32_t *memhd_start;
 
 	// save %eax to check if booted from multiboot loader
 	__asm __volatile("movl %%eax, %0" : "=r" (eax));
@@ -53,10 +54,11 @@ int main(struct multiboot_info *mboot_ptr)
 	printk("%s\n", os_str);
 
 	if(eax == MBT_BOOTLOADER_MAGIC){
+		memhd_start = (uint32_t *)mboot_ptr->mods_addr;
 		settextcolor(12, 0);
 		dump_multiboot(mboot_ptr);
 		settextcolor(13, 0);
-		dump_ext2(*(uint32_t*)mboot_ptr->mods_addr);
+		dump_ext2(*memhd_start);
 		resettextcolor();
 	}
 
@@ -70,6 +72,7 @@ int main(struct multiboot_info *mboot_ptr)
 	install_timer(100);
 	init_keyboard();
 	init_hd();
+	init_memhd();
 	init_buffer();
 	init_fs();
 
