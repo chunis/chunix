@@ -53,7 +53,6 @@ void check_initrd_fs(void)
 
 	// check ext2 magic number
 	printk("magic: %x\n", sb.magic);
-
 	if(sb.magic == EXT2_SUPER_MAGIC){
 		printk("This initrd fs is an ext2 fs\n");
 		// dump_superblock(&sb);

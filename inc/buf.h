@@ -36,5 +36,10 @@ struct buf {
 #define SCSI_GENERIC_MAJOR 21
 #define IDE1_MAJOR      22
 
+void init_buffer(void);
+struct buf *getblk(uint32_t dev, uint32_t nblk);
+struct buf *bread(uint32_t dev, uint32_t nblk);
+void bwrite(struct buf *bp);
+void brelse(struct buf *bp);
 
 #endif
