@@ -77,7 +77,6 @@ struct buf *bread(uint32_t dev, uint32_t nblk)
 	if((bp->flags & BUF_VALID) == 0)	// data invalid
 		buf_ll_rw(bp);
 
-	printk("bread() is done\n");
 	return bp;
 }
 

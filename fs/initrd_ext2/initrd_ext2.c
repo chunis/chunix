@@ -1,5 +1,8 @@
 #include <const.h>
 #include <fs.h>
+#include <buf.h>
+#include <ext2.h>
+#include <printf.h>
 
 
 extern enum fs_type root_fs_type;
@@ -30,4 +33,29 @@ void add_initrd_fs(void)
 void del_initrd_fs(void)
 {
 	unregister_filesystem(&initrd_ext2_fs);
+}
+
+void check_initrd_fs(void)
+{
+	int i;
+	struct buf *sbuf;
+	struct ext2_super_block sb;
+	char *sbp = &sb;
+
+	printk("do some initrd check...\n");
+	sbuf = bread(MKDEV(MEM_MAJOR, 0), 2);
+	memmove(sbp, sbuf->data, 512);
+	brelse(sbuf);
+
+	sbuf = bread(MKDEV(MEM_MAJOR, 0), 3);
+	memmove(sbp+512, sbuf->data, 512);
+	brelse(sbuf);
+
+	// check ext2 magic number
+	printk("magic: %x\n", sb.magic);
+
+	if(sb.magic == EXT2_SUPER_MAGIC){
+		printk("This initrd fs is an ext2 fs\n");
+		// dump_superblock(&sb);
+	}
 }

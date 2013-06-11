@@ -14,6 +14,9 @@
 
 #define MAJOR(a) (int)((dev_t)(a) >> 8)
 #define MINOR(a) (int)((dev_t)(a) & 0xFF)
+#define MKDEV(a,b) ((int)((((a) & 0xff) << 8) | ((b) & 0xff)))
+#define NODEV MKDEV(0,0)
+
 
 enum fs_type {
 	INITRD = 0,
