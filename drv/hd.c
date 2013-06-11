@@ -34,7 +34,7 @@ static void hd_dorw(struct buf *bp)
 	outb(HDR_LBA_HI, (bp->num >> 16) & 0xff);   // 0x1f5
 	outb(HDR_DEVICE, (dev | ((bp->num >> 24) & 0x0f)));   // 0x1f6
 
-	if(bp->flag & BUF_DIRTY){  // write
+	if(bp->flags & BUF_DIRTY){  // write
 		outb(HDR_STATUS, HD_WRITE);   // 0x1f7
 		outsl(HDR_DATA, bp->data, SECT_SIZE/4);  // 0x1f0
 	} else {
@@ -59,9 +59,9 @@ void hd_rw(struct buf *bp)
 {
 	struct buf **bpp;
 
-	if(!(bp->flag & BUF_BUSY))
+	if(!(bp->flags & BUF_BUSY))
 		panic("hd_rw: buf is not busy");
-	if((bp->flag & (BUF_VALID|BUF_DIRTY)) == BUF_VALID)
+	if((bp->flags & (BUF_VALID|BUF_DIRTY)) == BUF_VALID)
 		panic("hd_rw: need do nothing");
 
 	// just append bp to hdqueue.
@@ -75,7 +75,7 @@ void hd_rw(struct buf *bp)
 		hd_dorw(bp);
 
 	// Wait for request to finish.
-	while((bp->flag & (BUF_VALID|BUF_DIRTY)) != BUF_VALID){
+	while((bp->flags & (BUF_VALID|BUF_DIRTY)) != BUF_VALID){
 		sleep_on(&bp->bwait);
 	}
 
@@ -94,14 +94,14 @@ void hd_isr(void)
 	// remove bp from hdqueue and process bp
 	hdqueue = bp->hdnext;
 
-	if((bp->flag & BUF_DIRTY) == 0){
+	if((bp->flags & BUF_DIRTY) == 0){
 		printk("Read data out\n");
 		hdwait();
 		insl(HDR_DATA, bp->data, SECT_SIZE/4);  // 0x1f0
 	}
 
-	bp->flag |= BUF_VALID;
-	bp->flag &= ~BUF_DIRTY;
+	bp->flags |= BUF_VALID;
+	bp->flags &= ~BUF_DIRTY;
 	wakeup(&bp->bwait);
 
 	// start next buffer in hdqueue

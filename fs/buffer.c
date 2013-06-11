@@ -16,6 +16,7 @@ void init_buffer(void)
 	bhead.prev = &bhead;
 
 	for(bp = fsbuf; bp < fsbuf+NBUF; bp++){
+		bp->dev = -1;
 		bp->next = bhead.next;
 		bp->prev = &bhead;
 		bhead.next->prev = bp;
@@ -23,6 +24,21 @@ void init_buffer(void)
 	}
 }
 
+void buf_ll_rw(struct buf *bp)
+{
+	if(MAJOR(bp->dev) == MEM_MAJOR){
+		memhd_rw(bp);
+	} else if(MAJOR(bp->dev) == HD_MAJOR){
+		hd_rw(bp);
+	} else {
+		printk("buf_ll_rw: unknown dev %d\n", MAJOR(bp->dev));
+		panic("buf_ll_rw");
+	}
+}
+
+// Look through buffer cache for the nblk-th sector on device dev
+// If not found, allocate a fresh block.
+// In either case, return BUF_BUSY buffer
 struct buf *getblk(uint32_t dev, uint32_t nblk)
 {
 	struct buf *bp;
@@ -30,8 +46,8 @@ struct buf *getblk(uint32_t dev, uint32_t nblk)
 repeat:
 	for(bp = bhead.next; bp != &bhead; bp = bp->next){
 		if(bp->dev == dev && bp->num == nblk){
-			if((bp->flag & BUF_BUSY) == 0){
-				bp->flag |= BUF_BUSY;
+			if((bp->flags & BUF_BUSY) == 0){
+				bp->flags |= BUF_BUSY;
 				return bp;
 			}
 			sleep_on(&bp->bwait);
@@ -41,15 +57,15 @@ repeat:
 
 	// block not cached yet
 	for(bp = bhead.prev; bp != &bhead; bp = bp->prev){
-		if((bp->flag & (BUF_BUSY | BUF_DIRTY)) == 0){
-			bp->flag |= BUF_BUSY;
+		if((bp->flags & (BUF_BUSY | BUF_DIRTY)) == 0){
+			bp->flags = BUF_BUSY;
 			bp->dev = dev;
 			bp->num = nblk;
 			return bp;
 		}
 	}
 
-	// not cache available
+	// no cache available
 	panic("getblk: no buffers available");
 }
 
@@ -58,8 +74,8 @@ struct buf *bread(uint32_t dev, uint32_t nblk)
 	struct buf *bp;
 
 	bp = getblk(dev, nblk);
-	if((bp->flag & BUF_VALID) == 0)	// data invalid
-		hd_rw(bp);
+	if((bp->flags & BUF_VALID) == 0)	// data invalid
+		buf_ll_rw(bp);
 
 	printk("bread() is done\n");
 	return bp;
@@ -67,18 +83,17 @@ struct buf *bread(uint32_t dev, uint32_t nblk)
 
 void bwrite(struct buf *bp)
 {
-	if((bp->flag & BUF_BUSY) == 0)
+	if((bp->flags & BUF_BUSY) == 0)
 		panic("bwrite: buffer isn't busy");
 
-	bp->flag |= BUF_DIRTY;
-	hd_rw(bp);
-	bp->flag &= ~(BUF_BUSY | BUF_DIRTY);
+	bp->flags |= BUF_DIRTY;
+	buf_ll_rw(bp);
 }
 
 // release a BUF_BUSY buffer, move it to the start of buffer list
 void brelse(struct buf *bp)
 {
-	if((bp->flag & BUF_BUSY) == 0)
+	if((bp->flags & BUF_BUSY) == 0)
 		panic("bwrite: buffer isn't busy");
 
 	bp->next->prev = bp->prev;
@@ -88,6 +103,6 @@ void brelse(struct buf *bp)
 	bhead.next->prev = bp;
 	bhead.next = bp;
 
-	bp->flag &= ~BUF_BUSY;
+	bp->flags &= ~BUF_BUSY;
 	wakeup(&bp->bwait);
 }
