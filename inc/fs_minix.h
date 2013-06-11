@@ -3,6 +3,7 @@
 
 #include <types.h>
 #include <fs.h>
+#include <buf.h>
 
 
 #define MINIX_MAGIC	0x137F    // minix v1 fs, 14 char names
@@ -23,18 +24,6 @@
 #define T_FILE		1   // file
 #define T_DIR		2   // directory
 #define T_DEV		3   // special device
-
-struct buf {
-	int flag;
-	uint32_t dev;
-	uint32_t num;
-	uint8_t data[512];
-
-	void *bwait;
-	struct buf *prev;
-	struct buf *next;
-	struct buf *hdnext;
-};
 
 // superblock saved in disk
 struct d_superblock {

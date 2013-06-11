@@ -8,6 +8,7 @@
 #include <fs.h>
 #include <printf.h>
 #include <string.h>
+#include <buf.h>
 #include "../kern/task.h"
 #include "fs_minix.h"
 

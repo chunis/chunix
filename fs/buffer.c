@@ -1,7 +1,8 @@
 #include <const.h>
 #include <printf.h>
 #include <hd.h>
-#include "fs_minix.h"
+#include <buf.h>
+//#include "fs_minix.h"
 
 struct buf fsbuf[NBUF];
 struct buf bhead;

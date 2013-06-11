@@ -3,6 +3,7 @@
 #include <hd.h>
 #include <printf.h>
 #include <fs_minix.h>
+#include <buf.h>
 #include "../kern/sched.h"
 
 
