@@ -43,7 +43,6 @@ int main(struct multiboot_info *mboot_ptr)
 	int eax;
 
 	struct multiboot_mod_list *mod;
-	uint32_t *memhd_start;
 	uint32_t *mm_start = end;
 	uint32_t mm_size = 0;
 
@@ -63,10 +62,10 @@ int main(struct multiboot_info *mboot_ptr)
 		printk("mm upper: %d\n", mboot_ptr->mem_upper);
 		mm_size = mboot_ptr->mem_upper + 1024;	// KB
 
-		memhd_start = (uint32_t *)mboot_ptr->mods_addr;
-		mod = (struct multiboot_mod_list *)memhd_start;
+		mod = (struct multiboot_mod_list *)mboot_ptr->mods_addr;
 		printk("mod start: %x\n", mod->mod_start);
 		printk("mod end: %x\n", mod->mod_end);
+		printk("mod cmdline: %s\n", mod->cmdline);
 		mm_start = P2V(mod->mod_end);
 		if(mm_start < end)
 			mm_start = end;
@@ -75,8 +74,11 @@ int main(struct multiboot_info *mboot_ptr)
 		settextcolor(12, 0);
 		dump_multiboot(mboot_ptr);
 		settextcolor(13, 0);
-		dump_ext2(*memhd_start);
+		dump_ext2(mod->mod_start);
 		resettextcolor();
+
+		init_memhd((uint8_t *)P2V(mod->mod_start),
+				(mod->mod_end - mod->mod_start));
 	}
 
 	mem_init1(mm_start, mm_size);
@@ -90,7 +92,7 @@ int main(struct multiboot_info *mboot_ptr)
 	install_timer(100);
 	init_keyboard();
 	init_hd();
-	init_memhd();
+
 	init_buffer();
 	init_fs();
 

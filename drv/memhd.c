@@ -10,9 +10,11 @@
 static uint32_t disksize = 0;
 static uint8_t *hdstart = NULL;
 
-void init_memhd(void)
+void init_memhd(uint8_t *start, uint32_t size)
 {
-	printk("mem hd inited\n");
+	hdstart = start;
+	disksize = size/512;
+	printk("memhd starts from %x, size = %d sectors\n", hdstart, disksize);
 }
 
 // interrupt handler
