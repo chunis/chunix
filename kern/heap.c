@@ -89,8 +89,7 @@ static void free_chunk (struct heap_head *chunk)
 		heap_top -= PGSIZE;
 		page = pgdir_walk(kpgdir, heap_top, 0);
 		assert(page);
-		unmap_page(kpgdir, heap_top);
-		kfree_page(page);
+		unmap_page(kpgdir, heap_top); // also kfree_page(page) there
 	}
 }
 
@@ -147,9 +146,7 @@ void dump_heap(void)
 		printk("addr: %x, offset: %d, len = %d = 12 + %d, free: %d\n",
 				(uint32_t)p, ((uint32_t)p - HEAP_START),
 				p->len, (p->len - 12), p->free);
-		if(p->next == NULL)
-			break;
-		p = (struct heap_head *)((uint32_t)p + p->len);
+		p = p->next;
 	}
 }
 

@@ -68,7 +68,7 @@ int main(struct multiboot_info *mboot_ptr)
 
 	// test kmalloc()
 	test_kmalloc_1();
-	// test_kmalloc_2();
+	test_kmalloc_2();
 
 	init_8259A();
 	install_timer(100);
