@@ -15,7 +15,8 @@ void kfree_range(void *start, void *end);
 char *kalloc_page(void);
 void kfree_page(void *v);
 pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
-void mem_init(void);
+void mem_init1(uint32_t *start, uint32_t size);
+void mem_init2(void);
 void setupkvm(void);
 pde_t *mapkvm(void);
 

@@ -41,7 +41,11 @@ int main(struct multiboot_info *mboot_ptr)
 	extern char _binary_user_hello_start[], _binary_user_hello_size[];
 	extern char _binary_user_todo_start[], _binary_user_todo_size[];
 	int eax;
+
+	struct multiboot_mod_list *mod;
 	uint32_t *memhd_start;
+	uint32_t *mm_start = end;
+	uint32_t mm_size = 0;
 
 	// save %eax to check if booted from multiboot loader
 	__asm __volatile("movl %%eax, %0" : "=r" (eax));
@@ -54,7 +58,20 @@ int main(struct multiboot_info *mboot_ptr)
 	printk("%s\n", os_str);
 
 	if(eax == MBT_BOOTLOADER_MAGIC){
+		// check memory
+		printk("mm lower: %d\n", mboot_ptr->mem_lower);
+		printk("mm upper: %d\n", mboot_ptr->mem_upper);
+		mm_size = mboot_ptr->mem_upper + 1024;	// KB
+
 		memhd_start = (uint32_t *)mboot_ptr->mods_addr;
+		mod = (struct multiboot_mod_list *)memhd_start;
+		printk("mod start: %x\n", mod->mod_start);
+		printk("mod end: %x\n", mod->mod_end);
+		mm_start = P2V(mod->mod_end);
+		if(mm_start < end)
+			mm_start = end;
+		printk("mm_start: %x, mm_size: %d KB\n", mm_start, mm_size);
+
 		settextcolor(12, 0);
 		dump_multiboot(mboot_ptr);
 		settextcolor(13, 0);
@@ -62,8 +79,9 @@ int main(struct multiboot_info *mboot_ptr)
 		resettextcolor();
 	}
 
-	mem_init();
+	mem_init1(mm_start, mm_size);
 	setupkvm();
+	mem_init2();	// init mem between [4M, mm_size]
 	init_gdt();
 	//dump_gdt();
 	init_idt();

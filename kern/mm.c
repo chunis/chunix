@@ -8,6 +8,7 @@
 struct pglink *free_list;	// free page link
 static uint32_t memsz;		// memory size by KB
 extern char data[], end[];	// defined in kernel.ld
+static uint32_t mem_start;
 pde_t *kpgdir;
 
 pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc);
@@ -102,7 +103,7 @@ void kfree_page(void *v)
 {
 	struct pglink *fp;
 
-	if((uint32_t)v % PGSIZE || v < end || v > V2P(memsz*1024)){
+	if((uint32_t)v % PGSIZE || v < mem_start || v > V2P(memsz*1024)){
 		printk("kfree_page: v = %x\n", v);
 		panic("kfree_page");
 	}
@@ -159,17 +160,23 @@ static uint32_t detect_mem(void)
 
 // we won't use the memory < 1M. Just leave it there for future use. 
 // e.g. the bios vectors can be used in vm86 for GUI.
+// If caller doesn't give a positive size, we'll have to detect it.
 // Note: We can't detect memory > 64M yet.
 // it can be done using 'int 15' with eax=E820 in real mode, but it will make
 // the bootloader too large to locate at a single sector.
-// I'll fix this problem in the future. And now we'll limit the memory to no
-// more than 64M in the coming days.
-void mem_init(void)
+void mem_init1(uint32_t *start, uint32_t size)
 {
-	memsz = detect_mem() + 1024;
+	mem_start = start;
+	memsz = size ? size : (detect_mem() + 1024);
 	printk("memory size: %d KB\n\n", memsz);
 
-	kinit(end, P2V(4*1024*1024));
+	kinit(start, P2V(4 * 1024 * 1024));
+}
+
+// init memory [4M, memsz]
+void mem_init2(void)
+{
+	kinit(P2V(4 * 1024 * 1024), P2V(memsz * 1024));
 }
 
 void page_fault(STACK_FRAME *tf)
