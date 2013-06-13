@@ -24,7 +24,7 @@ void init_buffer(void)
 	}
 }
 
-void buf_ll_rw(struct buf *bp)
+static void buf_ll_rw(struct buf *bp)
 {
 	if(MAJOR(bp->dev) == MEM_MAJOR){
 		memhd_rw(bp);

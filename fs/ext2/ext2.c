@@ -25,22 +25,11 @@ struct fs_node ext2_fs = {
 	NULL,
 };
 
-void dump_ext2(uint32_t start_addr)
+void dump_ext2_superblock(struct ext2_super_block *sb_ptr)
 {
-	struct ext2_super_block *sb_ptr;
-	struct ext2_bg_descriptor *bg_ptr;
-	struct ext2_inode *inodetable, *inode, *inode_f;
-	struct ext2_dir_entry *dirent;
-	uint32_t dir_offset;
-	uint8_t *file_ptr;
-	char name[256];
 	int block_size;
-	int i, j;
 
-
-	sb_ptr = (struct ext2_super_block *)(start_addr + EXT2_SB_OFFSET);
-
-	printk("start_addr = %x, ", start_addr);
+	settextcolor(12, 0);
 	printk("superblock Magic = %x\n", (int)sb_ptr->magic);
 	assert(sb_ptr->magic == EXT2_SUPER_MAGIC);
 
@@ -66,6 +55,29 @@ void dump_ext2(uint32_t start_addr)
 			sb_ptr->max_mnt_count - sb_ptr->mnt_count);
 
 	printk("inodes are %d bytes\n", (int)sb_ptr->inode_size);
+	resettextcolor();
+}
+
+void dump_ext2(uint32_t start_addr)
+{
+	struct ext2_super_block *sb_ptr;
+	struct ext2_bg_descriptor *bg_ptr;
+	struct ext2_inode *inodetable, *inode, *inode_f;
+	struct ext2_dir_entry *dirent;
+	uint32_t dir_offset;
+	uint8_t *file_ptr;
+	char name[256];
+	int block_size;
+	int i, j;
+
+
+	sb_ptr = (struct ext2_super_block *)(start_addr + EXT2_SB_OFFSET);
+
+	printk("start_addr = %x, ", start_addr);
+	dump_ext2_superblock(sb_ptr);
+
+	block_size = 1024 << sb_ptr->log_block_size;
+	printk("a block = %d bytes, ", block_size);
 
 	bg_ptr = (struct ext2_bg_descriptor *)(start_addr + EXT2_SB_OFFSET + EXT2_SB_SIZE);
 	printk("\nNow come to the first block group...\n");

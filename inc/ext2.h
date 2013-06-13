@@ -136,6 +136,7 @@ struct ext2_dir_entry {
 } __attribute__((packed));
 
 
+void dump_ext2_superblock(struct ext2_super_block *sb_ptr);
 void dump_ext2(uint32_t start_addr);
 
 #endif
