@@ -217,11 +217,11 @@ int writei(struct minix_inode *ip, char *src, uint32_t off, uint32_t n)
 	return n;
 }
 
-// look for dirent 'name' in dir whose minix_inode is 'dp'.
+// look for minix_dirent 'name' in dir whose minix_inode is 'dp'.
 struct minix_inode *search_dir(struct minix_inode *dp, char *name)
 {
 	uint32_t len, in, desz;
-	struct dirent de;
+	struct minix_dirent de;
 
 	desz = sizeof(de);
 

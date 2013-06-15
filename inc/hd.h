@@ -8,7 +8,6 @@ void init_hd(void);
 void hd_rw(struct buf *bp);
 
 #define SECT_SIZE  512
-#define BLOCK_SIZE 1024
 
 #define HD_READ   0x20
 #define HD_WRITE  0x30

@@ -7,6 +7,7 @@
 #define EXT2_SUPER_MAGIC 0xEF53
 #define EXT2_SB_OFFSET	1024	// offset of superblock from partition start
 #define EXT2_SB_SIZE	1024	// superblock size
+#define EXT2_BLK_SIZE	1024	// block size
 
 /* File Types */
 #define EXT2_S_IFSOCK   0xC000

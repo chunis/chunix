@@ -95,7 +95,7 @@ struct minix_file {
 	struct inode *inode;
 };
 
-struct dirent {
+struct minix_dirent {
 	uint16_t inum;
 	int8_t name[DIR_LEN];
 };

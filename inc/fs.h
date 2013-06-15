@@ -9,8 +9,11 @@
 #define O_CREAT   1
 #define O_RDWR    2
 
-#define NR_SUPER 32
-#define BLOCK_SIZE 1024
+#define NR_SUPER      32
+#define BLOCK_SIZE  1024
+
+#define NAME_MAX     255    // # chars in a file name
+#define PATH_MAX    1024    // # chars in a path name
 
 #define MAJOR(a) (int)((dev_t)(a) >> 8)
 #define MINOR(a) (int)((dev_t)(a) & 0xFF)
@@ -85,6 +88,13 @@ struct file {
 	struct inode *f_inode;
 	struct file_operations *f_op;
 	void *private_data;     // needed for tty driver, and maybe others
+};
+
+struct dirent {
+	uint32_t d_ino;
+	off_t	 d_off;
+	uint16_t d_reclen;
+	uint8_t	 d_name[NAME_MAX+1];
 };
 
 struct super_operations {
