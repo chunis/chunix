@@ -1,6 +1,13 @@
 #ifndef __BUF_H__
 #define __BUF_H__
 
+
+// buffer flag
+#define BUF_BUSY  0x1	// buffer is locked
+#define BUF_VALID 0x2	// buffer data is valid
+#define BUF_DIRTY 0x4	// buffer data needs to be written to disk
+
+#define BUF_SIZE  512
 struct buf {
 	dev_t dev;
 	int flags;
@@ -11,13 +18,8 @@ struct buf {
 	struct buf *next;
 	struct buf *hdnext;
 
-	uint8_t data[512];
+	uint8_t data[BUF_SIZE];
 };
-
-// buffer flag
-#define BUF_BUSY  0x1	// buffer is locked
-#define BUF_VALID 0x2	// buffer data is valid
-#define BUF_DIRTY 0x4	// buffer data needs to be written to disk
 
 // Device Major number (keep it the same as Linux)
 #define UNNAMED_MAJOR   0

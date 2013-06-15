@@ -13,7 +13,7 @@ static uint8_t *hdstart = NULL;
 void init_memhd(uint8_t *start, uint32_t size)
 {
 	hdstart = start;
-	disksize = size/512;
+	disksize = size/BUF_SIZE;
 	printk("memhd starts from %x, size = %d sectors\n", hdstart, disksize);
 }
 
@@ -36,12 +36,12 @@ void memhd_rw(struct buf *b)
 	if(b->num >= disksize)
 		panic("memhd_rw: sector out of range");
 
-	p = hdstart + b->num * 512;
+	p = hdstart + b->num * BUF_SIZE;
 	if(b->flags & BUF_DIRTY){
 		b->flags &= ~BUF_DIRTY;
-		memmove(p, b->data, 512);
+		memmove(p, b->data, BUF_SIZE);
 	} else {
-		memmove(b->data, p, 512);
+		memmove(b->data, p, BUF_SIZE);
 	}
 
 	b->flags |= BUF_VALID;
