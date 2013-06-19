@@ -40,16 +40,10 @@ void check_initrd_fs(void)
 	int i;
 	struct buf *sbuf;
 	struct ext2_super_block sb;
-	char *sbp = &sb;
+	dev_t initrd_dev = MKDEV(MEM_MAJOR, 0);
 
 	printk("do some initrd check...\n");
-	sbuf = bread(MKDEV(MEM_MAJOR, 0), 2);
-	memmove(sbp, sbuf->data, 512);
-	brelse(sbuf);
-
-	sbuf = bread(MKDEV(MEM_MAJOR, 0), 3);
-	memmove(sbp+512, sbuf->data, 512);
-	brelse(sbuf);
+	bread_block(initrd_dev, &sb, 2);
 
 	// check ext2 magic number
 	printk("magic: %x\n", sb.magic);

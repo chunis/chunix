@@ -80,6 +80,21 @@ struct buf *bread(uint32_t dev, uint32_t nblk)
 	return bp;
 }
 
+// read sector number blk_no and blk_no+1 to 'buf'.
+// buf = a block = (512*2) bytes
+void bread_block(uint32_t dev, char *buf, int blk_no)
+{
+	struct buf *bp;
+
+	bp = bread(dev, blk_no);
+	memmove(buf, bp->data, 512);
+	brelse(bp);
+
+	bp = bread(dev, blk_no+1);
+	memmove(buf+512, bp->data, 512);
+	brelse(bp);
+}
+
 void bwrite(struct buf *bp)
 {
 	if((bp->flags & BUF_BUSY) == 0)
