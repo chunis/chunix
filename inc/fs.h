@@ -22,7 +22,7 @@
 
 
 enum fs_type {
-	INITRD = 0,
+	INITRD = 1,
 	EXT2,
 	MINIXFS,
 	FAT32,
