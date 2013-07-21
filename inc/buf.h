@@ -41,6 +41,8 @@ struct buf {
 void init_buffer(void);
 struct buf *getblk(uint32_t dev, uint32_t nblk);
 struct buf *bread(uint32_t dev, uint32_t nblk);
+void bread_block(uint32_t dev, char *buf, int blk_no);
+void bread_nblocks(uint32_t dev, char *buf, int blk_no, int n);
 void bwrite(struct buf *bp);
 void brelse(struct buf *bp);
 

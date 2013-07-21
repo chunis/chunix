@@ -80,20 +80,28 @@ struct buf *bread(uint32_t dev, uint32_t nblk)
 	return bp;
 }
 
-// read sector number blk_no and blk_no+1 to 'buf'.
-// buf = a block = (512*2) bytes
+// read a block to buf. buf size = a block = (512*2) bytes
 void bread_block(uint32_t dev, char *buf, int blk_no)
+{
+	bread_nblocks(dev, buf, blk_no, 2);
+}
+
+// read total n blocks started from sector number 'blk_no' to 'buf'.
+// buf = a block = (512*n) bytes
+void bread_nblocks(uint32_t dev, char *buf, int blk_no, int n)
 {
 	struct buf *bp;
 
-	bp = bread(dev, blk_no);
-	memmove(buf, bp->data, 512);
-	brelse(bp);
+	while(n-- > 0){
+		bp = bread(dev, blk_no);
+		memmove(buf, bp->data, 512);
+		brelse(bp);
 
-	bp = bread(dev, blk_no+1);
-	memmove(buf+512, bp->data, 512);
-	brelse(bp);
+		blk_no++;
+		buf += 512;
+	}
 }
+
 
 void bwrite(struct buf *bp)
 {

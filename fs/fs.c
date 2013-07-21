@@ -10,6 +10,8 @@ static struct fs_node *file_systems = NULL;
 dev_t ROOT_DEV = 0x0305;  // scratch a dummy number temporarily
 extern enum fs_type root_fs_type;
 
+struct inode inode_cache[NINODE];  // global initrd inode table
+
 int register_filesystem(struct fs_node *fs)
 {
 	struct fs_node **tmp;
@@ -49,6 +51,13 @@ int unregister_filesystem(struct fs_node *fs)
 	}
 
 	return -EINVAL;
+}
+
+void init_inode_cache(void)
+{
+	int i;
+
+	memset(inode_cache, 0, sizeof(inode_cache));
 }
 
 struct fs_node *get_fs_node(const char *name)

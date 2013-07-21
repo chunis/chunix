@@ -94,6 +94,7 @@ int main(struct multiboot_info *mboot_ptr)
 	init_hd();
 
 	init_buffer();
+	init_inode_cache();
 	init_fs();
 	check_initrd_fs();
 

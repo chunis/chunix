@@ -42,7 +42,8 @@ struct super_block {
 	dev_t s_dev;
 	uint32_t s_flags;
 	struct super_operations *s_op;
-	struct inode *s_mounted;
+	struct inode *s_mounted;  // which inode this sb mounted
+	struct inode *s_rootnode;  // root node
 	union {
 		struct ext2_sb_info ext2_sb;
 		struct initrd_sb_info initrd_sb;
@@ -50,28 +51,28 @@ struct super_block {
 };
 
 struct inode {
-	dev_t    i_dev;
-	uint32_t i_ino;
-	uint16_t i_mode;
-	uint16_t i_nlink;
+	dev_t    i_dev;  // device
+	uint32_t i_ino;  // number
+	uint16_t i_mode;  // mode: regular file; dir; link; pipe...
+	uint16_t i_nlink; // for hard link
 	uint8_t  i_dirt;
 	uint8_t  i_seek;
 	uint8_t  i_update;
-	uid_t    i_uid;
-	gid_t    i_gid;
-	dev_t    i_rdev;
+	//uid_t    i_uid;
+	//gid_t    i_gid;
+	//dev_t    i_rdev;
 	off_t    i_size;
-	time_t   i_atime;
-	time_t   i_mtime;
-	time_t   i_ctime;
-	uint16_t i_count;
+	//time_t   i_atime;
+	//time_t   i_mtime;
+	//time_t   i_ctime;
+	//uint16_t i_count;
 	uint16_t i_flags;
 	uint32_t i_blksize;
 	uint32_t i_blocks;
 	struct inode_operations *i_op;
 	struct super_block *i_sb;
 	struct inode *i_next, *i_prev;
-	struct inode *i_mount;
+	//struct inode *i_mount;
 	union {
 		struct ext2_inode_info ext2_i;
 		struct initrd_inode_info initrd_i;
