@@ -7,12 +7,13 @@ DRVOBJ  = $(patsubst %,drv/%,$(DRV))
 FSOBJ   = $(patsubst %,fs/%,$(FS))
 KERNOBJ = $(patsubst %,kern/%,$(KERN))
 USEROBJ = $(patsubst %,user/%,$(USER))
+USR_BIN = $(USEROBJ)
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 GDB_ARG = -S -gdb tcp::1234
 
-#HD = hd.img
-HD = minixfs.img
+HD = hd.img
+#HD = minixfs.img
 FD = floppy.img
 
 all: chunix.img $(HD)
@@ -27,8 +28,14 @@ bochs: chunix.img $(HD)
 	sed -i 's/hd.img/$(HD)/' hd.bxrc
 	bochs -f hd.bxrc
 
-$(HD): tools/$(HD).bz2
-	@bzcat tools/$(HD).bz2 > $(HD)
+$(HD): tools/$(HD).bz2 mk_sfs_fs
+	if [ $(HD) != "hd.img" ]; then bzcat tools/$(HD).bz2 > $(HD); fi
+
+mk_sfs_fs: mk_sfs $(USR_BIN)
+	./mk_sfs $(HD) $(USR_BIN)
+
+mk_sfs: tools/mk_sfs.c
+	gcc -o mk_sfs tools/mk_sfs.c
 
 grub: kernel initrd tools/$(FD).bz2 $(HD)
 	@bzcat tools/$(FD).bz2 > $(FD)
@@ -86,7 +93,7 @@ clean:
 	(cd fs && make clean)
 	(cd lib && make clean)
 	(cd user && make clean)
-	@rm -f initrd chunix.img #$(HD)
+	@rm -f mk_sfs initrd chunix.img #$(HD)
 
 cleanall: clean
 	@rm -f $(HD) *.img bochs.log *.asm *.sym
