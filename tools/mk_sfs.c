@@ -195,7 +195,7 @@ static void write_file(char *name)
 
 	memset(&index, 0, IE_SIZE);
 	if(dirp){  // for dir
-		dirp->etype = DIR_ENTRY;
+		dirp->etype = DIR_ENT;
 		dirp->ne = nie;
 		dirp->time = 0;
 		strncpy(dirp->name, name, DIR_SPACE);
@@ -209,7 +209,7 @@ static void write_file(char *name)
 	} else if(filep){  // for regular file
 		write_data(name, state.st_size, filep);
 
-		filep->etype = FILE_ENTRY;
+		filep->etype = FILE_ENT;
 		filep->ne = nie;
 		filep->time = 0;
 		filep->len = state.st_size;

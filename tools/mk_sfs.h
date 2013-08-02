@@ -1,3 +1,12 @@
+/*
+  A trival implement for SFS (Simple File System).
+  Refer to: http://dimensionalrift.homelinux.net/combuster/vdisk/sfs.html
+        or: http://www.d-rift.nl/combuster/vdisk/sfs.html
+*/
+
+#ifndef __MK_SFS_H__
+#define __MK_SFS_H__
+
 
 #define DIR_SPACE 54
 #define FILE_SPACE 30
@@ -7,8 +16,6 @@
 #define NIE_DIR(len) (((len)+10+1)/IE_SIZE) // first 1 byte for '\0'
 
 #define IE_SIZE 64	// Index entries size is 64 bytes each
-#define NB_INIT 4	// blocks for file when created
-#define NB_MORE 8	// blocks for file when it overflow its init space
 
 //typedef signed char int8_t;
 typedef unsigned char uint8_t;
@@ -20,25 +27,23 @@ typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 
 // Layout of areas
-#define SUPER_BLOCK   0x1
-#define RESERVED_AREA   0x2
-#define DATA_AREA    0x3
-#define FREE_AREA    0x4
-#define INDEX_AREA   0x5
+#define SUPER_BLK   0x1
+#define RESV_AREA   0x2
+#define DATA_AREA   0x3
+#define FREE_AREA   0x4
+#define INDEX_AREA  0x5
 
 // Index area entries type
 #define VOLUME_ID     0x01
 #define START_MARK    0x02
-#define UNUSED_ENTRY  0x10
-#define DIR_ENTRY     0x11
-#define FILE_ENTRY    0x12
-#define UNUSAB_ENTRY  0x18
+#define UNUSED_ENT    0x10
+#define DIR_ENT       0x11
+#define FILE_ENT      0x12
+#define UNUSABLE_ENT  0x18
 #define DEL_DIR       0x19
 #define DEL_FILE      0x1A
-#define CONT_ENTRY    0x20	// 0x20 ~ 0xFF
+#define CONT_ENT      0x20	// 0x20 ~ 0xFF
 
-#define T_FILE   FILE_ENTRY
-#define T_DIR    DIR_ENTRY
 
 struct sfs_superblock {
 	uint8_t  rev_boot1[11];
@@ -56,14 +61,6 @@ struct sfs_superblock {
 	uint8_t  rev_pt[64];  // partition table
 	uint8_t  rev_boot_sig[2];  // boot signature
 }__attribute__((packed));
-
-/*
-struct file_desp {
-	int fd_mode;
-	int fd_off;
-	struct sfs_inode *fd_inode;
-};
-*/
 
 struct sfs_vol_id {
 	uint8_t etype;
@@ -120,6 +117,7 @@ struct sfs_inode {
 	int8_t rw;	// read/write flag
 	int8_t dirty;	// is this inode changed?
 
-	struct sfs_index *sindex;	// index block (64bytes)
+	struct sfs_index *sindex;  // index block (64bytes)
 }__attribute__((packed));
 
+#endif
