@@ -16,8 +16,7 @@ int sfs_fd;
 struct sfs_superblock sb;
 uint32_t nblk = NBLK;
 uint32_t nindex = NBLK * (BLKSZ / IE_SIZE);
-uint32_t blksz = BLKSZ;
-uint32_t reserved_blk = 1;
+uint32_t reserved_blk = 1;     // no block for reserved
 uint32_t da_blocks = 0;  // data area size in blocks
 uint32_t ia_num = 0;  // index area size = ia_num * IE_SIZE
 struct sfs_mark mark = { START_MARK, };
@@ -27,7 +26,7 @@ static char calc_checksum(char *sb)
 	char sum = 0;
 	int cnt;
 
-	for(cnt=0x1ac; cnt<=0x1bd; cnt++)
+	for(cnt = 0x1ac; cnt <= 0x1bd; cnt++)
 		sum += sb[cnt];
 
 	return sum;
@@ -90,7 +89,7 @@ static void init_sb(void)
 	sb.fs_version = 0x10;	// sfs vresion 1.0
 
 	sb.total_blk = nblk;
-	sb.rev_blk = reserved_blk;     // no block for reserved
+	sb.rev_blk = reserved_blk;
 	sb.blk_size = 2;    // 512 bytes per block
 
 	// setup checksum

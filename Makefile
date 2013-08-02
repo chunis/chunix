@@ -7,7 +7,7 @@ DRVOBJ  = $(patsubst %,drv/%,$(DRV))
 FSOBJ   = $(patsubst %,fs/%,$(FS))
 KERNOBJ = $(patsubst %,kern/%,$(KERN))
 USEROBJ = $(patsubst %,user/%,$(USER))
-USR_BIN = $(USEROBJ)
+SFS_FILE = $(USEROBJ) README
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 GDB_ARG = -S -gdb tcp::1234
@@ -31,8 +31,8 @@ bochs: chunix.img $(HD)
 $(HD): tools/$(HD).bz2 mk_sfs_fs
 	if [ $(HD) != "hd.img" ]; then bzcat tools/$(HD).bz2 > $(HD); fi
 
-mk_sfs_fs: mk_sfs $(USR_BIN)
-	./mk_sfs $(HD) $(USR_BIN)
+mk_sfs_fs: mk_sfs $(SFS_FILE)
+	./mk_sfs $(HD) $(SFS_FILE)
 
 mk_sfs: tools/mk_sfs.c
 	gcc -o mk_sfs tools/mk_sfs.c
