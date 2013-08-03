@@ -37,6 +37,19 @@ mk_sfs_fs: mk_sfs $(SFS_FILE)
 mk_sfs: tools/mk_sfs.c
 	gcc -o mk_sfs tools/mk_sfs.c
 
+mk_sfs_initrd: tools/mk_sfs.c
+	gcc -DNUMBLK=512 -o mk_sfs_initrd tools/mk_sfs.c
+
+grub-sfs: kernel mk_sfs_initrd tools/$(FD).bz2 $(HD)
+	@bzcat tools/$(FD).bz2 > $(FD)
+	tools/update_kernel_sfs.sh $(SFS_FILE)
+	qemu -m 32 -fda $(FD) -hdb $(HD)
+
+grub-sfs-gdb: kernel mk_sfs_initrd tools/$(FD).bz2 $(HD) .gdbinit
+	@bzcat tools/$(FD).bz2 > $(FD)
+	tools/update_kernel_sfs.sh $(SFS_FILE)
+	qemu -m 32 -fda $(FD) -hdb $(HD) $(GDB_ARG)
+
 grub: kernel initrd tools/$(FD).bz2 $(HD)
 	@bzcat tools/$(FD).bz2 > $(FD)
 	tools/update_kernel.sh
@@ -93,7 +106,7 @@ clean:
 	(cd fs && make clean)
 	(cd lib && make clean)
 	(cd user && make clean)
-	@rm -f mk_sfs initrd chunix.img #$(HD)
+	@rm -f mk_sfs mk_sfs_initrd initrd chunix.img #$(HD)
 
 cleanall: clean
 	@rm -f $(HD) *.img bochs.log *.asm *.sym

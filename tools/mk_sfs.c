@@ -8,8 +8,13 @@
 
 #include "mk_sfs.h"
 
-#define BLKSZ	512
+#ifdef NUMBLK
+#define NBLK	NUMBLK
+#else
 #define NBLK	(170 * 16 * 63)  // hd size ~= 80M with sb.blk_size=2
+#endif
+
+#define BLKSZ	512
 #define BLOCK_INDEX(da_num) ((da_num) + reserved_blk)
 
 int sfs_fd;

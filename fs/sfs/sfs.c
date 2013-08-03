@@ -1,9 +1,7 @@
 /*
-  fs.c: A trival implement for SFS (Simple File System).
+  A trival implement for SFS (Simple File System).
   Refer to: http://dimensionalrift.homelinux.net/combuster/vdisk/sfs.html
-
-limits:
-	* files/dirs length should be less than 30+64*3 = 222 bytes
+        or: http://www.d-rift.nl/combuster/vdisk/sfs.html
 */
 
 #include <types.h>
@@ -16,6 +14,19 @@ limits:
 #include <printf.h>
 #include "../kern/task.h"
 
+
+#define SFS_DEV MKDEV(MEM_MAJOR, 0)
+//#define SFS_DEV MKDEV(HD_MAJOR, 0)
+
+char buf[SECT_SIZE];
+struct sfs_superblock sb;
+uint32_t nblk;  // total number of block
+uint32_t reserved_blk;  // superblock + reserved block
+uint32_t da_blocks;  // number of data area block
+uint32_t ia_num;  // number of index area
+uint32_t block_size;  // 2 means 512
+
+
 struct fs_node sfs_fs = {
 	NULL,
 	"sfs",
@@ -23,16 +34,34 @@ struct fs_node sfs_fs = {
 	NULL,
 };
 
-char buf[SECT_SIZE];
-char buf2[SECT_SIZE*2];
+void add_sfs_fs(void)
+{
+	register_filesystem(&sfs_fs);
+}
 
-struct sfs_superblock sb;
-int ibufs[4] = { IBUF1, IBUF2, IBUF3, IBUF4 };
+void del_sfs_fs(void)
+{
+	unregister_filesystem(&sfs_fs);
+}
 
-// TODO: work on this
-void sfs_hd_rw(int cmd, int offset, int nb, char *buf);
-void sfs_hd_rw(int cmd, int offset, int nb, char *buf) {}
+void sfs_init(void) {}
 
+void sfs_read_sb(void){}
+void sfs_write_sb(void){}
+
+
+void sfs_namei(const char *name) {}
+
+static sfs_bread(char *blk, int blk_no)
+{
+	struct buf *bp;
+
+	bp = bread(SFS_DEV, blk_no);
+	memmove(blk, bp->data, 512);
+	brelse(bp);
+}
+
+/*
 static struct inode1 *search_ibuf(void *bufp, const char *name, int scale)
 {
 	int i;
@@ -92,7 +121,9 @@ static struct inode1 *search_inode(const char *name)
 
 	return ret;
 }
+*/
 
+/*
 static struct inode1 *create_file(const char *f)
 {
 	int nie = NIE(strlen(f));
@@ -176,6 +207,7 @@ int open(const char *pathname, int flags)
 
 	return fd;
 }
+*/
 
 int read(int fd, void *buf, int n)
 {
@@ -206,67 +238,32 @@ static char calc_checksum(char *sb)
 	char sum = 0;
 	int cnt;
 
-	for(cnt=0x1ac; cnt<=0x1bd; cnt++)
+	for(cnt = 0x1ac; cnt <= 0x1bd; cnt++)
 		sum += sb[cnt];
 
 	return sum;
 }
 
-static void init_superblock(void)
+// obtain superblock info
+static void obtain_sb_info(struct sfs_superblock *sb)
 {
-	struct sfs_vol_id *idp;
-	struct sfs_mark *markp;
+	uint64_t time = sb->time_stamp;
 
-	sfs_hd_rw(HD_READ, 0, 1, (char *)&sb);
+	nblk = sb->total_blk;
+	reserved_blk = sb->rev_blk;
+	da_blocks = sb->da_blk;
+	ia_num = sb->ia_size / IE_SIZE;
+	block_size = sb->blk_size;
 
-	sb.time_stamp = 0;
-	sb.da_blk = 0;			// by blocks
-	sb.ia_size = IE_SIZE * 2;	// by 64 bytes each, for vol_id and mark
-	sb.magic_num[0] = 'S';
-	sb.magic_num[1] = 'F';
-	sb.magic_num[2] = 'S';
-	sb.fs_version = 0x10;	// sfs vresion 1.0
-
-	// for both qemu and bochs, hd size ~= 80M with sb.blk_size=2
-	sb.total_blk = 170*16*63;
-	sb.rev_blk = 1;     // one for superblock, no one for future usage
-	sb.blk_size = 2;    // 512 bytes per block
-
-	// setup checksum
-	sb.checksum = 0;
-	sb.checksum = -calc_checksum((char *)&sb);
-	printk("sb.checksum = %d\n", sb.checksum);
-
-	sfs_hd_rw(HD_WRITE, 0, 1, (char *)&sb);
-
-	memset(buf, 0, SECT_SIZE);
-	// vol id stay at the botton of hd area
-	idp = (struct sfs_vol_id *)buf;
-	idp += 7;
-	idp->etype = VOLUME_ID;
-	idp->resv[0] = idp->resv[1] = idp->resv[2] = 0;
-	idp->time = 0;
-	strcpy(idp->name, "HD of SFS-v1.0");  // any info here should be OK
-
-	// starting marker just above vol id since no files yet in the hd
-	// since only etype need to be set, idp is OK for it
-	idp -= 1;
-	idp->etype = START_MARK;
-
-	// write it to the last block of hd
-	sfs_hd_rw(HD_WRITE, sb.total_blk-1, 1, buf);
+	printk("in obtain_sb_info: da_blocks = %d\n", da_blocks);
 }
 
-void mkfs(void)
+static void check_sfs(void)
 {
-	init_superblock();
-}
-
-void check_fs(void)
-{
+	struct sfs_superblock *sb;
 	char sum;
 
-	sfs_hd_rw(HD_READ, 0, 1, buf);
+	sfs_bread(buf, 0);
 
 	// check checksum
 	sum = calc_checksum(buf);
@@ -275,9 +272,17 @@ void check_fs(void)
 	}
 
 	// TODO: check if 'versioin + magic_num' == '0x10534653'
+	sb = (struct sfs_superblock *)buf;
+	printk("magic_num: %x%x%x\n", sb->magic_num);
+	if(strncpy(sb->magic_num, "SFS", 3) || sb->fs_version != 0x10){
+		printk("!!!!! Error !!!!! Not a sfs file system\n");
+		return;
+	}
+
+	obtain_sb_info(sb);
 }
 
 void init_sfs(void)
 {
-	check_fs();
+	check_sfs();
 }

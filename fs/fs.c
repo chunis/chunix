@@ -153,6 +153,7 @@ void init_fs(void)
 {
 	add_ext2_fs();
 	add_initrd_fs();
+	add_sfs_fs();
 	list_fs();
 
 	mount_root();

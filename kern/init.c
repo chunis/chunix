@@ -74,7 +74,7 @@ int main(struct multiboot_info *mboot_ptr)
 		settextcolor(12, 0);
 		dump_multiboot(mboot_ptr);
 		settextcolor(13, 0);
-		dump_ext2(mod->mod_start);
+		//dump_ext2(mod->mod_start);
 		resettextcolor();
 
 		init_memhd((uint8_t *)P2V(mod->mod_start),
@@ -96,7 +96,8 @@ int main(struct multiboot_info *mboot_ptr)
 	init_buffer();
 	init_inode_cache();
 	init_fs();
-	check_initrd_fs();
+	init_sfs();
+	//check_initrd_fs();
 
 #if 0
 	rootp = 0;
