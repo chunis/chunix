@@ -273,8 +273,7 @@ static void check_sfs(void)
 
 	// TODO: check if 'versioin + magic_num' == '0x10534653'
 	sb = (struct sfs_superblock *)buf;
-	printk("magic_num: %x%x%x\n", sb->magic_num);
-	if(strncpy(sb->magic_num, "SFS", 3) || sb->fs_version != 0x10){
+	if(strncmp(sb->magic_num, "SFS", 3) || sb->fs_version != 0x10){
 		printk("!!!!! Error !!!!! Not a sfs file system\n");
 		return;
 	}
