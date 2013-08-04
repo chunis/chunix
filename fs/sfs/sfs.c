@@ -17,6 +17,7 @@
 
 #define SFS_DEV MKDEV(MEM_MAJOR, 0)
 //#define SFS_DEV MKDEV(HD_MAJOR, 0)
+#define BLOCK_INDEX(da_num) ((da_num) + reserved_blk)
 
 char buf[SECT_SIZE];
 struct sfs_superblock sb;
@@ -49,17 +50,45 @@ void sfs_init(void) {}
 void sfs_read_sb(void){}
 void sfs_write_sb(void){}
 
-
-void sfs_namei(const char *name) {}
-
-static sfs_bread(char *blk, int blk_no)
+static void read_block(uint32_t sec, void *buf)
 {
 	struct buf *bp;
 
-	bp = bread(SFS_DEV, blk_no);
-	memmove(blk, bp->data, 512);
+	bp = bread(SFS_DEV, sec);
+	memmove(buf, bp->data, 512);
 	brelse(bp);
 }
+
+static void read_data_block(uint32_t n, void *buf)
+{
+	read_block(BLOCK_INDEX(n), buf);
+}
+
+static void write_block(uint32_t sec, void *buf)
+{
+	return;
+}
+
+// read the content of sec-th item from index area into buf.
+// buf size should be no less than IE_SIZE = 64 bytes.
+static void read_index(uint32_t sec, void *buf)
+{
+	struct buf *bp;
+	uint32_t n = nblk - sec/IPB - 1;
+	uint32_t offset = SECT_SIZE - (sec % IPB + 1) * IE_SIZE;
+
+	//printk("sec = %d, n = %d, offset = %d\n", sec, n, offset);
+	bp = bread(SFS_DEV, n);
+	memmove(buf, bp->data + offset, IE_SIZE);
+	brelse(bp);
+}
+
+static void write_index(uint32_t sec, void *buf)
+{
+	return;
+}
+
+void sfs_namei(const char *name) {}
 
 /*
 static struct inode1 *search_ibuf(void *bufp, const char *name, int scale)
@@ -255,7 +284,14 @@ static void obtain_sb_info(struct sfs_superblock *sb)
 	ia_num = sb->ia_size / IE_SIZE;
 	block_size = sb->blk_size;
 
-	printk("in obtain_sb_info: da_blocks = %d\n", da_blocks);
+	settextcolor(11, 0);
+	printk("basic info in SFS file system:\n");
+	printk("total blocks: %d\n", nblk);
+	printk("sb + rsvd blocks: %d\n", reserved_blk);
+	printk("data area blocks: %d\n", da_blocks);
+	printk("index area items: %d\n", ia_num);
+	printk("block_size: %d (2 = 512, 3 = 1024 bytes)\n", block_size);
+	resettextcolor();
 }
 
 static void check_sfs(void)
@@ -263,7 +299,7 @@ static void check_sfs(void)
 	struct sfs_superblock *sb;
 	char sum;
 
-	sfs_bread(buf, 0);
+	read_block(0, buf);
 
 	// check checksum
 	sum = calc_checksum(buf);
@@ -271,7 +307,6 @@ static void check_sfs(void)
 		printk("ERROR! checksum = %d, not zero!\n", sum);
 	}
 
-	// TODO: check if 'versioin + magic_num' == '0x10534653'
 	sb = (struct sfs_superblock *)buf;
 	if(strncmp(sb->magic_num, "SFS", 3) || sb->fs_version != 0x10){
 		printk("!!!!! Error !!!!! Not a sfs file system\n");
@@ -281,7 +316,116 @@ static void check_sfs(void)
 	obtain_sb_info(sb);
 }
 
+// if find, return 1; else return 0
+static int sfs_find_index(const char *file, struct sfs_index *idxp)
+{
+	int nindex = ia_num - 1;  // skip the marker entry
+	struct sfs_dir *dirp;
+	struct sfs_file *filep;
+	uint32_t len = strlen(file);
+	char *str, *p;
+	int ne, ret = 0;
+
+	printk("cat file: %s\n", file);
+	while(nindex > 0){
+		read_index(nindex, (char *)idxp);
+		if(idxp->etype == DIR_ENT){
+			dirp = (struct sfs_dir *)idxp;
+			nindex -= dirp->ne + 1;
+			if(dirp->ne == 0 && len <= DIR_SPACE){
+				//printk("dir: %s\n", dirp->name);
+				if(strncmp(file, dirp->name, len) == 0){
+					printk("found dir: %s\n", dirp->name);
+					ret = 1;
+				}
+			} else {
+				str = kmalloc((dirp->ne + 1) * IE_SIZE);
+				if(!str)
+					panic("kmalloc");
+				strncpy(str, dirp->name, DIR_SPACE);
+				p = str + DIR_SPACE;
+				ne = dirp->ne;
+				while(ne > 0){
+					read_index(nindex + ne, p);
+					p += IE_SIZE;
+					ne--;
+				}
+				printk("long dir: %s\n", str);
+				if(strncmp(file, dirp->name, len) == 0){
+					printk("found dir: %s\n", dirp->name);
+					ret = 1;
+				}
+				kfree(str);
+			}
+		} else if(idxp->etype == FILE_ENT){
+			filep = (struct sfs_file *)idxp;
+			nindex -= filep->ne + 1;
+			if(filep->ne == 0 && len <= FILE_SPACE){
+				//printk("file: %s\n", filep->name);
+				if(strncmp(file, filep->name, len) == 0){
+					printk("found file: %s\n", filep->name);
+					ret = 1;
+				}
+			} else {
+				str = kmalloc((filep->ne + 1) * IE_SIZE);
+				if(!str)
+					panic("kmalloc");
+				strncpy(str, filep->name, FILE_SPACE);
+				p = str + FILE_SPACE;
+				ne = filep->ne;
+				while(ne > 0){
+					read_index(nindex + ne, p);
+					p += IE_SIZE;
+					ne--;
+				}
+				printk("long file: %s\n", str);
+				if(strncmp(file, filep->name, len) == 0){
+					printk("found file: %s\n", filep->name);
+					ret = 1;
+				}
+				kfree(str);
+			}
+		} else {
+			printk("etype: %x\n", idxp->etype);
+			break;
+		}
+		if(ret)
+			return ret;
+	}
+	return ret;
+}
+
+void sfs_cat_file(const char *file)
+{
+	struct sfs_index idx;
+	struct sfs_file *filep;
+	char buf[SECT_SIZE];
+	uint64_t m, n;
+	uint32_t sz, i;
+	int len;
+
+	if(! sfs_find_index(file, &idx))
+		return;
+
+	filep = (struct sfs_file *)&idx;
+	if(filep->etype != FILE_ENT)
+		return;
+
+	m = filep->blk_start;
+	n = filep->blk_end;
+	len = filep->len;
+	while(len > 0){
+		sz = len > SECT_SIZE ? SECT_SIZE : len;
+		//printk("m = %d, n = %d, len = %d, sz = %d\n", m, n, len, sz);
+		read_data_block(m++, buf);
+		for(i = 0; i < sz; i++)
+			printk("%c", buf[i]);
+		len -= SECT_SIZE;
+	}
+}
+
 void init_sfs(void)
 {
 	check_sfs();
+	sfs_cat_file("README");
 }

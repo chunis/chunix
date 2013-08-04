@@ -23,6 +23,7 @@ int close(int fd);
 #define NIE_DIR(len) (((len)+10+1)/IE_SIZE) // first 1 byte for '\0'
 
 #define IE_SIZE 64	// Index entries size is 64 bytes each
+#define IPB 8  // Items per block in index area. 512/64 = 8
 
 //#define T_FILE   FILE_ENTRY
 //#define T_DIR    DIR_ENTRY
