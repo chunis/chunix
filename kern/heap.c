@@ -2,10 +2,11 @@
 #include <heap.h>
 #include <mmu.h>
 #include <printf.h>
+#include "../kern/task.h"
 
 uint32_t heap_top = HEAP_START;
 struct heap_head *heap_start = NULL;
-extern pde_t *kpgdir;
+extern TASK_STRUCT *current;
 
 static void glue_chunk (struct heap_head *chunk);
 static void split_chunk (struct heap_head *chunk, uint32_t len);
@@ -71,7 +72,7 @@ static void alloc_chunk (uint32_t start, uint32_t len)
 
 	while(start + len > heap_top){
 		page = V2P(PTE_ADDR(kalloc_page()));
-		mappages(kpgdir, heap_top, page, PGSIZE, PTE_P | PTE_W);
+		mappages(current->pgdir, heap_top, page, PGSIZE, PTE_P | PTE_W);
 		heap_top += PGSIZE;
 	}
 }
@@ -87,9 +88,9 @@ static void free_chunk (struct heap_head *chunk)
 
 	while((uint32_t)chunk <= (heap_top - PGSIZE)){
 		heap_top -= PGSIZE;
-		page = pgdir_walk(kpgdir, heap_top, 0);
+		page = pgdir_walk(current->pgdir, heap_top, 0);
 		assert(page);
-		unmap_page(kpgdir, heap_top); // also kfree_page(page) there
+		unmap_page(current->pgdir, heap_top); // also kfree_page(page) there
 	}
 }
 
