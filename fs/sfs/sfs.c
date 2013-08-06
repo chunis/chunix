@@ -97,9 +97,13 @@ static struct sfs_inode *search_index_buf(const char *name)
 {
 	int i;
 
-	for(i = 0; i < NIBUF; i++)
-		if(strcmp(name, ibuf[i].name) == 0)
-			return &ibuf[i];
+	for(i = 0; i < NIBUF; i++){
+		if(ibuf[i].flags & SFS_INODE_INUSE){
+			if(strcmp(name, ibuf[i].name) == 0){
+				return &ibuf[i];
+			}
+		}
+	}
 	return NULL;
 }
 
@@ -130,7 +134,8 @@ static struct sfs_inode *search_index(const char *name, int type)
 		}
 		ip = &ibuf[i];
 
-		kfree(ip->name);
+		if(ip->name)
+			kfree(ip->name);
 		ip->name = kmalloc(strlen(name)+1);
 		if(ip->name == NULL){
 			printk("kmalloc() fail\n");
@@ -158,7 +163,7 @@ static struct sfs_inode *sfs_namei(const char *name)
 
 	ret = search_index_buf(name);
 	if(ret == NULL)
-		ret = search_index(name, T_FILE);
+		ret = search_index(name, SFS_TYPE_FILE);
 
 	return ret;
 }

@@ -127,6 +127,11 @@ struct sfs_inode {
 	struct sfs_index sindex;  // index block (64bytes)
 }__attribute__((packed));
 
+
+#define SFS_TYPE_FILE	1   // file
+#define SFS_TYPE_DIR	2   // directory
+#define SFS_TYPE_DEV	3   // special device
+
 struct file_desp {
 	int fd_type;
 	int fd_mode;
