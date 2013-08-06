@@ -10,7 +10,7 @@
 #include <types.h>
 #include <fs.h>
 
-int open(const char *pathname, int flags);
+int sfs_open(const char *pathname, int flags);
 int read(int fd, void *buf, int n);
 int write(int fd, const void *buf, int n);
 int close(int fd);
@@ -111,27 +111,31 @@ struct sfs_index {
 	uint8_t data[63];
 };
 
+#define SFS_INODE_FREE  0x000
+#define SFS_INODE_INUSE 0x001
+#define SFS_INODE_READ  0x002
+#define SFS_INODE_WRITE 0x004
+#define SFS_INODE_DIRTY 0x008
+
 // inode cache in memory for index
 struct sfs_inode {
 	int nb;		// block number in hd
 	uint8_t ni;	// index number in a single block
 	int8_t nref;	// reference count
-	int8_t rw;	// read/write flag
-	int8_t dirty;	// is this inode changed?
-
-	struct sfs_index *sindex;  // index block (64bytes)
+	int8_t flags;
+	uint8_t *name;
+	struct sfs_index sindex;  // index block (64bytes)
 }__attribute__((packed));
 
-/*
 struct file_desp {
+	int fd_type;
 	int fd_mode;
 	int fd_off;
-	struct inode1 *fd_inode;
+	struct sfs_inode *fd_inode;
 };
 
 #define FDT_SIZE 64	// size of fdtable[]
 struct file_desp fdtable[FDT_SIZE];
-*/
 
 
 #endif

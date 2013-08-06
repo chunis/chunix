@@ -99,7 +99,7 @@ int main(struct multiboot_info *mboot_ptr)
 	init_sfs();
 	//check_initrd_fs();
 
-#if 0
+#if 1
 	rootp = 0;
 	current = rootp;
 	mytask1 = task_create(_binary_user_hello_start,

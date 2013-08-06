@@ -6,7 +6,8 @@
 int sf_open(const char *path, int flags)
 {
 	printk("in sf_open: path: %s, flags: %d\n", path, flags);
-	return fileopen(path, flags);
+	//return fileopen(path, flags);
+	return sfs_open(path, flags);
 }
 
 int sf_creat(const char *path, int flags)

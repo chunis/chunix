@@ -19,6 +19,9 @@
 //#define SFS_DEV MKDEV(HD_MAJOR, 0)
 #define BLOCK_INDEX(da_num) ((da_num) + reserved_blk)
 
+#define NIBUF	32
+struct sfs_inode ibuf[NIBUF];  // static variable contains all zeros
+
 char buf[SECT_SIZE];
 struct sfs_superblock sb;
 uint32_t nblk;  // total number of block
@@ -26,6 +29,8 @@ uint32_t reserved_blk;  // superblock + reserved block
 uint32_t da_blocks;  // number of data area block
 uint32_t ia_num;  // number of index area
 uint32_t block_size;  // 2 means 512
+
+static int sfs_find_index(const char *file, struct sfs_index *idxp);
 
 
 struct fs_node sfs_fs = {
@@ -88,78 +93,85 @@ static void write_index(uint32_t sec, void *buf)
 	return;
 }
 
-void sfs_namei(const char *name) {}
-
-/*
-static struct inode1 *search_ibuf(void *bufp, const char *name, int scale)
+static struct sfs_inode *search_index_buf(const char *name)
 {
 	int i;
-	struct inode1 *p = (struct inode1 *)bufp;
 
-	for(i = 0; i<ibufs[scale-1]; i++){
-		if(p->nb == 0)	// slot not in use
-			continue;
-
-		if(! strcmp(p->sfile.name, name) )	// found it
-			return p;
-
-		p += scale;
-	}
+	for(i = 0; i < NIBUF; i++)
+		if(strcmp(name, ibuf[i].name) == 0)
+			return &ibuf[i];
 	return NULL;
 }
 
-static struct inode1 *search_index(const char *name, int type)
+// return the index of free position in ibuf or -1 if no slot available
+static int ibuf_alloc(void)
 {
-	int ic, j;
-	int nb = (sb.ia_size - 1)/SECT_SIZE;
-	struct sfs_index *ip;
+	int i;
 
-	for(ic = 0; ic <= nb; ic++){
-		sfs_hd_rw(HD_READ, sb.total_blk-1-ic, 1, buf);
-		ip = (struct sfs_index *)buf;
-		ip += 7;
-		for(j = 0; j<8; j++){
-			if(ip->etype == START_MARK)
-				break;
-			if(ip->etype == type)
-				return ip;
-			ip--;
+	for(i = 0; i < NIBUF; i++){
+		if(ibuf[i].flags == 0)
+			break;
+	}
+	return (i >= NIBUF ? -1 : i);
+}
+
+// find name in index area; and save the info into ibuf[]
+static struct sfs_inode *search_index(const char *name, int type)
+{
+	struct sfs_index idx;
+	struct sfs_inode *ip;
+	int i;
+
+	if(sfs_find_index(name, &idx)){ // find it in index area
+		i = ibuf_alloc();
+		if(i == -1){
+			printk("ERROR!! search_index: no slot in ibuf\n");
+			return NULL;
 		}
-	}
+		ip = &ibuf[i];
 
+		kfree(ip->name);
+		ip->name = kmalloc(strlen(name)+1);
+		if(ip->name == NULL){
+			printk("kmalloc() fail\n");
+			return NULL;
+		}
+		strcpy(ip->name, name);
+		ip->flags = SFS_INODE_INUSE;
+		ip->sindex = idx;
+		return ip;
+	}
 	return NULL;
 }
 
-static struct inode1 *search_inode(const char *name)
+static void sfs_iupdate(void)
 {
-	int nie = NIE(strlen(name));
-	struct inode1 *ret = NULL;
+}
 
-	if(nie == 1){
-		ret = search_ibuf(ibuf1, name, 1);
-	} else if(nie == 2){
-		ret = search_ibuf(ibuf2, name, 2);
-	} else if(nie == 3){
-		ret = search_ibuf(ibuf3, name, 3);
-	} else if(nie == 4){
-		ret = search_ibuf(ibuf4, name, 4);
-	}
+static void sfs_ialloc(void)
+{
+}
 
+static struct sfs_inode *sfs_namei(const char *name)
+{
+	struct sfs_inode *ret = NULL;
+
+	ret = search_index_buf(name);
 	if(ret == NULL)
 		ret = search_index(name, T_FILE);
 
 	return ret;
 }
-*/
 
-/*
-static struct inode1 *create_file(const char *f)
+static struct sfs_inode *sfs_create(const char *path, int type)
 {
-	int nie = NIE(strlen(f));
+	int len = strlen(path);
+	struct sfs_file *sp;
 	int bn;		// number of block
 	int bi;		// number in block
-	struct sfs_file *sp;
+	int nie;
 
+#if 0
 	bn = sb.total_blk - 1 - (sb.ia_size - 1)/SECT_SIZE;
 	bi = sb.ia_size % SECT_SIZE;
 	bi /= IE_SIZE;
@@ -179,33 +191,33 @@ static struct inode1 *create_file(const char *f)
 	sp--;	// to setup 'marker' entry
 	sp->etype = START_MARK;
 
-	sfs_hd_rw(HD_WRITE, bn-1, 2, buf2);
 
 	// save superblock changes to hd
-	printk("sb.da_blk: %d\n", sb.da_blk);
 	sb.da_blk += NB_INIT;
 	printk("sb.da_blk: %d\n", sb.da_blk);
 	sfs_hd_rw(HD_WRITE, 0, 1, (char *)&sb);
 
-	return (struct inode1 *)(++sp);
+	return (struct sfs_inode *)(++sp);
+#endif
+	return NULL;
 };
 
-int open(const char *pathname, int flags)
+int sfs_open(const char *pathname, int flags)
 {
 	int fd = -1;
 	int i;
-	struct inode1 *inp;
+	struct sfs_inode *inp;
 
-	printk("pathname: %s\n", pathname);
+	printk("in sfs_open: pathname=%s, flags = %d\n", pathname, flags);
 
 	// search free slot in fdp[]
-	for(i = 0; i < OFILE; i++){
+	for(i = 0; i < NOFILE; i++){
 		if(current->fdp[i] == 0){
 			fd = i;
 			break;
 		}
 	}
-	if(fd < 0 || fd >= OFILE)
+	if(fd < 0 || fd >= NOFILE)
 		panic("open: fdp[] is full!");
 
 	// search free slot in fdtable[]
@@ -216,10 +228,10 @@ int open(const char *pathname, int flags)
 	if(i >= FDT_SIZE)
 		panic("open: fdtable[] is full!");
 
-	inp = search_inode(pathname);
+	inp = sfs_namei(pathname);
 	if(! inp){		// file doesn't exist
 		if(flags & O_CREAT){
-			inp = create_file(pathname);
+			inp = sfs_create(pathname, flags);
 			if(!inp){
 				printk("Create file fail!\n");
 				return -1;
@@ -234,9 +246,11 @@ int open(const char *pathname, int flags)
 	fdtable[i].fd_mode = flags;
 	fdtable[i].fd_off = 0;
 
+	// TODO: process fd_type and fd_name
+
+	printk("fd = %d\n", fd);
 	return fd;
 }
-*/
 
 int read(int fd, void *buf, int n)
 {
