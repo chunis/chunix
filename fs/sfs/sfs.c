@@ -215,19 +215,19 @@ int sfs_open(const char *pathname, int flags)
 
 	printk("in sfs_open: pathname=%s, flags = %d\n", pathname, flags);
 
-	// search free slot in fdp[]
+	// search free slot in ofile[]
 	for(i = 0; i < NOFILE; i++){
-		if(current->fdp[i] == 0){
+		if(current->ofile[i] == 0){
 			fd = i;
 			break;
 		}
 	}
 	if(fd < 0 || fd >= NOFILE)
-		panic("open: fdp[] is full!");
+		panic("open: ofile[] is full!");
 
 	// search free slot in fdtable[]
 	for(i = 0; i < FDT_SIZE; i++){
-		if(fdtable[i].fd_inode == 0)
+		if(fdtable[i].f_inode == 0)
 			break;
 	}
 	if(i >= FDT_SIZE)
@@ -246,10 +246,10 @@ int sfs_open(const char *pathname, int flags)
 		}
 	}
 
-	current->fdp[fd] = &fdtable[i];
-	fdtable[i].fd_inode = inp;
-	fdtable[i].fd_mode = flags;
-	fdtable[i].fd_off = 0;
+	current->ofile[fd] = &fdtable[i];
+	fdtable[i].f_inode = inp;
+	fdtable[i].f_mode = flags;
+	fdtable[i].f_pos = 0;
 
 	// TODO: process fd_type and fd_name
 
@@ -257,11 +257,19 @@ int sfs_open(const char *pathname, int flags)
 	return fd;
 }
 
-int read(int fd, void *buf, int n)
+int sfs_read(int fd, void *buf, int n)
 {
-	int count;
+	struct sfs_file_desp *fp;
+	int count = n;
 
-	printk("In read\n");
+	printk("In sfs_read\n");
+	if(fd >= NOFILE){
+		printk("ERROR! fd = %d doesn't existed\n");
+		return -1;
+	}
+
+	fp = current->ofile[fd];
+	strcpy(buf, "Hello");
 	return count;
 }
 

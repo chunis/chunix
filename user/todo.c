@@ -5,11 +5,14 @@
 
 int main(int argc, char *argv[])
 {
-	int i = 0;
+	int n, i = 0;
 	int fd;
+	char buf[40] = { 0 };
 
-	fd = open("/README", O_RDWR);
+	fd = open("README", O_RDWR);
 	printf("fd = %d\n", fd);
+	n = read(fd, buf, 30);
+	printf("n = %d\n%s", n, buf);
 
 	for(;;){
 		sleep(3);

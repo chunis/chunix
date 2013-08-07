@@ -12,5 +12,6 @@ tools/mkboot
 bochs.*
 *.swp
 
-user/
+user/hello
+user/todo
 initrd

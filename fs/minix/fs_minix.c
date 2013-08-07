@@ -298,15 +298,15 @@ int fileopen(const char *path, int flags)
 	if((inp = namei(path)) == 0)
 		return -1;
 
-	// search free slot in fdp[]
+	// search free slot in ofile[]
 	for(i = 0; i < NOFILE; i++){
-		if(current->fdp[i] == 0){
+		if(current->ofile[i] == 0){
 			fd = i;
 			break;
 		}
 	}
 	if(fd < 0 || fd >= NOFILE)
-		panic("open: fdp[] is full!");
+		panic("open: ofile[] is full!");
 
 	// search free slot in file[]
 	for(i = 0; i < NFILE; i++){
@@ -316,7 +316,7 @@ int fileopen(const char *path, int flags)
 	if(i >= NFILE)
 		panic("open: file[] is full!");
 
-	current->fdp[fd] = &file[i];
+	current->ofile[fd] = &file[i];
 	file[i].inode = inp;
 	file[i].mode = flags;
 	file[i].pos = 0;

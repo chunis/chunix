@@ -11,7 +11,7 @@
 #include <fs.h>
 
 int sfs_open(const char *pathname, int flags);
-int read(int fd, void *buf, int n);
+int sfs_read(int fd, void *buf, int n);
 int write(int fd, const void *buf, int n);
 int close(int fd);
 
@@ -132,15 +132,17 @@ struct sfs_inode {
 #define SFS_TYPE_DIR	2   // directory
 #define SFS_TYPE_DEV	3   // special device
 
-struct file_desp {
-	int fd_type;
-	int fd_mode;
-	int fd_off;
-	struct sfs_inode *fd_inode;
+struct sfs_file_desc {
+	int f_type;
+	int f_mode;
+	int f_flags;
+	int f_count;
+	int f_pos;
+	struct sfs_inode *f_inode;
 };
 
 #define FDT_SIZE 64	// size of fdtable[]
-struct file_desp fdtable[FDT_SIZE];
+struct sfs_file_desc fdtable[FDT_SIZE];
 
 
 #endif

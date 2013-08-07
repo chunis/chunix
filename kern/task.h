@@ -79,7 +79,8 @@ typedef struct _task {
 	char name[24];
 	pde_t *pgdir;
 	char *kstack;	// bottom of kernel stack for this task
-	struct file *fdp[NOFILE];  // file table for file descriptors
+	//struct file *ofile[NOFILE];  // opened file
+	struct sfs_file_desc *ofile[NOFILE];  // opened file
 	enum TS_STATE state;
 	int priority;
 	void *chan;	// if chan != 0, sleeping on it
