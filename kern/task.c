@@ -9,7 +9,7 @@
 #include "task.h"
 #include "descriptor.h"
 
-TASK_STRUCT tasks[NPROC];
+struct task tasks[NPROC];
 int nextpid = 1;
 extern pde_t *kpgdir;
 extern void trap_ret(void);
@@ -19,9 +19,9 @@ void do_nothing(void)
 	return;
 }
 
-TASK_STRUCT *task_alloc(void)
+struct task *task_alloc(void)
 {
-	TASK_STRUCT *tp;
+	struct task *tp;
 	char *sp;
 
 	for(tp = tasks; tp < tasks + NPROC; tp++)
@@ -46,7 +46,7 @@ TASK_STRUCT *task_alloc(void)
 	tp->priority = INIT_PRIO;
 
 	sp = tp->kstack + KSTACKSIZE - sizeof(*tp->tf);
-	tp->tf = (STACK_FRAME *)sp;
+	tp->tf = (struct stack_frame *)sp;
 	memset(tp->tf, 0, sizeof(*tp->tf));
 
 	tp->tf->cs = USR_CODE | SA_RPL3;
@@ -80,7 +80,7 @@ TASK_STRUCT *task_alloc(void)
 
 // allocate len bytes of physical memory for task tp,
 // and map it at virtual address va.
-static void region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
+static void region_alloc(struct task *tp, void *va, uint32_t len)
 {
 	pte_t *pte;
 	char *p;
@@ -102,7 +102,7 @@ static void region_alloc(TASK_STRUCT *tp, void *va, uint32_t len)
 // Set up the initial program binary, stack, and processor flags
 // for a user process.
 // use region_alloc() to make it easier.
-static void load_icode(TASK_STRUCT *tp, uint8_t *binary, uint32_t size)
+static void load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 {
 	struct proghdr *ph, *eph;
 	struct elf *elfhdr;
@@ -131,9 +131,9 @@ static void load_icode(TASK_STRUCT *tp, uint8_t *binary, uint32_t size)
 
 // allocates a new task with task_alloc(), loads the named elf
 // binary into it with load_icode().
-TASK_STRUCT *task_create(uint8_t *binary, uint32_t size)
+struct task *task_create(uint8_t *binary, uint32_t size)
 {
-	TASK_STRUCT *tp = NULL;
+	struct task *tp = NULL;
 
 	tp = task_alloc();
 	if(tp){
@@ -144,9 +144,9 @@ TASK_STRUCT *task_create(uint8_t *binary, uint32_t size)
 	return tp;
 }
 
-// Restores register values in the STACK_FRAME with the 'iret' instruction.
+// Restores register values in the struct stack_frame with the 'iret' instruction.
 // This exits the kernel and starts executing some task's code.
-void task_pop_tf(STACK_FRAME *tf)
+void task_pop_tf(struct stack_frame *tf)
 {
 	__asm __volatile("movl %0,%%esp\n"
 		"\tpopl %%gs\n"
@@ -162,10 +162,10 @@ void task_pop_tf(STACK_FRAME *tf)
 
 // Context switch from current to task tp.
 // Note: if this is the first call to task_run, current is NULL.
-void task_run(TASK_STRUCT *tp)
+void task_run(struct task *tp)
 {
 	static int ltrflag = 0;
-	TASK_STRUCT *old_tp = current;
+	struct task *old_tp = current;
 
 	if(tp != current){
 		if(current && current->state == TS_RUNNING)
@@ -186,7 +186,7 @@ void task_run(TASK_STRUCT *tp)
 	swtch(old_tp->context, current->context);
 }
 
-void task_destroy(TASK_STRUCT *tp)
+void task_destroy(struct task *tp)
 {
 	return;
 }
@@ -206,7 +206,7 @@ void sleep_on(void *chan)
 
 void wakeup(void *chan)
 {
-	TASK_STRUCT *tp;
+	struct task *tp;
 
 	for(tp = rootp; tp; tp = tp->next){
 		if(tp->state == TS_STOPPED && tp->chan == chan)

@@ -29,7 +29,7 @@ isr_comm:
 	movw	%ax, %es
 	movw	%ax, %fs
 	movw	%ax, %gs
-	pushl	%esp	# now esp points to the start of STACK_FRAME
+	pushl	%esp	# now esp points to the start of stack_frame
 	call	trap
 	addl	$0x4, %esp
 

@@ -24,7 +24,7 @@ static const char *exceptions[] = {
 	"Coprocessor error",
 };
 
-void dump_tf(STACK_FRAME *tf)
+void dump_tf(struct stack_frame *tf)
 {
 	printk("----- Exception %d: %s -----\n",
 			tf->trapno, exceptions[tf->trapno]);
@@ -45,7 +45,7 @@ void dump_tf(STACK_FRAME *tf)
 
 }
 
-void trap(STACK_FRAME *tf)
+void trap(struct stack_frame *tf)
 {
 	if(read_eflags() & FL_IF)
 		panic("FL_IF should not be set!");

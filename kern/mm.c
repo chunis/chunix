@@ -179,7 +179,7 @@ void mem_init2(void)
 	kinit(P2V(4 * 1024 * 1024), P2V(memsz * 1024));
 }
 
-void page_fault(STACK_FRAME *tf)
+void page_fault(struct stack_frame *tf)
 {
 	int present  = tf->err & 0x1 ? 1 : 0;
 	int rw       = tf->err & 0x2 ? 1 : 0;

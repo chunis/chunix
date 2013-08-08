@@ -6,7 +6,7 @@
 
 uint32_t heap_top = HEAP_START;
 struct heap_head *heap_start = NULL;
-extern TASK_STRUCT *current;
+extern struct task *current;
 
 static void glue_chunk (struct heap_head *chunk);
 static void split_chunk (struct heap_head *chunk, uint32_t len);

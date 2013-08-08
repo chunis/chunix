@@ -36,8 +36,8 @@ int main(struct multiboot_info *mboot_ptr)
 {
 	char *os_str = "Welcome to ChuniX! :)\n";
 	extern uint32_t edata[], end[];
-	TASK_STRUCT *mytask1;
-	TASK_STRUCT *mytask2;
+	struct task *mytask1;
+	struct task *mytask2;
 	extern char _binary_user_hello_start[], _binary_user_hello_size[];
 	extern char _binary_user_todo_start[], _binary_user_todo_size[];
 	int eax;

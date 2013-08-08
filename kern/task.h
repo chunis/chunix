@@ -9,7 +9,7 @@
 #define LDT_SIZE	2
 #define USR_STACK_SIZE 1024
 
-enum TS_STATE {
+enum ts_state {
 	TS_UNUSED = 0,
 	TS_RUNNING,
 	TS_RUNNABLE,
@@ -17,7 +17,7 @@ enum TS_STATE {
 	TS_ZOMBIE,
 };
 
-typedef struct {
+struct tss {
 	uint32_t	back_link;
 	uint32_t	esp0, ss0;
 	uint32_t	esp1, ss1;
@@ -29,9 +29,9 @@ typedef struct {
 	uint32_t	es, cs, ss, ds, fs, gs;
 	uint32_t	ldt;
 	uint32_t	trace_bitmap;
-} TSS_STRUCT;
+};
 
-typedef struct {
+struct stack_frame {
 	uint32_t	gs;
 	uint32_t	fs;
 	uint32_t	es;
@@ -55,7 +55,7 @@ typedef struct {
 
 	uint32_t	esp;
 	uint32_t	ss;
-} STACK_FRAME;
+};
 
 // saved registers for kernel context switches.
 // Contexts are stored at the bottom of the stack they
@@ -70,8 +70,8 @@ struct context {
 	uint32_t eip;
 };
 
-typedef struct _task {
-	STACK_FRAME *tf;
+struct task {
+	struct stack_frame *tf;
 	struct context *context;     // saved in swtch()
 
 	uint32_t pid;
@@ -81,17 +81,17 @@ typedef struct _task {
 	char *kstack;	// bottom of kernel stack for this task
 	//struct file *ofile[NOFILE];  // opened file
 	struct sfs_file_desc *ofile[NOFILE];  // opened file
-	enum TS_STATE state;
+	enum ts_state state;
 	int priority;
 	void *chan;	// if chan != 0, sleeping on it
 	struct inode *cwd;
 	struct _task *next;
-} TASK_STRUCT;
+};
 
-TSS_STRUCT tss;
-TASK_STRUCT *rootp, *current;
-TASK_STRUCT *task_create(uint8_t *binary, uint32_t size);
-void task_run(TASK_STRUCT *tp);
-void task_destroy(TASK_STRUCT *tp);
+struct tss tss;
+struct task *rootp, *current;
+struct task *task_create(uint8_t *binary, uint32_t size);
+void task_run(struct task *tp);
+void task_destroy(struct task *tp);
 
 #endif

@@ -11,7 +11,7 @@ extern int sf_write(int fd, const void *buf, int n);
 extern int sf_close(int fd);
 
 // return the int at addr from task p.
-int getint(TASK_STRUCT *tp, uint32_t addr)
+int getint(struct task *tp, uint32_t addr)
 {
 	// TODO: need to check if addr is in tp's address space
 	return *(int *)addr;
@@ -19,7 +19,7 @@ int getint(TASK_STRUCT *tp, uint32_t addr)
 
 // get the nul-terminated string at addr from task p.
 // just sets *pp to point at it, and returns the length of string
-int getstr(TASK_STRUCT *tp, uint32_t addr, char **pp)
+int getstr(struct task *tp, uint32_t addr, char **pp)
 {
 	char *s;
 

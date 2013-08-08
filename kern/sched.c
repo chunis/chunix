@@ -4,7 +4,7 @@
 // task scheduler. pick a task and run it.
 void sched_yield(void)
 {
-	TASK_STRUCT *tp;
+	struct task *tp;
 
 	if(!rootp)
 		panic("No task!");
