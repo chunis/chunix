@@ -14,4 +14,6 @@ bochs.*
 
 user/hello
 user/todo
+mk_sfs
+mk_sfs_initrd
 initrd

@@ -168,6 +168,19 @@ static struct sfs_inode *sfs_namei(const char *name)
 	return ret;
 }
 
+static struct sfs_file_desc *fd_alloc(void)
+{
+	struct sfs_file_desc *fp;
+
+	for(fp = fdtable; fp < fdtable + FDT_SIZE; fp++){
+		if(fp->f_count == 0){  // found a free slot
+			fp->f_count++;
+			return fp;
+		}
+	}
+	return NULL;
+}
+
 static struct sfs_inode *sfs_create(const char *path, int type)
 {
 	int len = strlen(path);
@@ -212,26 +225,9 @@ int sfs_open(const char *pathname, int flags)
 	int fd = -1;
 	int i;
 	struct sfs_inode *inp;
+	struct sfs_file_desc *fdp;
 
 	printk("in sfs_open: pathname=%s, flags = %d\n", pathname, flags);
-
-	// search free slot in ofile[]
-	for(i = 0; i < NOFILE; i++){
-		if(current->ofile[i] == 0){
-			fd = i;
-			break;
-		}
-	}
-	if(fd < 0 || fd >= NOFILE)
-		panic("open: ofile[] is full!");
-
-	// search free slot in fdtable[]
-	for(i = 0; i < FDT_SIZE; i++){
-		if(fdtable[i].f_inode == 0)
-			break;
-	}
-	if(i >= FDT_SIZE)
-		panic("open: fdtable[] is full!");
 
 	inp = sfs_namei(pathname);
 	if(! inp){		// file doesn't exist
@@ -246,30 +242,76 @@ int sfs_open(const char *pathname, int flags)
 		}
 	}
 
-	current->ofile[fd] = &fdtable[i];
-	fdtable[i].f_inode = inp;
-	fdtable[i].f_mode = flags;
-	fdtable[i].f_pos = 0;
+	// search free slot in ofile[]
+	for(i = 0; i < NOFILE; i++){
+		if(current->ofile[i] == 0){
+			fd = i;
+			break;
+		}
+	}
+	if(fd < 0 || fd >= NOFILE){
+		printk("open: ofile[] is full!");
+		return -1;
+	}
 
-	// TODO: process fd_type and fd_name
+	// search free slot in fdtable[]
+	fdp = fd_alloc();
+	if(fdp == NULL){
+		printk("open: fdtable[] is full!");
+		return -1;
+	}
+
+	fdp->f_type = 0;
+	fdp->f_mode = 0;
+	fdp->f_flags = flags;
+	fdp->f_pos = 0;
+	fdp->f_inode = inp;
+	current->ofile[fd] = fdp;
 
 	printk("fd = %d\n", fd);
 	return fd;
 }
 
+#define min(a, b)  ((a) < (b) ? (a) : (b))
 int sfs_read(int fd, void *buf, int n)
 {
-	struct sfs_file_desp *fp;
-	int count = n;
+	struct sfs_file_desc *fdp;
+	struct sfs_file *fp;
+	char xbuf[SECT_SIZE];
+	int count, offset, nb, len;
 
-	printk("In sfs_read\n");
 	if(fd >= NOFILE){
 		printk("ERROR! fd = %d doesn't existed\n");
 		return -1;
 	}
 
-	fp = current->ofile[fd];
-	strcpy(buf, "Hello");
+	fdp = current->ofile[fd];
+	fp = (struct sfs_file *)&(fdp->f_inode->sindex);
+	n = min(n, (fp->len - fdp->f_pos));
+	nb = fp->blk_start + fdp->f_pos / SECT_SIZE;
+
+	// copy from the first block start from f_pos
+	offset = fdp->f_pos % SECT_SIZE;
+	read_data_block(nb, xbuf);
+	len = min(n, SECT_SIZE - offset);
+	memmove(buf, xbuf + offset, len);
+	count = len;
+	fdp->f_pos += len;
+	buf += len;
+	n -= len;
+	nb++;
+
+	while(n > 0){
+		read_data_block(nb, xbuf);
+		len = min(SECT_SIZE, n);
+		memmove(buf, xbuf, len);
+		fdp->f_pos += len;
+		count += len;
+		buf += len;
+		n -= len;
+		nb++;
+	}
+
 	return count;
 }
 

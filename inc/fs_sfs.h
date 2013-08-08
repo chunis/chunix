@@ -136,8 +136,8 @@ struct sfs_file_desc {
 	int f_type;
 	int f_mode;
 	int f_flags;
-	int f_count;
-	int f_pos;
+	uint32_t f_count;
+	uint32_t f_pos;
 	struct sfs_inode *f_inode;
 };
 
