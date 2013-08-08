@@ -10,7 +10,7 @@
 extern uint32_t isr_table[ISR_NUM];
 
 // add an descriptor entry to GDT
-void set_descriptor(DESCRIPTOR *desp, uint32_t base,
+void set_descriptor(struct descriptor *desp, uint32_t base,
 		uint32_t lim, uint16_t attr)
 {
 	desp->base_low = base & 0xffff;
@@ -23,7 +23,7 @@ void set_descriptor(DESCRIPTOR *desp, uint32_t base,
 }
 
 // add an gate entry to GDT
-void set_gate(GATE *gatep, uint32_t offset, uint8_t attr, uint16_t sel)
+void set_gate(struct gate *gatep, uint32_t offset, uint8_t attr, uint16_t sel)
 {
 	gatep->offset_low = offset & 0xffff;
 	gatep->offset_high = (offset >> 16) & 0xffff;
@@ -32,7 +32,7 @@ void set_gate(GATE *gatep, uint32_t offset, uint8_t attr, uint16_t sel)
 	gatep->attr = attr; // 0x8e
 }
 
-void dump_descriptor(DESCRIPTOR *desp)
+void dump_descriptor(struct descriptor *desp)
 {
 	uint32_t base, lim;
 	uint16_t attr;
@@ -51,18 +51,18 @@ void init_gdt(void)
 	uint16_t *gdt_lim;
 
 	memset(gdt, 0, sizeof(gdt));
-	set_descriptor((DESCRIPTOR *)&gdt[KER_CODE], 0,
+	set_descriptor((struct descriptor *)&gdt[KER_CODE], 0,
 			0xfffff, 0xC0<<8 | DA_CR);
-	set_descriptor((DESCRIPTOR *)&gdt[KER_DATA], 0,
+	set_descriptor((struct descriptor *)&gdt[KER_DATA], 0,
 			0xfffff, 0xC0<<8 | DA_DRW);
-	set_descriptor((DESCRIPTOR *)&gdt[USR_CODE], 0,
+	set_descriptor((struct descriptor *)&gdt[USR_CODE], 0,
 			0xfffff, (0xC0<<8 | DA_DPL3 | DA_CR));
-	set_descriptor((DESCRIPTOR *)&gdt[USR_DATA], 0,
+	set_descriptor((struct descriptor *)&gdt[USR_DATA], 0,
 			0xfffff, (0xC0<<8 | DA_DPL3 | DA_DRW));
 	// for tss
 	memset(&tss, 0, sizeof(tss));
 	tss.ss0 = KER_DATA;
-	set_descriptor((DESCRIPTOR *)&gdt[KER_TSS], (uint32_t)&tss,
+	set_descriptor((struct descriptor *)&gdt[KER_TSS], (uint32_t)&tss,
 			sizeof(tss)-1, DA_386TSS);
 
 	// load gdt
@@ -103,7 +103,7 @@ void dump_gdt(void)
 
 	printk("\n------- dump_gdt() start ------\n");
 	for(i=0; i<6; i++) {
-		dump_descriptor((DESCRIPTOR *)gp);
+		dump_descriptor((struct descriptor *)gp);
 		gp += 2;
 	}
 	printk("------- dump_gdt() end --------\n");
