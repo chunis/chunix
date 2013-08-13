@@ -97,6 +97,7 @@ int main(struct multiboot_info *mboot_ptr)
 	init_inode_cache();
 	init_fs();
 	init_sfs();
+	get_time();
 	//check_initrd_fs();
 
 #if 1
