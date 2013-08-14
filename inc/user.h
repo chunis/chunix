@@ -10,6 +10,9 @@ int read(int fd, void *buf, int n);
 int write(int fd, const void *buf, int n);
 int close(int fd);
 uint32_t get_ticks(void);
+int fork(void);
+int wait(void);
+int exit(void) __attribute__((noreturn));
 
 // printf.c
 void printf(char *fmt, ...);

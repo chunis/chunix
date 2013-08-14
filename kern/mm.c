@@ -151,6 +151,63 @@ pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc)
 	return (pte_t *)(pte + PTX(va));
 }
 
+int dealloc_uvm(pde_t *pgdir, uint32_t oldsz, uint32_t newsz)
+{
+	// TODO
+	return;
+}
+
+// Free a page table and all the physical memory pages
+// in the user part.
+void free_vm(pde_t *pgdir)
+{
+	int i;
+
+	if(pgdir == NULL)
+		panic("free_vm: pgdir is NULL");
+
+	dealloc_uvm(pgdir, KERNBASE, 0);
+	for(i = 0; i < 1024; i++){
+		if(pgdir[i] & PTE_P){
+			char *v = P2V(PTE_ADDR(pgdir[i]));
+			kfree_page(v);
+		}
+	}
+	kfree_page((char*)pgdir);
+}
+
+// copy a parent process's page table for child
+pde_t* copy_uvm(pde_t *pgdir, uint32_t sz)
+{
+	pde_t *pde;
+	pte_t *pte;
+	uint32_t pa, i, flags;
+	char *mem;
+
+	if((pde = mapkvm()) == 0)
+		return 0;
+	for(i = 0; i < sz; i += PGSIZE){
+		if((pte = pgdir_walk(pgdir, (void *)i, 0)) == 0)
+			panic("copy_uvm: pte doesn't exist");
+		if(!(*pte & PTE_P))
+			panic("copy_uvm: page doesn't present");
+		pa = PTE_ADDR(*pte);
+		flags = PTE_FLAGS(*pte);
+		if((mem = kalloc_page()) == 0){
+			free_vm(pde);
+			return NULL;
+		}
+
+		memmove(mem, (char*)P2V(pa), PGSIZE);
+		if(mappages(pde, (void*)i, PGSIZE, V2P(mem), flags) < 0){
+			free_vm(pde);
+			return NULL;
+		}
+	}
+	return pde;
+}
+
+
 // we won't bother to detect base memory (< 1M), but simply assume it is 640K.
 // since if not, there won't have any extend memory for the kernel to be loaded.
 static uint32_t detect_mem(void)

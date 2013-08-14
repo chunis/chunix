@@ -77,15 +77,18 @@ struct task {
 	uint32_t pid;
 	uint32_t ppid;	// parent's id
 	char name[24];
+	enum ts_state state;
+	int sz;
+	int priority;
 	pde_t *pgdir;
 	char *kstack;	// bottom of kernel stack for this task
+	void *chan;	// if chan != 0, sleeping on it
+
 	//struct file *ofile[NOFILE];  // opened file
 	struct sfs_file_desc *ofile[NOFILE];  // opened file
-	enum ts_state state;
-	int priority;
-	void *chan;	// if chan != 0, sleeping on it
-	struct inode *cwd;
-	struct _task *next;
+	struct sfs_inode *cwd;
+	struct task *parent;
+	struct task *next;
 };
 
 struct tss tss;

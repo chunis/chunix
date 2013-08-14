@@ -120,6 +120,21 @@ int sys_close(void)
 	sf_close(fd);
 }
 
+int sys_fork(void)
+{
+	return fork();
+}
+
+int sys_exit(void)
+{
+	return exit();
+}
+
+int sys_wait(void)
+{
+	return wait();
+}
+
 static int (*syscalls[])(void) = {
 	[SYS_open] = sys_open,
 	[SYS_creat] = sys_creat,
@@ -127,6 +142,9 @@ static int (*syscalls[])(void) = {
 	[SYS_write] = sys_write,
 	[SYS_close] = sys_close,
 	[SYS_get_ticks] = sys_gticks,
+	[SYS_fork] = sys_fork,
+	[SYS_wait] = sys_wait,
+	[SYS_exit] = sys_exit,
 };
 
 void syscall(void)

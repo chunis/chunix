@@ -28,6 +28,7 @@
 #define PGADDR(d, t, o)	((uint32_t)((d) <<PDXSHIFT | (t) << PTXSHIFT | (o)))
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)	((uint32_t)(pte) & ~0xFFF)
+#define PTE_FLAGS(pte)	((uint32_t)(pte) &  0xFFF)
 
 #define V2P(a)		((a) - KERNBASE)
 #define P2V(a)		((a) + KERNBASE)

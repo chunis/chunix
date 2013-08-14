@@ -47,18 +47,6 @@ struct task *task_alloc(void)
 
 	sp = tp->kstack + KSTACKSIZE - sizeof(*tp->tf);
 	tp->tf = (struct stack_frame *)sp;
-	memset(tp->tf, 0, sizeof(*tp->tf));
-
-	tp->tf->cs = USR_CODE | SA_RPL3;
-	tp->tf->ds = USR_DATA | SA_RPL3;
-	tp->tf->es = USR_DATA | SA_RPL3;
-	tp->tf->fs = USR_DATA | SA_RPL3;
-	tp->tf->gs = USR_DATA | SA_RPL3;
-	tp->tf->ss = USR_DATA | SA_RPL3;
-
-	tp->tf->eflags = FL_IF;
-	tp->tf->esp = USTACKTOP;
-	// we will set tp->tf->eip later.
 
 	// Set up new context to start executing at forkret,
 	// which returns to trap_ret.
@@ -69,11 +57,6 @@ struct task *task_alloc(void)
 	tp->context = (struct context *)sp;
 	memset(tp->context, 0, sizeof *tp->context);
 	tp->context->eip = (uint32_t)do_nothing;
-
-	tp->state = TS_RUNNABLE;
-	tp->next = rootp;
-	rootp = tp;
-	printk("Added new task: %d\n", tp->pid);
 
 	return tp;
 }
@@ -136,11 +119,32 @@ struct task *task_create(uint8_t *binary, uint32_t size)
 	struct task *tp = NULL;
 
 	tp = task_alloc();
-	if(tp){
-		lcr3((uint32_t *)P2V((uint32_t)tp->pgdir));
-		load_icode(tp, binary, size);
-		lcr3((uint32_t *)P2V((uint32_t)kpgdir));
+	if(tp == NULL){
+		printk("create task failed\n");
+		return NULL;
 	}
+
+	// setup trap frame
+	memset(tp->tf, 0, sizeof(*tp->tf));
+	tp->tf->cs = USR_CODE | SA_RPL3;
+	tp->tf->ds = USR_DATA | SA_RPL3;
+	tp->tf->es = USR_DATA | SA_RPL3;
+	tp->tf->fs = USR_DATA | SA_RPL3;
+	tp->tf->gs = USR_DATA | SA_RPL3;
+	tp->tf->ss = USR_DATA | SA_RPL3;
+	tp->tf->eflags = FL_IF;
+	tp->tf->esp = USTACKTOP;
+	// we will set tp->tf->eip later.
+
+	lcr3((uint32_t *)P2V((uint32_t)tp->pgdir));
+	load_icode(tp, binary, size);
+	lcr3((uint32_t *)P2V((uint32_t)kpgdir));
+
+	tp->state = TS_RUNNABLE;
+	tp->next = rootp;
+	rootp = tp;
+	printk("Added new task: %d\n", tp->pid);
+
 	return tp;
 }
 
@@ -191,6 +195,46 @@ void task_destroy(struct task *tp)
 	return;
 }
 
+int fork(void)
+{
+	int i, pid;
+	struct task *tp = NULL;
+
+	tp = task_alloc();
+	if(tp == NULL){
+		printk("fork() failed\n");
+		return -1;
+	}
+
+	// copy process state from process 'current'
+	if((tp->pgdir = copy_uvm(current->pgdir, current->sz)) == 0){
+		kfree_page(tp->kstack);
+		tp->kstack = 0;
+		tp->state = TS_UNUSED;
+		return -1;
+	}
+
+	tp->sz = current->sz;
+	tp->parent = current;
+	*tp->tf = *current->tf;
+
+	// clear %eax so that fork returns 0 in the child.
+	tp->tf->eax = 0;
+
+	/* TODO
+	for(i = 0; i < NOFILE; i++)
+		if(current->ofile[i])
+			tp->ofile[i] = filedup(current->ofile[i]);
+	tp->cwd = idup(current->cwd);
+	*/
+
+	pid = tp->pid;
+	tp->state = TS_RUNNABLE;
+	//strcpy(tp->name, current->name, sizeof(current->name));
+
+	return pid;
+}
+
 void sleep_on(void *chan)
 {
 	if(!current)
@@ -214,7 +258,14 @@ void wakeup(void *chan)
 	}
 }
 
+void wait(void)
+{
+	printk("------ in wait() ------\n");
+	return;
+}
+
 void exit(void)
 {
+	printk("------ in exit() ------\n");
 	return;
 }

@@ -15,3 +15,6 @@ SYSCALL read	SYS_read
 SYSCALL write	SYS_write
 SYSCALL close	SYS_close
 SYSCALL get_ticks SYS_get_ticks
+SYSCALL fork	SYS_fork
+SYSCALL wait	SYS_wait
+SYSCALL exit	SYS_exit

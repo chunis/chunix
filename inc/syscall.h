@@ -7,5 +7,8 @@
 #define SYS_write	4
 #define SYS_close	5
 #define SYS_get_ticks	6
+#define SYS_fork	7
+#define SYS_wait	8
+#define SYS_exit	9
 
 #endif
