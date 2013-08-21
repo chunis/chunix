@@ -20,6 +20,10 @@ int main(int argc, char *argv[])
 		printf("Error! fork() failed!\n");
 	} else if(pid == 0){
 		printf("I'm child\n");
+		for(;;){
+			sleep(2);
+			printf("in todo for child: i = %d\n", i++);
+		}
 		exit();
 	} else {
 		ret = wait();

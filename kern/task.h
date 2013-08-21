@@ -78,7 +78,7 @@ struct task {
 	uint32_t ppid;	// parent's id
 	char name[24];
 	enum ts_state state;
-	int sz;
+	uint32_t sz;
 	int priority;
 	pde_t *pgdir;
 	char *kstack;	// bottom of kernel stack for this task

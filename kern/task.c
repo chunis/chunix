@@ -35,10 +35,6 @@ struct task *task_alloc(void)
 	if((tp->kstack = kalloc_page()) == NULL){
 		return NULL;
 	}
-	if((tp->pgdir = mapkvm()) == NULL){
-		kfree_page(tp->kstack);
-		return NULL;
-	}
 
 	tp->pid = nextpid++;
 	tp->ppid = 0;	// set parent to 0
@@ -85,10 +81,11 @@ static void region_alloc(struct task *tp, void *va, uint32_t len)
 // Set up the initial program binary, stack, and processor flags
 // for a user process.
 // use region_alloc() to make it easier.
-static void load_icode(struct task *tp, uint8_t *binary, uint32_t size)
+static uint32_t load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 {
 	struct proghdr *ph, *eph;
 	struct elf *elfhdr;
+	uint32_t offset, range = 0;
 
 	elfhdr = (struct elf *)binary;
 	if(elfhdr->e_magic != ELF_MAGIC)
@@ -103,6 +100,8 @@ static void load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 		region_alloc(tp, (void *)ph->ph_va, ph->ph_memsize);
 		memmove((void *)ph->ph_va, (void *)(binary+ph->ph_offset), ph->ph_filesize);
 		memset((void *)(ph->ph_va + ph->ph_filesize), 0, ph->ph_memsize - ph->ph_filesize);
+		offset = ph->ph_va + ph->ph_memsize;
+		range = (range >= offset ? range : offset);
 	}
 
 	// setup tp's eip to e_entry
@@ -110,6 +109,8 @@ static void load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 
 	// map one page for the program's initial stack
 	region_alloc(tp, (void *)USTACKTOP - PGSIZE, PGSIZE);
+
+	return range;
 }
 
 // allocates a new task with task_alloc(), loads the named elf
@@ -117,10 +118,15 @@ static void load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 struct task *task_create(uint8_t *binary, uint32_t size)
 {
 	struct task *tp = NULL;
+	uint32_t range;
 
 	tp = task_alloc();
 	if(tp == NULL){
 		printk("create task failed\n");
+		return NULL;
+	}
+	if((tp->pgdir = mapkvm()) == NULL){
+		kfree_page(tp->kstack);
 		return NULL;
 	}
 
@@ -137,9 +143,10 @@ struct task *task_create(uint8_t *binary, uint32_t size)
 	// we will set tp->tf->eip later.
 
 	lcr3((uint32_t *)P2V((uint32_t)tp->pgdir));
-	load_icode(tp, binary, size);
+	range = load_icode(tp, binary, size);
 	lcr3((uint32_t *)P2V((uint32_t)kpgdir));
 
+	tp->sz = range;
 	tp->state = TS_RUNNABLE;
 	tp->next = rootp;
 	rootp = tp;
@@ -218,6 +225,11 @@ int fork(void)
 	tp->parent = current;
 	*tp->tf = *current->tf;
 
+	// set up task's user stack and copy current task's stack
+	if(copy_page(tp, (void *)(USTACKTOP - PGSIZE)) == NULL){
+		return -1;
+	}
+
 	// clear %eax so that fork returns 0 in the child.
 	tp->tf->eax = 0;
 
@@ -231,6 +243,8 @@ int fork(void)
 	pid = tp->pid;
 	tp->state = TS_RUNNABLE;
 	//strcpy(tp->name, current->name, sizeof(current->name));
+	tp->next = rootp;
+	rootp = tp;
 
 	return pid;
 }

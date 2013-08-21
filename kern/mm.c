@@ -176,6 +176,32 @@ void free_vm(pde_t *pgdir)
 	kfree_page((char*)pgdir);
 }
 
+// copy a page from current task to task 'tp'.
+// alloc a new page for tp and map it, then copy the content from 'addr'.
+// Note: addr should be page-aligned.
+pde_t* copy_page(struct task *tp, uint32_t addr)
+{
+	pte_t *pte;
+	uint32_t pa, flags;
+	char *mem;
+
+	if((pte = pgdir_walk(current->pgdir, (void *)addr, 0)) == 0)
+		panic("copy_uvm: pte doesn't exist");
+	if(!(*pte & PTE_P))
+		panic("copy_uvm: page doesn't present");
+	pa = PTE_ADDR(*pte);
+	flags = PTE_FLAGS(*pte);
+	if((mem = kalloc_page()) == 0){
+		return NULL;
+	}
+
+	memmove(mem, (char*)P2V(pa), PGSIZE);
+	if(mappages(tp->pgdir, (void*)addr, V2P(mem), PGSIZE, flags) < 0){
+		return NULL;
+	}
+	return tp->pgdir;
+}
+
 // copy a parent process's page table for child
 pde_t* copy_uvm(pde_t *pgdir, uint32_t sz)
 {
