@@ -199,7 +199,7 @@ pde_t* copy_uvm(pde_t *pgdir, uint32_t sz)
 		}
 
 		memmove(mem, (char*)P2V(pa), PGSIZE);
-		if(mappages(pde, (void*)i, PGSIZE, V2P(mem), flags) < 0){
+		if(mappages(pde, (void*)i, V2P(mem), PGSIZE, flags) < 0){
 			free_vm(pde);
 			return NULL;
 		}
