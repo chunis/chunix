@@ -11,6 +11,7 @@ SFS_FILE = $(USEROBJ) README
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 GDB_ARG = -S -gdb tcp::1234
+QEMU = qemu -m 32 -serial mon:stdio
 
 HD = hd.img
 #HD = minixfs.img
@@ -19,10 +20,10 @@ FD = floppy.img
 all: chunix.img $(HD)
 
 qemu: chunix.img $(HD)
-	qemu -m 32 -hda chunix.img -hdb $(HD)
+	$(QEMU) -hda chunix.img -hdb $(HD)
 
 qemu-gdb: chunix.img $(HD) .gdbinit
-	qemu -m 32 -hda chunix.img -hdb $(HD) $(GDB_ARG)
+	$(QEMU) -hda chunix.img -hdb $(HD) $(GDB_ARG)
 
 bochs: chunix.img $(HD)
 	sed -i 's/hd.img/$(HD)/' hd.bxrc
@@ -43,22 +44,22 @@ mk_sfs_initrd: tools/mk_sfs.c
 grub-sfs: kernel mk_sfs_initrd tools/$(FD).bz2 $(HD)
 	@bzcat tools/$(FD).bz2 > $(FD)
 	tools/update_kernel_sfs.sh $(SFS_FILE)
-	qemu -m 32 -fda $(FD) -hdb $(HD)
+	$(QEMU) -fda $(FD) -hdb $(HD)
 
 grub-sfs-gdb: kernel mk_sfs_initrd tools/$(FD).bz2 $(HD) .gdbinit
 	@bzcat tools/$(FD).bz2 > $(FD)
 	tools/update_kernel_sfs.sh $(SFS_FILE)
-	qemu -m 32 -fda $(FD) -hdb $(HD) $(GDB_ARG)
+	$(QEMU) -fda $(FD) -hdb $(HD) $(GDB_ARG)
 
 grub: kernel initrd tools/$(FD).bz2 $(HD)
 	@bzcat tools/$(FD).bz2 > $(FD)
 	tools/update_kernel.sh
-	qemu -m 32 -fda $(FD) -hdb $(HD)
+	$(QEMU) -fda $(FD) -hdb $(HD)
 
 grub-gdb: kernel initrd tools/$(FD).bz2 $(HD) .gdbinit
 	@bzcat tools/$(FD).bz2 > $(FD)
 	tools/update_kernel.sh
-	qemu -m 32 -fda $(FD) -hdb $(HD) $(GDB_ARG)
+	$(QEMU) -fda $(FD) -hdb $(HD) $(GDB_ARG)
 
 chunix.img: bootsect kernel tools/blank_hd.img.bz2
 	@cat boot/bootsect kernel > tmp.img
