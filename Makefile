@@ -7,7 +7,8 @@ DRVOBJ  = $(patsubst %,drv/%,$(DRV))
 FSOBJ   = $(patsubst %,fs/%,$(FS))
 KERNOBJ = $(patsubst %,kern/%,$(KERN))
 USEROBJ = $(patsubst %,user/%,$(USER))
-SFS_FILE = $(USEROBJ) README
+BINOBJ  = $(patsubst %,bin/%,$(USER))
+SFS_FILE = $(BINOBJ) README
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 GDB_ARG = -S -gdb tcp::1234
@@ -99,6 +100,9 @@ $(KERNOBJ) kern/entry.o:
 $(USEROBJ):
 	(cd user && make)
 
+$(BINOBJ): $(USEROBJ)
+	mkdir -p bin && cp $(USEROBJ) bin
+
 clean:
 	(cd tools && make clean)
 	(cd boot && make clean)
@@ -108,6 +112,7 @@ clean:
 	(cd lib && make clean)
 	(cd user && make clean)
 	@rm -f mk_sfs mk_sfs_initrd initrd chunix.img #$(HD)
+	@rm -rf bin/
 
 cleanall: clean
 	@rm -f $(HD) *.img bochs.log *.asm *.sym

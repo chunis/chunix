@@ -148,8 +148,11 @@ int sys_wait(void)
 
 int sys_exec(void)
 {
+	char *path;
+
+	argstr(0, &path);
 	printk("*** Enter sys_exec() ***\n");
-	return exec();
+	return exec(path, NULL);
 }
 
 static int (*syscalls[])(void) = {
