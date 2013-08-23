@@ -18,3 +18,4 @@ SYSCALL get_ticks SYS_get_ticks
 SYSCALL fork	SYS_fork
 SYSCALL wait	SYS_wait
 SYSCALL exit	SYS_exit
+SYSCALL exec	SYS_exec

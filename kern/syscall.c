@@ -135,6 +135,7 @@ int sys_wait(void)
 	char buf[1024];
 	int i, ret;
 
+	// just used for test sfs_read_file()
 	printk("--- test sfs_read_file start ---\n");
 	ret = sfs_read_file("README", buf, 1024);
 	for(i = 0; i < 60; i++)
@@ -143,6 +144,12 @@ int sys_wait(void)
 	printk("--- test sfs_read_file end ---\n");
 
 	return wait();
+}
+
+int sys_exec(void)
+{
+	printk("*** Enter sys_exec() ***\n");
+	return exec();
 }
 
 static int (*syscalls[])(void) = {
@@ -155,6 +162,7 @@ static int (*syscalls[])(void) = {
 	[SYS_fork] = sys_fork,
 	[SYS_wait] = sys_wait,
 	[SYS_exit] = sys_exit,
+	[SYS_exec] = sys_exec,
 };
 
 void syscall(void)

@@ -13,6 +13,7 @@ uint32_t get_ticks(void);
 int fork(void);
 int wait(void);
 int exit(void) __attribute__((noreturn));
+int exec(char *path, char **argv);
 
 // printf.c
 void printf(char *fmt, ...);

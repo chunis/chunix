@@ -10,5 +10,6 @@
 #define SYS_fork	7
 #define SYS_wait	8
 #define SYS_exit	9
+#define SYS_exec	10
 
 #endif

@@ -395,7 +395,6 @@ static int sfs_find_index(const char *file, struct sfs_index *idxp)
 	char *str, *p;
 	int ne, ret = 0;
 
-	printk("cat file: %s\n", file);
 	while(nindex > 0){
 		read_index(nindex, (char *)idxp);
 		if(idxp->etype == DIR_ENT){
