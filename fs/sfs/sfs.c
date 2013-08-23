@@ -464,6 +464,43 @@ static int sfs_find_index(const char *file, struct sfs_index *idxp)
 	return ret;
 }
 
+// read at most n bytes content of file to buf.
+// return the number of bytes sucessfully read.
+// make sure buf has space no less than nb bytes.
+// return -1 if something wrong.
+int sfs_read_file(const char *file, char *buf, int nb)
+{
+	struct sfs_index idx;
+	struct sfs_file *filep;
+	char buffer[SECT_SIZE];
+	uint64_t m, n;
+	uint32_t sz;
+	int len, ret = 0;
+
+	if(! sfs_find_index(file, &idx))
+		return -1;
+
+	filep = (struct sfs_file *)&idx;
+	if(filep->etype != FILE_ENT)
+		return -1;
+
+	memset(buf, 0, nb);
+	m = filep->blk_start;
+	n = filep->blk_end;
+	len = filep->len;
+	len = (len < nb ? len : nb);
+	while(len > 0){
+		sz = len > SECT_SIZE ? SECT_SIZE : len;
+		read_data_block(m++, buffer);
+		memmove(buf, buffer, sz);
+		len -= sz;
+		buf += sz;
+		ret += sz;
+	}
+
+	return ret;
+}
+
 void sfs_cat_file(const char *file)
 {
 	struct sfs_index idx;

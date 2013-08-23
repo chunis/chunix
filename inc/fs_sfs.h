@@ -12,6 +12,7 @@
 
 int sfs_open(const char *pathname, int flags);
 int sfs_read(int fd, void *buf, int n);
+int sfs_read_file(const char *file, char *buf, int n);
 int write(int fd, const void *buf, int n);
 int close(int fd);
 

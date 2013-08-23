@@ -132,6 +132,16 @@ int sys_exit(void)
 
 int sys_wait(void)
 {
+	char buf[1024];
+	int i, ret;
+
+	printk("--- test sfs_read_file start ---\n");
+	ret = sfs_read_file("README", buf, 1024);
+	for(i = 0; i < 60; i++)
+		printk("%c", buf[i]);
+	printk("\nret = %d\n", ret);
+	printk("--- test sfs_read_file end ---\n");
+
 	return wait();
 }
 
