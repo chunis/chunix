@@ -57,27 +57,6 @@ struct task *task_alloc(void)
 	return tp;
 }
 
-// allocate len bytes of physical memory for task tp,
-// and map it at virtual address va.
-static void region_alloc(struct task *tp, void *va, uint32_t len)
-{
-	pte_t *pte;
-	char *p;
-	uint32_t _va = PGROUNDDOWN((uint32_t)va);
-	uint32_t _va_end = PGROUNDUP((uint32_t)va+len);
-
-	while(_va < _va_end){
-		pte = pgdir_walk(tp->pgdir, (void *)_va, 1);
-		if(!pte)
-			panic("region_alloc failed!");
-		p = kalloc_page();
-		if(!p)
-			panic("region_alloc failed!");
-		*pte = PTE_ADDR(V2P((uint32_t)p)) | PTE_U | PTE_W | PTE_P;
-		_va += PGSIZE;
-	}
-}
-
 // Set up the initial program binary, stack, and processor flags
 // for a user process.
 // use region_alloc() to make it easier.
@@ -97,7 +76,7 @@ static uint32_t load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 		if(ph->ph_type != ELF_PROG_LOAD)
 			continue;
 
-		region_alloc(tp, (void *)ph->ph_va, ph->ph_memsize);
+		region_alloc(tp->pgdir, (void *)ph->ph_va, ph->ph_memsize);
 		memmove((void *)ph->ph_va, (void *)(binary+ph->ph_offset), ph->ph_filesize);
 		memset((void *)(ph->ph_va + ph->ph_filesize), 0, ph->ph_memsize - ph->ph_filesize);
 		offset = ph->ph_va + ph->ph_memsize;
@@ -108,7 +87,7 @@ static uint32_t load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 	tp->tf->eip = elfhdr->e_entry;
 
 	// map one page for the program's initial stack
-	region_alloc(tp, (void *)USTACKTOP - PGSIZE, PGSIZE);
+	region_alloc(tp->pgdir, (void *)USTACKTOP - PGSIZE, PGSIZE);
 
 	return range;
 }
