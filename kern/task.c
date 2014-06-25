@@ -41,6 +41,9 @@ struct task *task_alloc(void)
 	tp->state = TS_STOPPED;
 	tp->priority = INIT_PRIO;
 
+	tp->heap_top = HEAP_START;
+	tp->heap_start = NULL;
+
 	sp = tp->kstack + KSTACKSIZE - sizeof(*tp->tf);
 	tp->tf = (struct stack_frame *)sp;
 

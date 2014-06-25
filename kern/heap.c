@@ -4,8 +4,6 @@
 #include <printf.h>
 #include "../kern/task.h"
 
-uint32_t heap_top = HEAP_START;
-struct heap_head *heap_start = NULL;
 extern struct task *current;
 
 static void glue_chunk (struct heap_head *chunk);
@@ -22,7 +20,7 @@ void heap_init(void)
 void *kmalloc(uint32_t n)
 {
 	uint32_t chunk_start;
-	struct heap_head *curp = heap_start, *prevp = NULL;
+	struct heap_head *curp = current->heap_start, *prevp = NULL;
 
 	n += sizeof(struct heap_head);
 	while(curp){
@@ -40,7 +38,7 @@ void *kmalloc(uint32_t n)
 		chunk_start = (uint32_t)prevp + prevp->len;
 	} else {
 		chunk_start = HEAP_START;
-		heap_start = (struct heap_head *)chunk_start;
+		current->heap_start = (struct heap_head *)chunk_start;
 	}
 
 	alloc_chunk(chunk_start, n);
@@ -70,10 +68,10 @@ static void alloc_chunk (uint32_t start, uint32_t len)
 {
 	pte_t *page;
 
-	while(start + len > heap_top){
+	while(start + len > current->heap_top){
 		page = V2P(PTE_ADDR(kalloc_page()));
-		mappages(current->pgdir, heap_top, page, PGSIZE, PTE_P | PTE_W);
-		heap_top += PGSIZE;
+		mappages(current->pgdir, current->heap_top, page, PGSIZE, PTE_P | PTE_W);
+		current->heap_top += PGSIZE;
 	}
 }
 
@@ -82,15 +80,15 @@ static void free_chunk (struct heap_head *chunk)
 	pte_t *page;
 
 	if(chunk->prev == NULL)
-		heap_start = NULL;
+		current->heap_start = NULL;
 	else
 		chunk->prev->next = NULL;
 
-	while((uint32_t)chunk <= (heap_top - PGSIZE)){
-		heap_top -= PGSIZE;
-		page = pgdir_walk(current->pgdir, heap_top, 0);
+	while((uint32_t)chunk <= (current->heap_top - PGSIZE)){
+		current->heap_top -= PGSIZE;
+		page = pgdir_walk(current->pgdir, current->heap_top, 0);
 		assert(page);
-		unmap_page(current->pgdir, heap_top); // also kfree_page(page) there
+		unmap_page(current->pgdir, current->heap_top); // also kfree_page(page) there
 	}
 }
 
@@ -140,7 +138,7 @@ static void glue_chunk (struct heap_head *chunk)
 
 void dump_heap(void)
 {
-	struct heap_head *p = heap_start;
+	struct heap_head *p = current->heap_start;
 
 	printk("dump heap:\n");
 	while(p){

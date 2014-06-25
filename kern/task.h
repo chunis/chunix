@@ -4,6 +4,7 @@
 #include <types.h>
 #include "descriptor.h"
 #include <const.h>
+#include <heap.h>
 
 #define INIT_PRIO	20
 #define LDT_SIZE	2
@@ -83,6 +84,10 @@ struct task {
 	pde_t *pgdir;
 	char *kstack;	// bottom of kernel stack for this task
 	void *chan;	// if chan != 0, sleeping on it
+
+	// for kernel heap
+	uint32_t heap_top;
+	struct heap_head *heap_start;
 
 	//struct file *ofile[NOFILE];  // opened file
 	struct sfs_file_desc *ofile[NOFILE];  // opened file
