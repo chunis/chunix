@@ -30,10 +30,8 @@ bochs: chunix.img $(HD)
 	sed -i 's/hd.img/$(HD)/' hd.bxrc
 	bochs -f hd.bxrc
 
-$(HD): tools/$(HD).bz2 mk_sfs_fs
+$(HD): tools/$(HD).bz2 mk_sfs $(SFS_FILE)
 	if [ $(HD) != "hd.img" ]; then bzcat tools/$(HD).bz2 > $(HD); fi
-
-mk_sfs_fs: mk_sfs $(SFS_FILE)
 	./mk_sfs $(HD) $(SFS_FILE)
 
 mk_sfs: tools/mk_sfs.c
