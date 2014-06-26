@@ -331,6 +331,37 @@ int close(int fd)
 	return 0;
 }
 
+// return 0 if succeed, -1 if fail
+int sfs_stat(const char *path, struct sfs_stat *buf)
+{
+	struct sfs_inode *indp;
+	struct sfs_index *idxp;
+	//struct sfs_dir *dirp;
+	struct sfs_file *filep;
+
+	memset(buf, 0, sizeof(struct sfs_stat));
+
+	indp = sfs_namei(path);
+	if(indp == NULL){
+		printk("sfs_stat: sfs_namei() fail\n");
+		return -1;
+	}
+
+	idxp = &indp->sindex;
+	if(idxp->etype == DIR_ENT){
+		buf->st_mode = SFS_TYPE_DIR;
+		//dirp = (struct sfs_dir *)idxp;
+		buf->st_size = 0;
+	} else if (idxp->etype == FILE_ENT){
+		buf->st_mode = SFS_TYPE_FILE;
+		filep = (struct sfs_file *)idxp;
+		buf->st_size = filep->len;
+	}
+
+	buf->st_dev = SFS_DEV;
+	return 0;
+}
+
 static char calc_checksum(char *sb)
 {
 	char sum = 0;
