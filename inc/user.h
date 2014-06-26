@@ -2,6 +2,7 @@
 #define __USER_H__
 
 #include <types.h>
+#include <stat.h>
 
 // syscall
 int open(const char *pathname, int flags);
@@ -14,6 +15,7 @@ int fork(void);
 int wait(void);
 int exit(void) __attribute__((noreturn));
 int exec(char *path, char **argv);
+int stat(const char *filename, struct stat *stat_buf);
 
 // printf.c
 void printf(char *fmt, ...);

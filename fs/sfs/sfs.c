@@ -161,8 +161,9 @@ static struct sfs_inode *sfs_namei(const char *name)
 {
 	struct sfs_inode *ret = NULL;
 
-	ret = search_index_buf(name);
-	if(ret == NULL)
+	// Something wrong goes here
+	//ret = search_index_buf(name);
+	//if(ret == NULL)
 		ret = search_index(name, SFS_TYPE_FILE);
 
 	return ret;

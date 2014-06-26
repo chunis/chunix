@@ -155,6 +155,16 @@ int sys_exec(void)
 	return exec(path, NULL);
 }
 
+int sys_stat(void)
+{
+	char *path, *buf;
+
+	argstr(0, &path);
+	argstr(1, &buf);
+
+	sf_stat(path, (struct sfs_stat *)buf);
+}
+
 static int (*syscalls[])(void) = {
 	[SYS_open] = sys_open,
 	[SYS_creat] = sys_creat,
@@ -166,6 +176,7 @@ static int (*syscalls[])(void) = {
 	[SYS_wait] = sys_wait,
 	[SYS_exit] = sys_exit,
 	[SYS_exec] = sys_exec,
+	[SYS_stat] = sys_stat,
 };
 
 void syscall(void)

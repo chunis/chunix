@@ -1,4 +1,6 @@
 #include <printf.h>
+#include <fs_sfs.h>
+#include <stat.h>
 
 // syscalls in fs
 // do some arguments check, then call into fs.c
@@ -35,3 +37,10 @@ int sf_close(int fd)
 	return fileclose(fd);
 }
 
+int sf_stat(const char *path, struct sfs_stat *buf)
+{
+	printk("in sf_stat: path: %s\n", path);
+
+	// no need to do copying from kernel
+	return sfs_stat(path, buf);
+}

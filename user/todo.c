@@ -10,10 +10,12 @@ int main(int argc, char *argv[])
 	char buf[40] = { 0 };
 	int pid, ret;
 
+#if 0
 	fd = open("README", O_RDWR);
 	printf("fd = %d\n", fd);
 	n = read(fd, buf, 39);
 	printf("n = %d\n%s\n\n", n, buf);
+#endif
 
 	pid = fork();
 	if(pid < 0){
@@ -24,7 +26,7 @@ int main(int argc, char *argv[])
 		printf("After exec(), ret = %d\n", ret);
 
 		for(;;){
-			sleep(2);
+			sleep(5);
 			printf("in todo for child: i = %d\n", i++);
 		}
 		exit();
@@ -34,7 +36,7 @@ int main(int argc, char *argv[])
 	}
 
 	for(;;){
-		sleep(3);
+		sleep(8);
 		printf("in todo: i = %d\n", i++);
 	}
 }

@@ -19,3 +19,4 @@ SYSCALL fork	SYS_fork
 SYSCALL wait	SYS_wait
 SYSCALL exit	SYS_exit
 SYSCALL exec	SYS_exec
+SYSCALL stat	SYS_stat

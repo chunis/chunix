@@ -2,11 +2,14 @@
 
 int main(int argc, char *argv[])
 {
-	char *str = "Hello";
+	struct stat state;
+
+	stat("bin/todo", &state);
+	printf("bin/todo size = |%d|\n", state.st_size);
 
 	for(;;){
-		sleep(3);
-		printf("in hello: I'm %s\n", str);
+		sleep(10);
+		printf("hello> \n");
 	}
 
 	return 0;
