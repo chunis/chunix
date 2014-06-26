@@ -10,9 +10,16 @@
 #include <types.h>
 #include <fs.h>
 
+struct sfs_stat {
+	dev_t st_dev;
+	uint32_t st_mode;
+	off_t st_size;
+};
+
 int sfs_open(const char *pathname, int flags);
 int sfs_read(int fd, void *buf, int n);
 int sfs_read_file(const char *file, char *buf, int n);
+int sfs_stat(const char *path, struct sfs_stat *buf);
 int write(int fd, const void *buf, int n);
 int close(int fd);
 
@@ -144,11 +151,5 @@ struct sfs_file_desc {
 
 #define FDT_SIZE 64	// size of fdtable[]
 struct sfs_file_desc fdtable[FDT_SIZE];
-
-struct sfs_stat {
-	dev_t st_dev;
-	uint32_t st_mode;
-	off_t st_size;
-};
 
 #endif
