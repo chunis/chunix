@@ -2,24 +2,29 @@
 #include <mmu.h>
 #include <elf.h>
 #include <printf.h>
-//#include <x86.h>
-//#include <mmu.h>
-//#include <kbd.h>
+#include <fs_sfs.h>
 //#include <console.h>
-//#include <multiboot.h>
 //#include <string.h>
 //#include <fs.h>
+#include "task.h"
+
+
+extern struct task *current;
 
 int exec(char *path, char **argv)
 {
 	pde_t *pgdir, oldpgdir;
+	struct sfs_stat state;
+	struct proghdr *ph, *eph;
 	struct elf elfhdr;
 	int elfsz = sizeof(struct elf);
+	uint32_t offset, range = 0;
 	int ret;
+	char *fp;
 
 	printk("------> Enter exec() now, path = %s\n", path);
-	// 1. read the elf binary from disk, and check elf reader
-	//if(sfs_read_file(path, (char *)&elfhdr, elfsz) < elfsz){
+
+	// read the elf binary from disk, and check elf reader
 	ret = sfs_read_file(path, (char *)&elfhdr, elfsz);
 	printk("exec: ret = %d\n", ret);
 	if(ret < elfsz){
@@ -35,23 +40,43 @@ int exec(char *path, char **argv)
 		goto fail;
 	}
 
-	// 2. load program into memory
-	//
+	// get binary file size
+	sfs_stat(path, &state);
+	printk("%s: size = %d\n", path, state.st_size);
+	fp = kmalloc(state.st_size);
+	if(!fp)
+		panic("kmalloc");
 
-	// 3. setup user stack
-	//
+	// read all binary from disk to buf 'fp'
+	ret = sfs_read_file(path, fp, state.st_size);
+	if(ret < state.st_size)
+		panic("sfs_read_file");
+
+	ph = (struct proghdr *)(fp + elfhdr.e_phoff);
+	eph = ph + elfhdr.e_phnum;
+	for(; ph < eph; ph++){
+		if(ph->ph_type != ELF_PROG_LOAD)
+			continue;
+
+		region_alloc(current->pgdir, (void *)ph->ph_va, ph->ph_memsize);
+		memmove((void *)ph->ph_va, (void *)(fp+ph->ph_offset), ph->ph_filesize);
+		memset((void *)(ph->ph_va + ph->ph_filesize), 0, ph->ph_memsize - ph->ph_filesize);
+		offset = ph->ph_va + ph->ph_memsize;
+		range = (range >= offset ? range : offset);
+	}
+
+	// setup tp's eip to e_entry
+	current->tf->eip = elfhdr.e_entry;
+
+	// map one page for the program's initial stack
+	region_alloc(current->pgdir, (void *)USTACKTOP - PGSIZE, PGSIZE);
 
 	// 4. setup arguments in stack
-	//
 
-	// 5. other things
-	//
-
+	kfree(fp);
 	return 0;
 
 fail:
-	//if(pgdir)
-	//	free_vm(pgdir);
 	return -1;
 }
 
