@@ -19,4 +19,4 @@ KERN = isr.o init.o string.o printf.o time.o syscall.o sched.o \
 		task.o descriptor.o tools.o mm.o trap.o swtch.o \
 		multiboot.o heap.o get_time.o exec.o
 
-USER = hello todo
+USER = hello todo hsh
