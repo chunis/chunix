@@ -27,3 +27,8 @@ void sched_yield(void)
 	task_run(current);
 }
 
+void yield(void)
+{
+	current->state = TS_RUNNABLE;
+	sched_yield();
+}

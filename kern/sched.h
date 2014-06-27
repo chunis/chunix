@@ -6,5 +6,6 @@
 extern uint32_t timer_ticks;
 
 void sched_yield(void);
+void yield(void);
 
 #endif

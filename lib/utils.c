@@ -11,3 +11,15 @@ void sleep(int sec)
 			break;
 	}
 }
+
+void msleep(int msec)
+{
+	int start;
+
+	start = get_ticks();
+
+	while(1){
+		if(get_ticks() - start > msec / 10)
+			break;
+	}
+}

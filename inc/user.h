@@ -22,5 +22,6 @@ void printf(char *fmt, ...);
 
 // utils.c
 void sleep(int sec);
+void msleep(int msec);
 
 #endif
