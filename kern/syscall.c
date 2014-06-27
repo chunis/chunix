@@ -88,7 +88,11 @@ int sys_read(void)
 	argstr(1, &p);
 	len = argint(2);
 
-	return sf_read(fd, p, len);
+	if(fd == 0){  // get data from stdin
+		return stdin_read(p, len);
+	} else {
+		return sf_read(fd, p, len);
+	}
 }
 
 int sys_write(void)

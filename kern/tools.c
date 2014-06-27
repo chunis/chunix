@@ -7,6 +7,19 @@
 
 char monbuf[1024];  // monitor buffer
 
+
+// get n chars to buf
+int stdin_read(char *buf, int n)
+{
+	int i = 0;
+
+	while(i < n){
+		buf[i++] = get_c();
+	}
+
+	return i;
+}
+
 char *readline(char *str)
 {
 	int i = 0;

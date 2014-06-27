@@ -13,6 +13,7 @@ static uint16_t *cons_buf;
 static uint16_t cons_pos;
 uint8_t default_color = BRIGHT_GREEN;
 static uint8_t dcolor = BRIGHT_GREEN;
+int inputlock;
 
 static uint16_t locate_cursor(void)
 {
@@ -130,8 +131,8 @@ char get_c(void)
 {
 	char c;
 
-	while(cbuf.rpos == cbuf.wpos)  // no chars available in cbuf.buf[]
-		;
+	if(cbuf.rpos == cbuf.wpos)  // no chars available in cbuf.buf[]
+		sleep_on(&inputlock);
 
 	c = cbuf.buf[cbuf.rpos++];
 	if(cbuf.rpos == CONS_SIZE)

@@ -20,7 +20,7 @@ int sf_creat(const char *path, int flags)
 
 int sf_read(int fd, void *buf, int n)
 {
-	printk("in sf_read: fd: %d, buf: %s, n: %d\n", fd, buf, n);
+	//printk("in sf_read: fd: %d, n: %d\n", fd, n);
 	//return fileread(fd, buf, n);
 	return sfs_read(fd, buf, n);
 }
