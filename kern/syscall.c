@@ -64,7 +64,7 @@ int sys_open(void)
 	argstr(0, &path);
 	flag = argint(1);
 
-	sf_open(path, flag);
+	return sf_open(path, flag);
 }
 
 int sys_creat(void)
@@ -75,7 +75,7 @@ int sys_creat(void)
 	argstr(0, &path);
 	flag = argint(1);
 
-	sf_creat(path, flag);
+	return sf_creat(path, flag);
 }
 
 int sys_read(void)
@@ -85,10 +85,10 @@ int sys_read(void)
 	int s;
 
 	fd = argint(0);
-	len = argstr(1, &p);
+	argstr(1, &p);
 	len = argint(2);
 
-	sf_read(fd, p, len);
+	return sf_read(fd, p, len);
 }
 
 int sys_write(void)
@@ -98,7 +98,7 @@ int sys_write(void)
 	int s;
 
 	fd = argint(0);
-	len = argstr(1, &p);
+	argstr(1, &p);
 	len = argint(2);
 
 	if(fd == 1 || fd == 2){  // print to stdout
@@ -117,7 +117,7 @@ int sys_close(void)
 {
 	int fd = argint(0);
 
-	sf_close(fd);
+	return sf_close(fd);
 }
 
 int sys_fork(void)
@@ -162,7 +162,7 @@ int sys_stat(void)
 	argstr(0, &path);
 	argstr(1, &buf);
 
-	sf_stat(path, (struct sfs_stat *)buf);
+	return sf_stat(path, (struct sfs_stat *)buf);
 }
 
 static int (*syscalls[])(void) = {
