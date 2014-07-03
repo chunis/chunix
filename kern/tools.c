@@ -13,8 +13,8 @@ int stdin_read(char *buf, int n)
 {
 	int i = 0;
 
-	while(i < n){
-		buf[i++] = get_c();
+	while(i++ < n){
+		*buf++ = get_c();
 	}
 
 	return i;

@@ -23,5 +23,6 @@ void printf(char *fmt, ...);
 // utils.c
 void sleep(int sec);
 void msleep(int msec);
+void gets(char *buf, int n);
 
 #endif

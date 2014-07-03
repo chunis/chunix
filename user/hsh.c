@@ -4,9 +4,14 @@
 
 int main(int argc, char *argv[])
 {
+	char buf[1024];
+
 	for(;;){
-		sleep(4);
 		printf("hsh > ");
+
+		//memset(buf, 0, 1024);
+		gets(buf, 1024);
+		printf("You Enter: %s\n", buf);
 	}
 
 	return 0;

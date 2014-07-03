@@ -23,3 +23,19 @@ void msleep(int msec)
 			break;
 	}
 }
+
+// get at most n chars to buf, ends with '\n' if less than n chars
+void gets(char *buf, int n)
+{
+	int i = 0;
+	char c;
+
+	while(i+1 < n){
+		if(read(0, &c, 1) < 1)
+			break;
+		buf[i++] = c;
+		if(c == '\n' || c == '\r')
+			break;
+	}
+	buf[i] = '\0';
+}
