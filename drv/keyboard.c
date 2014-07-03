@@ -4,7 +4,6 @@
 #include <kbd.h>
 
 static void process_char(uint8_t c);
-extern int inputlock;
 
 // process keyboard input
 // TODO: scan code for "Print Screen" and "Pause"
@@ -155,7 +154,7 @@ void read_char(void)
 static void process_char(uint8_t c)
 {
 	// only output ascii characters now
-	wakeup(&inputlock);
+	wakeup(&cbuf.rpos);
 	if(c <= 0x7f)
 		put_c(c);
 }
