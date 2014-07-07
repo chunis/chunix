@@ -18,7 +18,7 @@
 void cons_init(void);
 void put_c(char c);
 void put_color_c(char color, char c);
-char get_c(void);
+int get_c(int block);
 
 struct console_buf {
 	char buf[CONS_SIZE];

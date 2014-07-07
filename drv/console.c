@@ -126,12 +126,19 @@ void put_c(char c)
 	put_cursor(cons_pos);
 }
 
-char get_c(void)
+// argument:
+// 'block' = 1: sleep until return with a char.
+// 'block' = 0: don't block, just return -1 to mean no char returned
+int get_c(int block)
 {
 	char c;
 
-	if(cbuf.rpos == cbuf.wpos)  // no chars available in cbuf.buf[]
-		sleep_on(&cbuf.rpos);
+	if(cbuf.rpos == cbuf.wpos){  // no chars available in cbuf.buf[]
+		if(block)
+			sleep_on(&cbuf.rpos);
+		else
+			return -1;
+	}
 
 	c = cbuf.buf[cbuf.rpos++];
 	if(cbuf.rpos == CONS_SIZE)

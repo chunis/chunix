@@ -8,13 +8,17 @@
 char monbuf[1024];  // monitor buffer
 
 
-// get n chars to buf
+// get n chars to buf, or -1 if no data obtained
 int stdin_read(char *buf, int n)
 {
-	int i = 0;
+	int r, i = 0;
 
-	while(i++ < n){
-		*buf++ = get_c();
+	while(i < n){
+		r = get_c(0); // TODO: Why get_c(1) is wrong?
+		if(r == -1)
+			return r;
+		*buf++ = (char)r;
+		i++;
 	}
 
 	return i;
@@ -27,7 +31,7 @@ char *readline(char *str)
 	if(str != NULL)
 		printk("%s", str);
 
-	while( (monbuf[i++] = get_c()) != '\n')
+	while( (monbuf[i++] = get_c(1)) != '\n')
 		;  // do nothing
 	monbuf[--i] = '\0'; // delete the last '\n'
 

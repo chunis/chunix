@@ -27,12 +27,16 @@ void msleep(int msec)
 // get at most n chars to buf, ends with '\n' if less than n chars
 void gets(char *buf, int n)
 {
-	int i = 0;
+	int r, i = 0;
 	char c;
 
 	while(i+1 < n){
-		if(read(0, &c, 1) < 1)
+		r = read(0, &c, 1);
+		if(r == -1)
+			continue;
+		if(r == 0)
 			break;
+
 		buf[i++] = c;
 		if(c == '\n' || c == '\r')
 			break;
