@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 	printf("bin/todo size = |%d|\n", state.st_size);
 
 	for(;;){
-		sleep(10);
+		sleep(400);
 		printf("hello> \n");
 	}
 

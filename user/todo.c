@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 		printf("After exec(), ret = %d\n", ret);
 
 		for(;;){
-			sleep(5);
+			sleep(300);
 			printf("in todo for child: i = %d\n", i++);
 		}
 		exit();
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	}
 
 	for(;;){
-		sleep(8);
+		sleep(500);
 		printf("in todo: i = %d\n", i++);
 	}
 }
