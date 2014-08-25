@@ -91,6 +91,7 @@ int main(struct multiboot_info *mboot_ptr)
 	init_8259A();
 	install_timer(100);
 	init_keyboard();
+	init_serial();
 	init_hd();
 
 	init_buffer();
