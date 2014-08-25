@@ -66,4 +66,17 @@ read_eflags(void)
 	return val;
 }
 
+static __inline void
+cli(void)
+{
+	  __asm __volatile("cli");
+}
+
+static __inline void
+sti(void)
+{
+	  __asm __volatile("sti");
+}
+
+
 #endif
