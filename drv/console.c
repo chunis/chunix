@@ -2,6 +2,7 @@
 #include <x86.h>
 #include <mmu.h>
 #include <string.h>
+#include <spinlock.h>
 #include "console.h"
 
 #define CEIL(num, base)	(((num)/(base)+1)*(base))
@@ -13,6 +14,7 @@ static uint16_t *cons_buf;
 static uint16_t cons_pos;
 uint8_t default_color = BRIGHT_GREEN;
 static uint8_t dcolor = BRIGHT_GREEN;
+struct spinlock cons_lock;
 
 static uint16_t locate_cursor(void)
 {
@@ -65,6 +67,7 @@ void cons_init(void)
 	cbuf.wpos = 0;
 	cbuf.rpos = 0;
 
+	init_lock(&cons_lock, "cons_lock");
 	clean_screen();
 }
 

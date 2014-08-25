@@ -17,6 +17,6 @@ DRV  = console.o hd.o keyboard.o memhd.o
 FS   = buffer.o sysfile.o fs.o file.o ext2/ext2.o initrd_ext2/initrd_ext2.o sfs/sfs.o
 KERN = isr.o init.o string.o printf.o time.o syscall.o sched.o \
 		task.o descriptor.o tools.o mm.o trap.o swtch.o \
-		multiboot.o heap.o get_time.o exec.o
+		multiboot.o heap.o get_time.o exec.o spinlock.o
 
 USER = hello todo hsh echo

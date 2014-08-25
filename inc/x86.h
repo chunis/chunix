@@ -78,5 +78,16 @@ sti(void)
 	  __asm __volatile("sti");
 }
 
+static __inline uint32_t
+xchg(__volatile uint32_t *addr, uint32_t newval)
+{
+	uint32_t ret;
+
+	// The + in "+m" denotes a read-modify-write operand.
+	__asm __volatile("lock; xchgl %0, %1" :
+			"+m" (*addr), "=a" (ret) :
+			"1" (newval) : "cc");
+	return ret;
+}
 
 #endif
