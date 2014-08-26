@@ -15,6 +15,7 @@ static uint16_t cons_pos;
 uint8_t default_color = BRIGHT_GREEN;
 static uint8_t dcolor = BRIGHT_GREEN;
 struct spinlock cons_lock;
+extern uint8_t timer_flag;
 
 static uint16_t locate_cursor(void)
 {
@@ -91,7 +92,7 @@ void put_color_c(char color, char c)
 	dcolor = oldcolor;
 }
 
-void put_c(char c)
+void putc_to_console(char c)
 {
 	int cnt;
 	char blank = 0x20;
@@ -103,6 +104,7 @@ void put_c(char c)
 				cons_buf[--cons_pos] = BLANK_CHAR;
 			break;
 		case '\n':
+		case '\r':
 			cons_pos += CONS_COLS;
 			cons_pos -= (cons_pos % CONS_COLS);
 			break;
@@ -129,6 +131,13 @@ void put_c(char c)
 	put_cursor(cons_pos);
 }
 
+void put_c(char c)
+{
+	putc_to_console(c);
+	if(timer_flag == 0)
+		write_serial(c);
+}
+
 // argument:
 // 'block' = 1: sleep until return with a char.
 // 'block' = 0: don't block, just return -1 to mean no char returned
@@ -148,4 +157,26 @@ int get_c(int block)
 		cbuf.rpos = 0;
 
 	return c;
+}
+
+void console_isr(int (*getc)(void))
+{
+	int c;
+	char val;
+
+	while((c = getc()) != -1){
+		if(c == 0)
+			continue;
+		val = (char)c;
+		cbuf.buf[cbuf.wpos++] = val;
+		if(cbuf.wpos >= CONS_SIZE){
+			cbuf.wpos = 0;
+		}
+
+		wakeup(&cbuf.rpos);
+
+		// only output ascii characters now
+		if(val <= 0x7f)
+			put_c(val);
+	}
 }

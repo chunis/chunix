@@ -22,6 +22,7 @@ void install_timer(int freq)
 
 uint32_t timer_ticks = 0;
 int reent = -1;
+uint8_t timer_flag;
 
 void timer_isr(void)
 {
@@ -37,7 +38,9 @@ void timer_isr(void)
 	if(timer_ticks++ % 100 == 0){
 		get_cursor(&x, &y);
 		set_cursor(64, 0);
+		timer_flag = 1;
 		printk("time: %d sec\n", timer_ticks/100);
+		timer_flag = 0;
 		set_cursor(x, y);
 	}
 

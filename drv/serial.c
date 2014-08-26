@@ -4,7 +4,7 @@
 #define COM1	0x3F8   // COM1
 
 static int has_serial;
-
+void write_serial(int c);
  
 void init_serial(void)
 {
@@ -28,6 +28,8 @@ void init_serial(void)
 	(void) inb(COM1 + 2);
 	(void) inb(COM1 + 0);
 
+	outb(0x21, inb(0x21)&0xef);  // enable COM1
+
 	while(*p)
 		write_serial(*p++);
 }
@@ -36,8 +38,12 @@ static int read_serial(void)
 {
 	if(!has_serial)
 		return -1;
+
+	//while((inb(COM1 + 5) & 0x1) == 0)
+	//	;
 	if((inb(COM1 + 5) & 0x1) == 0)
 		return -1;
+
 	return inb(COM1 + 0);
 }
 
@@ -49,4 +55,22 @@ void write_serial(int c)
 		;
 
 	outb(COM1 + 0, c);
+	if(c == '\r')
+		write_serial('\n');
+}
+
+void serial_isr(void)
+{
+	console_isr(read_serial);
+	outb(0x20, 0x20);
+}
+
+void _serial_isr(void)
+{
+	int c;
+
+	c = read_serial();
+	if(c == -1)
+		return;
+	put_c((char)c);
 }

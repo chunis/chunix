@@ -58,6 +58,10 @@ void trap(struct stack_frame *tf)
 		keyboard_isr();
 		return;
 	}
+	if(tf->trapno == T_IRQ0 + IRQ_COM1){
+		serial_isr();
+		return;
+	}
 	if(tf->trapno == T_IRQ0 + IRQ_IDE){
 		printk("IDE read/write interrupt\n");
 		hd_isr();

@@ -126,21 +126,11 @@ int read_kbd(void)
 	return val;
 }
 
-void read_char(void)
+void keyboard_isr(void)
 {
-	int c;
 	char val;
 
-	while((c = read_kbd()) != -1){
-		if(c == 0)
-			continue;
-		val = (char)c;
-		cbuf.buf[cbuf.wpos++] = val;
-		if(cbuf.wpos >= CONS_SIZE){
-			cbuf.wpos = 0;
-		}
-		process_char(val);
-	}
+	console_isr(read_kbd);
 
 	/* finish handle key and re-enable interrupt */
 	val = inb(0x61);
@@ -148,20 +138,6 @@ void read_char(void)
 	outb(0x61, val&0x7f);
 
 	outb(0x20, 0x20);
-}
-
-// process char. At here, we can process inputs like ''C-c' and 'F1'.
-static void process_char(uint8_t c)
-{
-	// only output ascii characters now
-	wakeup(&cbuf.rpos);
-	if(c <= 0x7f)
-		put_c(c);
-}
-
-void keyboard_isr(void)
-{
-	read_char();
 }
 
 void init_keyboard(void)
