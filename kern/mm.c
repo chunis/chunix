@@ -100,7 +100,7 @@ void kfree_range(void *start, void *end)
 
 // allocate len bytes of physical memory for task tp,
 // and map it at virtual address va.
-void region_alloc(pde_t *pgdir, void *va, uint32_t len)
+void region_alloc(pde_t *pgdir, void *va, uint32_t len, int perm)
 {
 	pte_t *pte;
 	char *p;
@@ -114,7 +114,7 @@ void region_alloc(pde_t *pgdir, void *va, uint32_t len)
 		p = kalloc_page();
 		if(!p)
 			panic("region_alloc failed!");
-		*pte = PTE_ADDR(V2P((uint32_t)p)) | PTE_U | PTE_W | PTE_P;
+		*pte = PTE_ADDR(V2P((uint32_t)p)) | perm | PTE_P;
 		_va += PGSIZE;
 	}
 }

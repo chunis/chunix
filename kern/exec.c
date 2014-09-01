@@ -58,22 +58,22 @@ int exec(char *path, char **argv)
 		if(ph->ph_type != ELF_PROG_LOAD)
 			continue;
 
-		region_alloc(current->pgdir, (void *)ph->ph_va, ph->ph_memsize);
+		region_alloc(current->pgdir, (void *)ph->ph_va, ph->ph_memsize, (PTE_W | PTE_U));
 		memmove((void *)ph->ph_va, (void *)(fp+ph->ph_offset), ph->ph_filesize);
 		memset((void *)(ph->ph_va + ph->ph_filesize), 0, ph->ph_memsize - ph->ph_filesize);
 		offset = ph->ph_va + ph->ph_memsize;
 		range = (range >= offset ? range : offset);
 	}
+	kfree(fp);
 
 	// setup tp's eip to e_entry
 	current->tf->eip = elfhdr.e_entry;
 
 	// map one page for the program's initial stack
-	region_alloc(current->pgdir, (void *)USTACKTOP - PGSIZE, PGSIZE);
+	region_alloc(current->pgdir, (void *)USTACKTOP - PGSIZE, PGSIZE, (PTE_W | PTE_U));
 
 	// 4. setup arguments in stack
 
-	kfree(fp);
 	return 0;
 
 fail:

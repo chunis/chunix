@@ -79,7 +79,7 @@ static uint32_t load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 		if(ph->ph_type != ELF_PROG_LOAD)
 			continue;
 
-		region_alloc(tp->pgdir, (void *)ph->ph_va, ph->ph_memsize);
+		region_alloc(tp->pgdir, (void *)ph->ph_va, ph->ph_memsize, (PTE_W | PTE_U));
 		memmove((void *)ph->ph_va, (void *)(binary+ph->ph_offset), ph->ph_filesize);
 		memset((void *)(ph->ph_va + ph->ph_filesize), 0, ph->ph_memsize - ph->ph_filesize);
 		offset = ph->ph_va + ph->ph_memsize;
@@ -90,7 +90,7 @@ static uint32_t load_icode(struct task *tp, uint8_t *binary, uint32_t size)
 	tp->tf->eip = elfhdr->e_entry;
 
 	// map one page for the program's initial stack
-	region_alloc(tp->pgdir, (void *)USTACKTOP - PGSIZE, PGSIZE);
+	region_alloc(tp->pgdir, (void *)USTACKTOP - PGSIZE, PGSIZE, (PTE_W | PTE_U));
 
 	return range;
 }
