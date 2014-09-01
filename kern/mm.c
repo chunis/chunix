@@ -207,9 +207,9 @@ pde_t* copy_page(struct task *tp, uint32_t addr)
 	char *mem;
 
 	if((pte = pgdir_walk(current->pgdir, (void *)addr, 0)) == 0)
-		panic("copy_uvm: pte doesn't exist");
+		panic("copy_page: pte doesn't exist");
 	if(!(*pte & PTE_P))
-		panic("copy_uvm: page doesn't present");
+		panic("copy_page: page doesn't present");
 	pa = PTE_ADDR(*pte);
 	flags = PTE_FLAGS(*pte);
 	if((mem = kalloc_page()) == 0){
@@ -218,6 +218,7 @@ pde_t* copy_page(struct task *tp, uint32_t addr)
 
 	memmove(mem, (char*)P2V(pa), PGSIZE);
 	if(mappages(tp->pgdir, (void*)addr, V2P(mem), PGSIZE, flags) < 0){
+		kfree_page(mem);
 		return NULL;
 	}
 	return tp->pgdir;
