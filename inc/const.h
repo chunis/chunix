@@ -16,6 +16,7 @@
 #define NFILE		256	// opened files for all tasks
 #define NINODE		128	// maximum number of active inodes
 #define KSTACKSIZE	4096	// per-task kernel stack size
+#define MAXARGS 	16	// maximum number of arguments passed to syscall exec()
 
 #define FL_IF	0x00000200
 

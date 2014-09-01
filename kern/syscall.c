@@ -1,5 +1,6 @@
 #include <syscall.h>
 #include <types.h>
+#include <const.h>
 #include <printf.h>
 #include "task.h"
 #include "sched.h"
@@ -152,11 +153,29 @@ int sys_wait(void)
 
 int sys_exec(void)
 {
-	char *path;
+	char *path, *argv[MAXARGS];
+	uint32_t uarg, uargv, i;
+	char **p;
 
 	argstr(0, &path);
-	printk("*** Enter sys_exec() ***\n");
-	return exec(path, NULL);
+	uargv = (uint32_t)argint(1);
+	memset(argv, 0, sizeof(argv));
+
+	for(i=0; ; i++){
+		if(i >= MAXARGS)
+			return -1;
+
+		uarg = (uint32_t)getint(current, uargv + i * 4);
+		if(uarg < 0)
+			return -1;
+		if(uarg == 0){  // the last element of passed argv[]
+			argv[i] = 0;
+			break;
+		}
+		if(getstr(current, uarg, &argv[i]) < 0)
+			return -1;
+	}
+	return exec(path, argv);
 }
 
 int sys_stat(void)

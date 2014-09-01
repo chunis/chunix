@@ -22,7 +22,16 @@ int exec(char *path, char **argv)
 	int ret;
 	char *fp;
 
-	printk("------> Enter exec() now, path = %s\n", path);
+	// test passed arguments
+	int argc = 0;
+	char **p = argv;
+
+	printk(">>>\npath = %s\n", path);
+	while(*p){
+		argc++;
+		printk("arg%d: %s\n", argc, *p++);
+	}
+	printk("argc = %d\n<<<\n", argc);
 
 	// read the elf binary from disk, and check elf reader
 	ret = sfs_read_file(path, (char *)&elfhdr, elfsz);

@@ -3,6 +3,14 @@
 #define O_CREAT   1
 #define O_RDWR    2
 
+char *argv[] = { "bin/echo", "my", "chunix", 0 };
+void mytest(void)
+{
+	printf("Start mytest()...\n");
+	exec("bin/echo", argv);
+	printf("End mytest()...\n");
+}
+
 int main(int argc, char *argv[])
 {
 	int n, i = 0;
@@ -22,6 +30,7 @@ int main(int argc, char *argv[])
 		printf("Error! fork() failed!\n");
 	} else if(pid == 0){
 		printf("I'm child\n");
+		mytest();
 		ret = exec("bin/hsh", NULL);
 		printf("After exec(), ret = %d\n", ret);
 
