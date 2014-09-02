@@ -190,27 +190,20 @@ int fork(void)
 	struct task *tp = NULL;
 
 	tp = task_alloc();
-	if(tp == NULL){
-		printk("fork() failed\n");
-		return -1;
-	}
+	if(tp == NULL)
+		goto fork_fail;
 
 	// copy process state from process 'current'
-	if((tp->pgdir = copy_uvm(current->pgdir, current->sz)) == 0){
-		kfree_page(tp->kstack);
-		tp->kstack = 0;
-		tp->state = TS_UNUSED;
-		return -1;
-	}
+	if((tp->pgdir = copy_uvm(current->pgdir, current->sz)) == 0)
+		goto fork_fail;
 
 	tp->sz = current->sz;
 	tp->parent = current;
 	*tp->tf = *current->tf;
 
 	// set up task's user stack and copy current task's stack
-	if(copy_page(tp, (void *)(USTACKTOP - PGSIZE)) == NULL){
-		return -1;
-	}
+	if(copy_page(tp, (void *)(USTACKTOP - PGSIZE)) == NULL)
+		goto fork_fail;
 
 	// clear %eax so that fork returns 0 in the child.
 	tp->tf->eax = 0;
@@ -229,6 +222,12 @@ int fork(void)
 	rootp = tp;
 
 	return pid;
+
+fork_fail:
+	kfree_page(tp->kstack);
+	tp->kstack = 0;
+	tp->state = TS_UNUSED;
+	return -1;
 }
 
 void sleep_on(void *chan)
