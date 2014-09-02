@@ -111,10 +111,14 @@ void region_alloc(pde_t *pgdir, void *va, uint32_t len, int perm)
 		pte = pgdir_walk(pgdir, (void *)_va, 1);
 		if(!pte)
 			panic("region_alloc failed!");
-		p = kalloc_page();
-		if(!p)
-			panic("region_alloc failed!");
-		*pte = PTE_ADDR(V2P((uint32_t)p)) | perm | PTE_P;
+		if(*pte & PTE_P){
+			printk("WARNING!! %x is already mapped\n", _va);
+		} else {
+			p = kalloc_page();
+			if(!p)
+				panic("region_alloc failed!");
+			*pte = PTE_ADDR(V2P((uint32_t)p)) | perm | PTE_P;
+		}
 		_va += PGSIZE;
 	}
 }
@@ -124,7 +128,7 @@ void kfree_page(void *v)
 {
 	struct pglink *fp;
 
-	if((uint32_t)v % PGSIZE || v < mem_start || v > V2P(memsz*1024)){
+	if((uint32_t)v % PGSIZE || (uint32_t)v < mem_start || (uint32_t)v > V2P(memsz*1024)){
 		printk("kfree_page: v = %x\n", v);
 		panic("kfree_page");
 	}
@@ -175,7 +179,7 @@ pte_t *pgdir_walk(pde_t *pgdir, const void *va, int alloc)
 int dealloc_uvm(pde_t *pgdir, uint32_t oldsz, uint32_t newsz)
 {
 	// TODO
-	return;
+	return 0;
 }
 
 // Free a page table and all the physical memory pages
