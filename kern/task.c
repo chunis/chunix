@@ -253,10 +253,10 @@ void wakeup(void *chan)
 	}
 }
 
-void wait(void)
+int wait(void)
 {
 	printk("------ in wait() ------\n");
-	return;
+	return -1;
 }
 
 void exit(void)

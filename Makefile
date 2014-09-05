@@ -8,7 +8,7 @@ FSOBJ   = $(patsubst %,fs/%,$(FS))
 KERNOBJ = $(patsubst %,kern/%,$(KERN))
 USEROBJ = $(patsubst %,user/%,$(USER))
 BINOBJ  = $(patsubst %,bin/%,$(USER))
-SFS_FILE = $(BINOBJ) README
+SFS_FILE = $(BINOBJ) README etc/motd
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 GDB_ARG = -S -gdb tcp::1234
@@ -67,8 +67,8 @@ chunix.img: bootsect kernel tools/blank_hd.img.bz2
 	@dd if=tmp.img of=chunix.img conv=notrunc
 	@rm -f tmp.img
 
-kernel: buildall kern/kernel.ld
-	$(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary $(USEROBJ)
+kernel: buildall kern/kernel.ld user/init
+	$(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary user/init user/todo user/hello
 	${OBJDUMP} -d $@ > $@.asm
 	${NM} -n $@ > $@.sym
 

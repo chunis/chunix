@@ -38,8 +38,8 @@ int main(struct multiboot_info *mboot_ptr)
 	extern uint32_t edata[], end[];
 	struct task *mytask1;
 	struct task *mytask2;
+	extern char _binary_user_init_start[], _binary_user_init_size[];
 	extern char _binary_user_hello_start[], _binary_user_hello_size[];
-	extern char _binary_user_todo_start[], _binary_user_todo_size[];
 	int eax;
 
 	struct multiboot_mod_list *mod;
@@ -106,8 +106,8 @@ int main(struct multiboot_info *mboot_ptr)
 	current = rootp;
 	mytask1 = task_create(_binary_user_hello_start,
 			(uint32_t)_binary_user_hello_size);
-	mytask2 = task_create(_binary_user_todo_start,
-			(uint32_t)_binary_user_todo_size);
+	mytask2 = task_create(_binary_user_init_start,
+			(uint32_t)_binary_user_init_size);
 	//task_run(mytask1);
 	//task_run(mytask2);
 	if(!current)
