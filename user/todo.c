@@ -3,11 +3,11 @@
 #define O_CREAT   1
 #define O_RDWR    2
 
-char *argv[] = { "bin/echo", "my", "chunix", 0 };
+char *xargv[] = { "bin/echo", "my", "chunix", 0 };
 void mytest(void)
 {
 	printf("Start mytest()...\n");
-	exec("bin/echo", argv);
+	exec("bin/echo", xargv);
 	printf("End mytest()...\n");
 }
 
@@ -31,8 +31,8 @@ int main(int argc, char *argv[])
 		exit();
 	} else if(pid == 0){ // child
 		printf("I'm child\n");
-		mytest();
-		ret = exec("bin/hsh", argv);
+		//mytest();
+		ret = exec("bin/hsh", xargv);
 		printf("!! exec() failed. ret = %d\n", ret);
 		exit();
 	}
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 	printf("I'm parent, ret = %d\n", ret);
 
 	for(;;){
-		sleep(3);
+		sleep(15);
 		printf("in todo: i = %d\n", i++);
 	}
 }
