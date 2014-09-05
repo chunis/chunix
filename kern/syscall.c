@@ -164,6 +164,8 @@ int sys_exec(void)
 	for(i=0; ; i++){
 		if(i >= MAXARGS)
 			return -1;
+		if(uargv == 0)  // no arguments
+			break;
 
 		uarg = (uint32_t)getint(current, uargv + i * 4);
 		if(uarg < 0)

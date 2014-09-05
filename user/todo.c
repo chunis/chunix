@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	} else if(pid == 0){ // child
 		printf("I'm child\n");
 		//mytest();
-		ret = exec("bin/hsh", xargv);
+		ret = exec("bin/hsh", NULL);
 		printf("!! exec() failed. ret = %d\n", ret);
 		exit();
 	}
