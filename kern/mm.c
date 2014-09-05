@@ -204,7 +204,7 @@ void free_vm(pde_t *pgdir)
 // copy a page from current task to task 'tp'.
 // alloc a new page for tp and map it, then copy the content from 'addr'.
 // Note: addr should be page-aligned.
-pde_t* copy_page(struct task *tp, uint32_t addr)
+pde_t* copy_page(pde_t *pgdir, uint32_t addr)
 {
 	pte_t *pte;
 	uint32_t pa, flags;
@@ -221,11 +221,11 @@ pde_t* copy_page(struct task *tp, uint32_t addr)
 	}
 
 	memmove(mem, (char*)P2V(pa), PGSIZE);
-	if(mappages(tp->pgdir, (void*)addr, V2P(mem), PGSIZE, flags) < 0){
+	if(mappages(pgdir, (void*)addr, V2P(mem), PGSIZE, flags) < 0){
 		kfree_page(mem);
 		return NULL;
 	}
-	return tp->pgdir;
+	return pgdir;
 }
 
 // copy a parent process's page table for child
@@ -257,6 +257,43 @@ pde_t* copy_uvm(pde_t *pgdir, uint32_t sz)
 		}
 	}
 	return pde;
+}
+
+char* uva2ka(pde_t *pgdir, char *uva)
+{
+	pte_t *pte;
+
+	pte = pgdir_walk(pgdir, uva, 0);
+	if((*pte & PTE_P) == 0)
+		return 0;
+	if((*pte & PTE_U) == 0)
+		return 0;
+	return (char*)P2V(PTE_ADDR(*pte));
+}
+
+// Copy len bytes from p to user address va in page table pgdir.
+// Most useful when pgdir is not the current page table.
+// uva2ka ensures this only works for PTE_U pages.
+int copyout(pde_t *pgdir, uint32_t va, void *p, uint32_t len)
+{
+	char *buf, *pa0;
+	uint32_t n, va0;
+
+	buf = (char*)p;
+	while(len > 0){
+		va0 = (uint32_t)PGROUNDDOWN(va);
+		pa0 = uva2ka(pgdir, (char*)va0);
+		if(pa0 == 0)
+			return -1;
+		n = PGSIZE - (va - va0);
+		if(n > len)
+			n = len;
+		memmove(pa0 + (va - va0), buf, n);
+		len -= n;
+		buf += n;
+		va = va0 + PGSIZE;
+	}
+	return 0;
 }
 
 

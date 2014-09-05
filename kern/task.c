@@ -202,7 +202,7 @@ int fork(void)
 	*tp->tf = *current->tf;
 
 	// set up task's user stack and copy current task's stack
-	if(copy_page(tp, (void *)(USTACKTOP - PGSIZE)) == NULL)
+	if(copy_page(tp->pgdir, (void *)(USTACKTOP - PGSIZE)) == NULL)
 		goto fork_fail;
 
 	// clear %eax so that fork returns 0 in the child.

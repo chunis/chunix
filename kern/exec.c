@@ -7,23 +7,24 @@
 //#include <string.h>
 //#include <fs.h>
 #include "task.h"
+#include <x86.h>
 
 
 extern struct task *current;
 
 int exec(char *path, char **argv)
 {
-	pde_t *pgdir, oldpgdir;
+	pde_t *pgdir, *oldpgdir;
 	struct sfs_stat state;
 	struct proghdr *ph, *eph;
 	struct elf elfhdr;
 	int elfsz = sizeof(struct elf);
 	uint32_t offset, range = 0;
+	uint32_t argc = 0, sp, ustack[2+MAXARGS+1];
 	int ret;
 	char *fp;
 
 	// test passed arguments
-	int argc = 0;
 	char **p = argv;
 
 	printk(">>>\npath = %s\n", path);
@@ -70,22 +71,51 @@ int exec(char *path, char **argv)
 		region_alloc(current->pgdir, (void *)ph->ph_va, ph->ph_memsize, (PTE_W | PTE_U));
 		memmove((void *)ph->ph_va, (void *)(fp+ph->ph_offset), ph->ph_filesize);
 		memset((void *)(ph->ph_va + ph->ph_filesize), 0, ph->ph_memsize - ph->ph_filesize);
+		copy_page(pgdir, (void *)ph->ph_va);
 		offset = ph->ph_va + ph->ph_memsize;
 		range = (range >= offset ? range : offset);
 	}
 	kfree(fp);
 
-	// setup tp's eip to e_entry
-	current->tf->eip = elfhdr.e_entry;
-
 	// map one page for the program's initial stack
 	region_alloc(current->pgdir, (void *)USTACKTOP - PGSIZE, PGSIZE, (PTE_W | PTE_U));
 
-	// 4. setup arguments in stack
+	// setup arguments in stack
+	sp = USTACKTOP;
+	for(argc = 0; argv[argc]; argc++) {
+		if(argc >= MAXARGS)
+			goto fail;
+		sp = (sp - (strlen(argv[argc]) + 1)) & ~3;
+		if(copyout(current->pgdir, sp, argv[argc], strlen(argv[argc]) + 1) < 0)
+			goto fail;
+		ustack[2+argc] = sp;
+	}
+	ustack[2+argc] = 0;
+	ustack[0] = argc;
+	ustack[1] = sp - (argc+1)*4;  // argv pointer
 
+	sp -= (2+argc+1) * 4;
+	if(copyout(current->pgdir, sp, ustack, (2+argc+1)*4) < 0)
+		goto fail;
+
+	copy_page(pgdir, (void *)(USTACKTOP - PGSIZE));
+
+	oldpgdir = current->pgdir;
+	current->pgdir = pgdir;
+	free_vm(oldpgdir);
+
+	current->tf->eip = elfhdr.e_entry;
+	current->tf->esp = sp;
+	current->sz = range;
+
+	lcr3((uint32_t *)P2V((uint32_t)current->pgdir));
+
+	printk("---+--+--- exec() end\n");
 	return 0;
 
 fail:
+	printk("Error! exec() failed\n");
+	if(pgdir)
+		free_vm(pgdir);
 	return -1;
 }
-

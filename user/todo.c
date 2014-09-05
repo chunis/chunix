@@ -28,24 +28,21 @@ int main(int argc, char *argv[])
 	pid = fork();
 	if(pid < 0){
 		printf("Error! fork() failed!\n");
-	} else if(pid == 0){
+		exit();
+	} else if(pid == 0){ // child
 		printf("I'm child\n");
 		mytest();
-		ret = exec("bin/hsh", NULL);
-		printf("After exec(), ret = %d\n", ret);
-
-		for(;;){
-			sleep(300);
-			printf("in todo for child: i = %d\n", i++);
-		}
+		ret = exec("bin/hsh", argv);
+		printf("!! exec() failed. ret = %d\n", ret);
 		exit();
-	} else {
-		ret = wait();
-		printf("I'm parent, ret = %d\n", ret);
 	}
 
+	// parent
+	ret = wait();
+	printf("I'm parent, ret = %d\n", ret);
+
 	for(;;){
-		sleep(500);
+		sleep(3);
 		printf("in todo: i = %d\n", i++);
 	}
 }
