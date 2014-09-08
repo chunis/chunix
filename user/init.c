@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	printf("\n%s\n\n", buf);
 	sleep(3);
 
-	//for(;;){ //waiting for wait() works
+	for(;;){
 		printf("init: starting sh...\n");
 		pid = fork();
 		if(pid < 0){
@@ -41,5 +41,5 @@ int main(int argc, char *argv[])
 		while((wpid = wait()) >= 0 && wpid != pid){
 			printf("dead task(pid = %d)!\n", wpid);
 		}
-	//}
+	}
 }

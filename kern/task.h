@@ -101,5 +101,7 @@ struct task *rootp, *current;
 struct task *task_create(uint8_t *binary, uint32_t size);
 void task_run(struct task *tp);
 void task_destroy(struct task *tp);
+int wait(void);
+void exit(void);
 
 #endif

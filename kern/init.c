@@ -15,6 +15,7 @@
 
 
 enum fs_type root_fs_type = INITRD;	// the root is located in INITRD fs
+extern struct task *inittask;
 
 static void init_8259A(void)
 {
@@ -108,6 +109,7 @@ int main(struct multiboot_info *mboot_ptr)
 			(uint32_t)_binary_user_hello_size);
 	mytask2 = task_create(_binary_user_init_start,
 			(uint32_t)_binary_user_init_size);
+	inittask = mytask2;  // this is our init task, means task 0
 	//task_run(mytask1);
 	//task_run(mytask2);
 	if(!current)

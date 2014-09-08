@@ -132,7 +132,8 @@ int sys_fork(void)
 
 int sys_exit(void)
 {
-	return exit();
+	exit();
+	return 0;
 }
 
 int sys_wait(void)

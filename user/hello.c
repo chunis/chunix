@@ -3,15 +3,18 @@
 int main(int argc, char *argv[])
 {
 	struct stat state;
+	int i = 0;
 
-	stat("bin/todo", &state);
-	printf("bin/todo size = |%d|\n", state.st_size);
+	stat("bin/hello", &state);
+	printf("bin/hello size = |%d|\n", state.st_size);
 
-	for(;;){
-		sleep(400);
-		printf("hello> \n");
+	printf("Hello, world\n");
+	while(i++ < 3){
+		sleep(1);
+		printf("%d..", i);
 	}
 
-	return 0;
+	printf("\nGoodbye, world\n");
+	exit();
 }
 

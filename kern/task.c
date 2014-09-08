@@ -10,6 +10,7 @@
 #include "descriptor.h"
 
 struct task tasks[NPROC];
+struct task *inittask; // this is our init task(task 0)
 int nextpid = 1;
 extern pde_t *kpgdir;
 extern void trap_ret(void);
@@ -253,14 +254,67 @@ void wakeup(void *chan)
 	}
 }
 
+// wait a child task exit and return its pid, or -1 if it has no children
 int wait(void)
 {
+	struct task *tp;
+	int pid, get_child = 0;
+
 	printk("------ in wait() ------\n");
-	return -1;
+	while(1){
+		// search for zombie child
+		for(tp = rootp; tp; tp = tp->next){
+			if(tp->parent != current)
+				continue;
+
+			get_child = 1;
+			if(tp->state == TS_ZOMBIE){
+				pid = tp->pid;
+				tp->pid = 0;
+				tp->parent = 0;
+				tp->name[0] = 0;
+				tp->state = TS_UNUSED;
+
+				kfree_page(tp->kstack);
+				tp->kstack = 0;
+				//free_vm(tp->pgdir);
+				return pid;
+			}
+		}
+
+		if(!get_child)
+			return -1;
+
+		// wait for child to exit, work together in exit()
+		sleep_on(current);
+	}
 }
 
+// exited task remains in zombie status,
+// until its parent calls wait() to deal with it
 void exit(void)
 {
+	struct task *tp;
+
 	printk("------ in exit() ------\n");
-	return;
+	if(tp == inittask)
+		panic("Error! inittask exit");
+
+	// close all opened files
+
+	// passed its children to inittask
+	for(tp = rootp; tp; tp = tp->next){
+		if(tp->parent == current)
+			tp->parent = inittask;
+		if(tp->state == TS_ZOMBIE)  // child is zombie already
+			wakeup(inittask);
+	}
+
+	// parent may sleeps in wait()
+	wakeup(tp->parent);
+
+	// schedule and never return
+	current->state = TS_ZOMBIE;
+	sched_yield();
+	panic("exit fail"); // something wrong or should not go here
 }
