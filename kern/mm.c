@@ -241,8 +241,11 @@ pde_t* copy_uvm(pde_t *pgdir, uint32_t sz)
 	for(i = 0; i < sz; i += PGSIZE){
 		if((pte = pgdir_walk(pgdir, (void *)i, 0)) == 0)
 			panic("copy_uvm: pte doesn't exist");
-		if(!(*pte & PTE_P))
-			panic("copy_uvm: page doesn't present");
+		if(!(*pte & PTE_P)){
+			// there may be holes between range(0 ~ sz)
+			//panic("copy_uvm: page doesn't present");
+			continue;
+		}
 		pa = PTE_ADDR(*pte);
 		flags = PTE_FLAGS(*pte);
 		if((mem = kalloc_page()) == 0){

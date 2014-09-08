@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 		//memset(buf, 0, BUFZ);
 		gets(buf, BUFZ);
 		buf[strlen(buf)-1] = '\0';
-		//printf("You Entered: |%s|\n", buf);
+		//printf("Command: |%s|\n", buf);
 		if(strcmp(buf, "help") == 0){
 			help();
 		} else if(strcmp(buf, "version") == 0){
@@ -127,5 +127,5 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	return ret;
+	exit();
 }
