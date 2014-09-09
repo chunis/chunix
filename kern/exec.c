@@ -71,7 +71,7 @@ int exec(char *path, char **argv)
 		region_alloc(current->pgdir, (void *)ph->ph_va, ph->ph_memsize, (PTE_W | PTE_U));
 		memmove((void *)ph->ph_va, (void *)(fp+ph->ph_offset), ph->ph_filesize);
 		memset((void *)(ph->ph_va + ph->ph_filesize), 0, ph->ph_memsize - ph->ph_filesize);
-		copy_page(pgdir, (void *)ph->ph_va);
+		copy_page(pgdir, (uint32_t)ph->ph_va);
 		offset = ph->ph_va + ph->ph_memsize;
 		range = (range >= offset ? range : offset);
 	}
@@ -98,7 +98,10 @@ int exec(char *path, char **argv)
 	if(copyout(current->pgdir, sp, ustack, (2+argc+1)*4) < 0)
 		goto fail;
 
-	copy_page(pgdir, (void *)(USTACKTOP - PGSIZE));
+	// copy stack and heap
+	// TODO: check how many pages need to be copied
+	copy_page(pgdir, (uint32_t)(USTACKTOP - PGSIZE));
+	copy_page(pgdir, (uint32_t)HEAP_START);
 
 	oldpgdir = current->pgdir;
 	current->pgdir = pgdir;
