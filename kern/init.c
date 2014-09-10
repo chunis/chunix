@@ -105,11 +105,11 @@ int main(struct multiboot_info *mboot_ptr)
 #if 1
 	rootp = 0;
 	current = rootp;
-	mytask1 = task_create(_binary_user_hello_start,
-			(uint32_t)_binary_user_hello_size);
-	mytask2 = task_create(_binary_user_init_start,
+	mytask1 = task_create(_binary_user_init_start,
 			(uint32_t)_binary_user_init_size);
-	inittask = mytask2;  // this is our init task, means task 0
+	mytask2 = task_create(_binary_user_hello_start,
+			(uint32_t)_binary_user_hello_size);
+	inittask = mytask1;  // this is our init task, means task 0
 	//task_run(mytask1);
 	//task_run(mytask2);
 	if(!current)

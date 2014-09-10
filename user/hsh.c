@@ -81,24 +81,25 @@ int check_xargv(char *xargv[])
 static void run_cmd(char *cmd)
 {
 	char *p, *xargv[MAXARGS];
+	char cmdbuf[32] = "bin/";
+	char *cmdp = cmdbuf + strlen(cmdbuf);
 	int pid;
 
 	printf("(Run command '%s')\n", cmd);
 	split_args(cmd, xargv, MAXARGS);
 	check_xargv(xargv);
 
-#if 0
 	pid = fork();
 	if(pid == -1){
 		printf("fork() failed\n");
 		exit();
 	}
 	else if(pid == 0){
-		exec(xargv[0], xargv);
+		strcpy(cmdp, xargv[0]);
+		exec(cmdbuf, xargv);
 		printf("cmd '%s' failed\n", xargv[0]);
 	}
 	wait();
-#endif
 }
 
 int main(int argc, char *argv[])

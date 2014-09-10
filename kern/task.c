@@ -39,6 +39,8 @@ struct task *task_alloc(void)
 
 	tp->pid = nextpid++;
 	tp->ppid = 0;	// set parent to 0
+	if(current)
+		tp->ppid = current->pid;
 	tp->state = TS_STOPPED;
 	tp->priority = INIT_PRIO;
 
@@ -310,11 +312,10 @@ void exit(void)
 			wakeup(inittask);
 	}
 
-	// parent may sleeps in wait()
-	wakeup(tp->parent);
+	current->state = TS_ZOMBIE;
+	wakeup(current->parent); // parent may sleeps in wait()
 
 	// schedule and never return
-	current->state = TS_ZOMBIE;
 	sched_yield();
 	panic("exit fail"); // something wrong or should not go here
 }
