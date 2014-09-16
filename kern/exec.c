@@ -113,7 +113,7 @@ int exec(char *path, char **argv)
 
 	lcr3((uint32_t *)P2V((uint32_t)current->pgdir));
 
-	printk("---+--+--- exec() end\n");
+	dprintk("---+--+--- exec() end\n");
 	return 0;
 
 fail:

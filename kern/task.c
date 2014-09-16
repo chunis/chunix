@@ -262,7 +262,7 @@ int wait(void)
 	struct task *tp;
 	int pid, get_child = 0;
 
-	printk("------ in wait() ------\n");
+	dprintk("------ in wait() ------\n");
 	while(1){
 		// search for zombie child
 		for(tp = rootp; tp; tp = tp->next){
@@ -298,7 +298,7 @@ void exit(void)
 {
 	struct task *tp;
 
-	printk("------ in exit() ------\n");
+	dprintk("------ in exit() ------\n");
 	if(tp == inittask)
 		panic("Error! inittask exit");
 

@@ -7,15 +7,15 @@ int main(int argc, char *argv[])
 
 	sleep(4);
 	stat("bin/hello", &state);
-	printf("bin/hello size = |%d|\n", state.st_size);
+	dprintf("bin/hello size = |%d|\n", state.st_size);
 
-	printf("Hello, world\n");
+	dprintf("start hello: Hello, world\n");
 	for(;;){  // run forever, until we remove it totally from kernel
 		sleep(60);
-		printf("hello %d..\n", i);
+		dprintf("hello %d..\n", i);
 	}
 
-	printf("\nGoodbye, world\n");
+	dprintf("\nend hello: Goodbye, world\n");
 	exit();
 }
 

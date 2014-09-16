@@ -4,6 +4,15 @@
 #include <types.h>
 #include <stat.h>
 
+// for debug
+#define USER_DEBUG 1
+
+#if USER_DEBUG
+#define dprintf printf
+#else
+#define dprintf
+#endif
+
 // syscall
 int open(const char *pathname, int flags);
 int creat(const char *pathname, int flags);
