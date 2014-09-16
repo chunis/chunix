@@ -11,6 +11,8 @@ char buf[BUFZ];
 static void help(void)
 {
 	printf("    help\tThis help\n");
+	printf("    cat\tCat one or more file(s)\n");
+	printf("    echo\techo one or more string(s)\n");
 	printf("    hello\tRun Hello\n");
 	printf("    version\tGet Hsh's version info\n");
 }
@@ -120,6 +122,7 @@ int main(int argc, char *argv[])
 		} else if(strcmp(buf, "clr") == 0){
 			clean_screen();
 		} else if(strncmp(buf, "hello", 5) == 0
+			|| strncmp(buf, "cat", 3) == 0
 			|| strncmp(buf, "echo", 4) == 0){
 			run_cmd(buf);
 		} else if(strlen(buf)){

@@ -16,7 +16,9 @@ user/init
 user/hello
 user/todo
 user/hsh
+user/cat
 user/echo
+
 mk_sfs
 mk_sfs_initrd
 initrd
