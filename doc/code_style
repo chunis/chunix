@@ -1,0 +1,7 @@
+Code Style for ChuniX
+
+The code style for ChuniX generally follows Linux's code style, and K&&R, but a
+little more freely. Below are a few items I think important:
+* The C++ comment style (// xx) is allowed and used heavily
+* For place not clear enough, should be marked with 'TODO' or '??'
+

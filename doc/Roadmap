@@ -1,0 +1,46 @@
+Roadmap
+
+
+This file lists a brief TODOs in the future development of Chunix,
+and vaguely about which versions will includes which items.
+Only things need to be done are listed here. For items already done,
+please refer to 'Changelog'.
+
+
+### version 0.0.2
+
+* fork/exec
+* task/scheduler improvement
+* /init, shell, echo, todo, cat
+* uart
+
+
+### version 0.0.3
+
+* mm improvement (user malloc/free, with syscall sbrk)
+* device abstract
+* tty support, maybe add an userspace game 'tetris'
+* time/timer
+* pipe, stdin/stdout redirect
+* fs and vfs: minixfs, ext2, initrd, sfs
+*? fat32, proc
+* fs buffer
+* driver for hard disk, ram
+
+
+### version 0.0.4
+
+* signal
+*? old-vi, or cvi
+*? port xv6-sh or v6-sh
+* port newlib, gcc, binutils or similiar tools
+* port bash, vim
+
+
+### version far-far-away
+
+* GUI
+* network
+* usb
+* smp
+* audio

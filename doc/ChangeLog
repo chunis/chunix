@@ -1,0 +1,29 @@
+Change Log
+
+
+This file lists a brief Changes in each released versions of Chunix.
+Only things already done are listed here. For items to be implemented in
+future versions, please refer to 'Roadmap'.
+
+
+### version 0.0.2 (will release at about 2014.09)
+
+* keyboard
+* printk
+* isr, trap
+* syscall framework, and some basic syscalls
+* heap: kmalloc, kfree
+* task, multitask
+* scheduler
+* fork/exec
+* /init, shell, echo, todo
+* uart
+
+
+### version 0.0.1 (released @ 2012.03.24)
+
+* kernel shell interface
+* load kernel and jump to it
+
+
+### project starts @ 2011.10.24
