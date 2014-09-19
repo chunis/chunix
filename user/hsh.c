@@ -11,8 +11,8 @@ char buf[BUFZ];
 static void help(void)
 {
 	printf("    help\tThis help\n");
-	printf("    cat\tCat one or more file(s)\n");
-	printf("    echo\techo one or more string(s)\n");
+	printf("    cat\t\tCat one or more file(s)\n");
+	printf("    echo\tEcho one or more string(s)\n");
 	printf("    hello\tRun Hello\n");
 	printf("    version\tGet Hsh's version info\n");
 }
