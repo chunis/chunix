@@ -8,7 +8,7 @@ FSOBJ   = $(patsubst %,fs/%,$(FS))
 KERNOBJ = $(patsubst %,kern/%,$(KERN))
 USEROBJ = $(patsubst %,user/%,$(USER))
 BINOBJ  = $(patsubst %,bin/%,$(USER))
-SFS_FILE = $(BINOBJ) README etc/motd
+FS_FILE = $(BINOBJ) doc/* etc/* README
 
 OBJS = $(DRVOBJ) $(FSOBJ) $(KERNOBJ) $(USEROBJ)
 GDB_ARG = -S -gdb tcp::1234
@@ -30,9 +30,9 @@ bochs: chunix.img $(HD)
 	sed -i 's/hd.img/$(HD)/' hd.bxrc
 	bochs -f hd.bxrc
 
-$(HD): tools/$(HD).bz2 mk_sfs $(SFS_FILE)
+$(HD): tools/$(HD).bz2 mk_sfs $(FS_FILE)
 	if [ $(HD) != "hd.img" ]; then bzcat tools/$(HD).bz2 > $(HD); fi
-	./mk_sfs $(HD) $(SFS_FILE)
+	./mk_sfs $(HD) $(FS_FILE)
 
 mk_sfs: tools/mk_sfs.c
 	gcc -o mk_sfs tools/mk_sfs.c
@@ -40,24 +40,20 @@ mk_sfs: tools/mk_sfs.c
 mk_sfs_initrd: tools/mk_sfs.c
 	gcc -DNUMBLK=512 -o mk_sfs_initrd tools/mk_sfs.c
 
-grub-sfs: kernel mk_sfs_initrd tools/$(FD).bz2 $(HD)
-	@bzcat tools/$(FD).bz2 > $(FD)
-	tools/update_kernel_sfs.sh $(SFS_FILE)
+grub-sfs: kernel mk_sfs_initrd $(HD)
+	tools/update_kernel.sh sfs $(FS_FILE)
 	$(QEMU) -fda $(FD) -hdb $(HD)
 
-grub-sfs-gdb: kernel mk_sfs_initrd tools/$(FD).bz2 $(HD) .gdbinit
-	@bzcat tools/$(FD).bz2 > $(FD)
-	tools/update_kernel_sfs.sh $(SFS_FILE)
+grub-sfs-gdb: kernel mk_sfs_initrd $(HD) .gdbinit
+	tools/update_kernel.sh sfs $(FS_FILE)
 	$(QEMU) -fda $(FD) -hdb $(HD) $(GDB_ARG)
 
-grub: kernel initrd tools/$(FD).bz2 $(HD)
-	@bzcat tools/$(FD).bz2 > $(FD)
-	tools/update_kernel.sh
+grub: kernel $(HD)
+	tools/update_kernel.sh ext2
 	$(QEMU) -fda $(FD) -hdb $(HD)
 
-grub-gdb: kernel initrd tools/$(FD).bz2 $(HD) .gdbinit
-	@bzcat tools/$(FD).bz2 > $(FD)
-	tools/update_kernel.sh
+grub-gdb: kernel $(HD) .gdbinit
+	tools/update_kernel.sh ext2
 	$(QEMU) -fda $(FD) -hdb $(HD) $(GDB_ARG)
 
 chunix.img: bootsect kernel tools/blank_hd.img.bz2
@@ -71,10 +67,6 @@ kernel: buildall kern/kernel.ld user/init
 	$(LD) $(LDFLAGS) -T kern/kernel.ld -o $@ kern/entry.o $(KERNOBJ) $(FSOBJ) $(DRVOBJ) -b binary user/init user/todo user/hello
 	${OBJDUMP} -d $@ > $@.asm
 	${NM} -n $@ > $@.sym
-
-initrd: tools/initrd.bz2
-	@bzcat $^ > $@
-	tools/mk_initrd.sh
 
 buildall:
 	(cd drv && make)
@@ -109,7 +101,7 @@ clean:
 	(cd fs && make clean)
 	(cd lib && make clean)
 	(cd user && make clean)
-	@rm -f mk_sfs mk_sfs_initrd initrd chunix.img #$(HD)
+	@rm -f mk_sfs mk_sfs_initrd chunix.img #$(HD)
 	@rm -rf bin/
 
 cleanall: clean
