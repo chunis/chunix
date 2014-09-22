@@ -5,26 +5,6 @@
 #include <printf.h>
 
 
-extern enum fs_type root_fs_type;
-
-static struct superblock *ext2_read_super(struct super_block *sb)
-{
-	printk("In ext2_read_super\n");
-
-	if(root_fs_type != EXT2)
-		return NULL;
-
-	printk("Enter ext2_read_super now\n");
-	return sb;
-}
-
-struct fs_node ext2_fs = {
-	ext2_read_super,
-	"ext2",
-	1,
-	NULL,
-};
-
 void dump_ext2_superblock(struct ext2_super_block *sb_ptr)
 {
 	int block_size;
@@ -120,14 +100,4 @@ void dump_ext2(uint32_t start_addr)
 			}
 		}
 	}
-}
-
-void add_ext2_fs(void)
-{
-	register_filesystem(&ext2_fs);
-}
-
-void del_ext2_fs(void)
-{
-	unregister_filesystem(&ext2_fs);
 }

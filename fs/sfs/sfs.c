@@ -33,6 +33,7 @@ uint32_t block_size;  // 2 means 512
 static int sfs_find_index(const char *file, struct sfs_index *idxp);
 
 
+#if 0
 struct fs_node sfs_fs = {
 	NULL,
 	"sfs",
@@ -49,6 +50,7 @@ void del_sfs_fs(void)
 {
 	unregister_filesystem(&sfs_fs);
 }
+#endif
 
 void sfs_init(void) {}
 
