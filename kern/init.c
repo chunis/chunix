@@ -14,7 +14,7 @@
 #include "sched.h"
 
 
-enum fs_type root_fs_type = INITRD;	// the root is located in INITRD fs
+extern struct fs_node *fs_root;	// the root of the file system
 extern struct task *inittask;
 
 static void init_8259A(void)
@@ -97,6 +97,7 @@ int main(struct multiboot_info *mboot_ptr)
 
 	init_buffer();
 	init_sfs();
+	fs_root = init_initrd_sfs();
 	get_time();
 	//check_initrd_fs();
 

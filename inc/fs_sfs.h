@@ -23,6 +23,9 @@ int sfs_stat(const char *path, struct sfs_stat *buf);
 int write(int fd, const void *buf, int n);
 int close(int fd);
 
+void init_sfs(void);
+struct fs_node *init_initrd_sfs(void);
+
 #define DIR_SPACE 54
 #define FILE_SPACE 30
 

@@ -568,3 +568,9 @@ void init_sfs(void)
 	check_sfs();
 	sfs_cat_file("README");
 }
+
+struct fs_node *init_initrd_sfs(void)
+{
+	printk("---- in init_initrd_sfs() ----\n");
+	//return s;
+}
