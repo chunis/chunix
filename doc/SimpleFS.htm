@@ -1,0 +1,1326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+  <title>SimpleFS</title>
+  <meta content="">
+  <style></style>
+  <meta content="SimpleFS" name="description">
+</head>
+<body>
+<div style="text-align: center;"><br>
+<big><big><big><br>
+SFS (Simple File System) Specification<br>
+<br>
+Draft Version 1.0<br>
+<br>
+March 7, 2009<br>
+</big></big></big></div>
+<br>
+<br>
+<br>
+<br>
+<div style="text-align: center;"><big><big>NOTICE</big></big><br>
+</div>
+<span style="color: rgb(255, 0, 0);"><br>
+</span>This specification has no copyright and there are no
+restrictions on the use of this specification. It is distributed to
+help other programmers understand how the Simple File System works and
+to implement Simple File System software without compatability
+problems. This specification is distributed without any warranty. Use
+this specification at your own risk.<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<span style="font-weight: bold;">Table of Contents:</span><br>
+&nbsp;&nbsp;&nbsp; <a href="#Introduction">Introduction</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#FS_Overview">File System Format Overview</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Super-Block">Super-Block Format</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Reserved_Area">Reserved Area</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Data_Area">Data Area Format</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Free_Area">Free Area</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Index_Area">Index Area Format</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#Volume_Identifier">Volume
+Identifier</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#Starting_Marker">Starting
+Marker Entry</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#Unused">Unused Entry</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#Directory">Directory
+Entry</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#File_Entry">File Entry</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#Unusable_Entry">Unusable
+Entry</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#Deleted_Directory">Deleted
+Directory Entry</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#Deleted_File">Deleted
+File Entry</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <a href="#Continuation_Entry">Continuation
+Entry</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Time_Stamps">Time Stamps</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Name_Strings">Name Strings</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Compatibility">Compatibility</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Appendix_A">Appendix A - Algorithms</a><br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+<big><big><a name="Introduction"></a>Introduction</big></big><br>
+<br>
+Unlike networking protocols, there is currently no widely accepted
+format for freely exchanging data on physical media between computers
+and other devices. Instead people have been using a variety of file
+systems that are either not widely accepted or subject to technical,
+licensing, copyright or patent restrictions.<br>
+<br>
+The primary purpose of the Simple File System is to facilitate the free
+exchange of data on physical media without unnecessary restrictions or
+complexity.
+For this reason the Simple File System has been designed in such a way
+that it is easy to understand and implement.<br>
+<br>
+<br>
+<br>
+<big><big><a name="FS_Overview"></a>File System Format Overview</big></big><br>
+<br>
+The file system uses different areas on the physical media for
+different purposes. The five areas are:<br>
+<ul>
+  <li>the super-block</li>
+  <li>the reserved area</li>
+  <li>the data area</li>
+  <li>free area<br>
+  </li>
+  <li>the index area</li>
+</ul>
+The purpose and usage of each of these areas is described in detail in
+the following sections. These areas are always in the following order:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 50%; text-align: left;" border="0" cellpadding="1" cellspacing="1">
+  <caption align="bottom"><small><span style="font-weight: bold;">Table
+1 - Layout of areas on the media</span></small><br>
+  </caption><tbody>
+    <tr>
+      <td style="vertical-align: top; width: 50%; background-color: rgb(255, 128, 128);"><br>
+      </td>
+      <td style="vertical-align: middle;">Super-block<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 50%; background-color: rgb(255, 0, 0);"><br>
+      <br>
+      </td>
+      <td style="vertical-align: middle;">Reserved area<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 50%; background-color: rgb(0, 0, 255);"><br>
+      <br>
+      <br>
+      <br>
+      <br>
+      </td>
+      <td style="vertical-align: middle;">Data Area<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 50%; background-color: rgb(0, 255, 0);"><br>
+      <br>
+      <br>
+      <br>
+      <br>
+      </td>
+      <td style="vertical-align: middle;">Free Area<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 50%; background-color: rgb(128, 0, 255);"><br>
+      </td>
+      <td style="vertical-align: middle;">Index Area<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+All values defined within this specification must be stored with the
+least significant byte at the lowest address (i.e. in "little-endian"
+format). All fields marked as "Unused/reserved" must be filled with
+zeros when written to the media and ignored when read from the media,
+except as otherwise noted (in the super-block and reserved area).<br>
+<br>
+<br>
+<br>
+<big><big><a name="Super-Block"></a>Super-Block Format</big></big><br>
+<br>
+The super-block contains values needed to determine the physical size
+and layout of the media itself, and values needed to determine the
+location of each area. The super-block also contains many values that
+are used for compatibility purposes.<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 2 -
+Super-block format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0000<br>
+      </td>
+      <td style="vertical-align: top;">11<br>
+      </td>
+      <td style="vertical-align: top;">Reserved for compatibility (boot
+code)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x000B<br>
+      </td>
+      <td style="vertical-align: top;">21<br>
+      </td>
+      <td style="vertical-align: top;">Reserved for compatibility
+(legacy BIOS parameter block)</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0020<br>
+      </td>
+      <td style="vertical-align: top;">372<br>
+      </td>
+      <td style="vertical-align: top;">Reserved for compatibility (boot
+code)</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0194</td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Time stamp</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x019C</td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Size of data area in blocks</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01A4</td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Size of index area in bytes</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01AC</td>
+      <td style="vertical-align: top;">3<br>
+      </td>
+      <td style="vertical-align: top;">Magic number (0x534653)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01AF<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Simple File System version
+number (0x10 for Version 1.0)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01B0<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Total number of blocks<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01B8<br>
+      </td>
+      <td style="vertical-align: top;">4<br>
+      </td>
+      <td style="vertical-align: top;">Number of reserved blocks<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01BC</td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Block size<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01BD<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Checksum<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01BE<br>
+      </td>
+      <td style="vertical-align: top;">64<br>
+      </td>
+      <td style="vertical-align: top;">Reserved for compatibility
+(partition table)</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01FE</td>
+      <td style="vertical-align: top;">2<br>
+      </td>
+      <td style="vertical-align: top;">Reserved for compatibility (boot
+signature)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The reserved areas at offsets 0x0000, 0x000B, 0x0020, 0x01BE and 0x1FE
+are used for compatability purposes, and is not covered by this
+specification. Data in these areas must be ignored when the super-block
+is read, and never modified (unless the modifications are for purposes
+not covered by this specification).<br>
+<br>
+The checksum field (at offset 0x01BD) is calculated such that the sum
+of all bytes stored between offset 0x01AC and 0x01BD inclusive will
+have the lowest 8 bits clear. This checksum is set when the media is
+formatted and does not normally need to be changed after the media is
+formatted (however, it may need to be recalculated if the version
+number at offset 0x01AF is changed).<br>
+<br>
+The block size (at offset 0x01BC) is used to calculate the number of
+bytes in each block. The formula for this calculation is
+"bytes_per_block = 2 <sup>(block_size + 7)</sup>", so that a value of
+2 represents 512 bytes per block, 3 represents 1024 bytes per block,
+etc. This value must be equal to or greater than 1 (128 bytes per block
+or less is not supported). For media that is organized into "sectors"
+(floppy disks, hard disks, etc) the block size must match the size of a
+sector. For example, for a common 1440 KB floppy disk this value would
+be 2 (512 bytes per sector).<br>
+<br>
+The number of reserved blocks (at offset 0x01B8) specifies the number
+of blocks that are reserved for the reserved area and the super-block.
+This value is also used to determine where the data area begins. This
+value must be 1 or greater (as it includes the super-block). For
+example, if the first block is "block number 0" and the reserved area
+(including the super-block) is 20 blocks in size, then this value must
+contain 20 and the first block in the data area will be "block number
+20".<br>
+<br>
+The total number of blocks (at offset 0x01B0) includes all areas
+defined in this specification, including the super-block and reserved
+area. It is used to determine the physical size of the media and for
+finding the end of the index area. The formula for calculating the
+physical size of the media in bytes is "media_size = total_blocks * 2 <sup>(block_size
++ 7)</sup>". For example, for a common 1440 KB floppy disk this value
+would be 2880.<br>
+<br>
+The magic number (at offset 0x01AC) is used to indicate compliance with
+this specification. The magic number&nbsp; 0x534653 represents the
+ASCII characters 'SFS'. The magic number is positioned next to the
+version number so that software can check both in a single
+operation (for example, software can check if the 32 bit value at
+offset 0x01AC equals 0x10534653).<br>
+<br>
+The Simple File System version number (at offset 0x01AF) must contain
+the value 0x10 to indicate compliance with this specification. This
+value is in fixed point BCD, where the high 4 bits determine the major
+version number and the lower 4 bits determine the minor version number.
+Any future versions of this specification (which aren't expected but
+are possible) will use numerically higher values for the version
+number. For
+example, 0x23 would represent version 2.3 of the SFS specification.<br>
+<br>
+All future versions of the Simple File System will remain compatible
+with "SFS Version 1.0", in that optional features may be added. If the
+version number (at offset 0x01AF) is numerically higher than the
+value 0x10, then code that implements "SFS Version 1.0" can leave the
+version number unchanged and provide read-only access to file data.
+This preserves any optional features added in later versions of SFS.
+Alternatively, code that implements "SFS Version 1.0" can replace the
+version number with 0x10 to automatically revert the file system such
+that it complies with this specification (any data in the file system
+that belongs to optional features added in later versions of SFS become
+discarded/ignored). In this case write access can be permitted (however
+it is recommended that the version number remain unchanged until the
+first modification is made, rather than changing it when the file
+system is "mounted"). Please note that in order to change the version
+number, the checksum field (at offset 0x01BD) must also be recalculated.<br>
+<br>
+The size of the index area (at offset 0x01A4) indicates the size
+of the index area in bytes, and is also used to calculate the location
+of the start of the index area by subtracting the size of the index
+area from the total size of the media. This value is also used to
+determine the end of the free space area by calculating the start of
+the index area and rounding it down to the nearest block size. The size
+of the index area must be a multiple of 64 bytes.<br>
+<br>
+The size of the data area (at offset 0x019C) indicates how large the
+data area currently is in blocks. It does not indicate how many blocks
+within the data area are actually used (for example, if files have been
+deleted it is likely that some blocks within the data area are not in
+use).<br>
+<br>
+The time stamp field (at offset 0x0194) indicates when the size of the
+index area (at offset 0x01A4) or the size of the data area (at offset
+0x019C) was changed last. This field is used is used in conjunction
+with the <a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Volume_Identifier">Volume Identifier</a> to
+improve the detection of "media changed" on some hardware (e.g. old
+floppy drives). The time stamp is stored in the same format as <a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Time_Stamps">all time stamps</a> used by the Simple
+File System.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Reserved_Area"></a>Reserved Area</big></big><br>
+<br>
+The reserved area (immediately following the super-block) may be used
+for any number of things that are outside
+the scope of this specification. Examples would include additional file
+information, boot code or data used for compatibility. All data within
+the reserved area must be ignored by all software that complies with
+this specification (i.e. even though it's reserved, it's never cleared
+when written to because it's never written to). The size of the
+reserved area can be determined
+from "number of reserved blocks" field (at offset 0x01B8) in the
+super-block.<br>
+<br>
+It should be noted that the "number of reserved blocks" field (at
+offset 0x01B8 in the super-block) includes the super-block itself. This
+means that for 256 byte blocks this value must be 2 or higher, and for
+larger block sizes this value must be 1 or higher. The largest possible
+value in the "number of reserved blocks" field (at offset 0x01B8) can
+be calculated by subtracting 2 blocks (one for the index area and
+another for the data area) from the "Total number of blocks" field (at
+offset 0x01B0 in the super-block), unless the result is too large for a
+32 bit unsigned integer (in which case the reserved area is limited to
+0xFFFFFFFF blocks).<br>
+<br>
+&nbsp;<br>
+<br>
+<big><big><a name="Data_Area"></a>Data Area Format</big></big><br>
+<br>
+The data area is used to store all file data. The start of the data
+area is determined by the "number of reserved blocks" field in the
+super-block, and the end of the data area is determined by adding the
+"size of data area" and "number of reserved blocks" fields.<br>
+<br>
+The data for any specific file consumes sequential blocks in the data
+area (file fragmentation is not supported). The data area may contain
+unused blocks, where files have been deleted or reduced in size, or
+unused blocks have been deliberately left to allow data to be appended
+to the preceding file. Different techniques for managing the blocks
+within the data area are discussed in <a href="#Appendix_A">Appendix A</a>.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Free_Area"></a>Free Area</big></big><br>
+<br>
+The free area is an area of unused blocks between the data area and
+index area. As new files are added to the file system, the data area
+below the free area grows and the index area above the free area grows,
+causing the free area to shrink from both ends.<br>
+<br>
+The start of the free space area is determined by adding the "size of
+data area" and "number of reserved blocks" fields. The end of the free
+space area is determined by subtracting the size of the index area from
+the total size of the
+media and rounding it down to
+the nearest block size. It is assumed that these values would be
+calculated during initialization and updated in software after that.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Index_Area"></a>Index Area Format</big></big><br>
+<br>
+The index area is used to manage the usage of blocks in the data area
+and keep track of file names.&nbsp; The start of the index area is
+determined by subtracting the size of
+the index area from the total size of the
+media. The end of the index area is determined by the total size of the
+media.<br>
+<br>
+The index area contains a variable number of 64 byte entries, where
+every file has one or more entries (but every entry doesn't necessarily
+represent
+a file). The format for these entries is described in the following
+section. The total number of entries stored in the index area can be
+determined by dividing the size of
+the index area by 64. Entries are not sorted in any way, except for
+continuation entries (which always immediately follow the entry they
+continue). For
+directories, entries for '.' and '..' are never stored in the file
+system and are assumed to exist when necessary.<br>
+<br>
+There are 9 different types of index area entries:<br>
+<ul>
+  <li>Volume Identifier (type 0x01)<br>
+  </li>
+  <li>Starting Marker Entry (type 0x02)</li>
+  <li>Unused Entry (type 0x10)</li>
+  <li>Directory Entry (type 0x11)</li>
+  <li>File Entry (type 0x12)</li>
+  <li>Unusable Entry (type 0x18)</li>
+  <li>Deleted Directory Entry (type 0x19)</li>
+  <li>Deleted File Entry (type 0x1A)</li>
+  <li>Continuation Entry (any value between 0x20 and 0xFF inclusive)<br>
+  </li>
+</ul>
+These entry types are described in the following sections.<br>
+<br>
+Any index entry type not listed above must be treated as an unused
+entry (0x10), and may be replaced with the&nbsp; entry type value 0x10
+by an SFS 1.0 compliant code at any time.<br>
+<br>
+Some of these entry types have specific positions within the index
+area. For example:<br>
+<br>
+<table style="width: 50%; margin-left: auto; margin-right: auto; text-align: left;" border="0" cellpadding="1" cellspacing="1">
+  <caption align="bottom"><small><span style="font-weight: bold;">Table
+3 - One possible index area</span></small><br>
+  </caption><tbody>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(0, 255, 0); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: middle;">Last block in free area </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 25%; background-color: rgb(240, 255, 208);"><br>
+      </td>
+      <td style="vertical-align: top;">Empty space (present whenever
+the start of the index area isn't aligned to the start of a block)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(208, 64, 255); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: middle;">Starting marker entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(0, 0, 255); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: top;">File entry 5<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(0, 255, 255);"><br>
+      </td>
+      <td style="vertical-align: top;">Unused entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(0, 0, 255);"><br>
+      </td>
+      <td style="vertical-align: top;">File entry 4</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(128, 0, 255); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: top;">File entry 3<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(128, 0, 255);"><br>
+      </td>
+      <td style="vertical-align: top;">Continuation entry for file
+entry 3<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(0, 255, 255);"><br>
+      </td>
+      <td style="vertical-align: top;">Deleted file entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 25%; background-color: rgb(0, 255, 255);"><br>
+      </td>
+      <td style="vertical-align: top;">Continuation entry for deleted
+file entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(255, 0, 0);"><br>
+      </td>
+      <td style="vertical-align: top;">Unusable entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(0, 0, 255); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: top;">File entry 2</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(128, 0, 255); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: top;">Directory entry 1</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(128, 0, 255); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: top;">Continuation entry for directory
+entry 1</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(0, 0, 255); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: top;">File entry 1</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; background-color: rgb(208, 64, 255); width: 25%;"><br>
+      </td>
+      <td style="vertical-align: top;">Volume identifier entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 25%;"><br>
+      </td>
+      <td style="vertical-align: top;">End of media<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<br>
+<big><big><a name="Volume_Identifier"></a>Index Area - Volume Identifier</big></big><br>
+<br>
+The very first entry (just below the end of the media) in the index
+area must be a Volume Identifier Entry, which is used to detect if the
+media
+is changed on devices that don't have a reliable "media changed"
+facility (e.g. old floppy drives). There must only be one Volume
+Identifier Entry at the end of the media.<br>
+<br>
+The Volume Identifier Entry uses the following format:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 4 -
+Volume Identifier Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Entry type (0x01 for the Volume
+Identifier Entry)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01<br>
+      </td>
+      <td style="vertical-align: top;">3<br>
+      </td>
+      <td style="vertical-align: top;">Unused/reserved (must be zero)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x04<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Time stamp<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0C</td>
+      <td style="vertical-align: top;">52<br>
+      </td>
+      <td style="vertical-align: top;">Volume name in UTF-8, including
+zero terminator<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The entry type is used to determine that this is a Volume Identifier
+Entry and not any other type of index area entry. <br>
+<br>
+The time stamp field indicates when the media was first formatted (it
+is not changed during normal operation). It is stored in the same
+format as <a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Time_Stamps">all time stamps</a> used by
+the Simple File System.<br>
+<br>
+The volume name is limited to 52 bytes (including the terminator), and
+some characters are not allowed within a volume name. This name field
+follows the <a href="#Name_Strings">format for all name fields</a> in
+the Simple File System.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Starting_Marker"></a>Index Area - Starting Marker
+Entry</big></big><br>
+<br>
+The Starting Marker Entry is used to find the beginning of the index
+area during file system recovery (i.e. when the super-block is
+unusable). There must always be one Starting Marker Entry, and
+there must never be any index area entries closer to the start of the
+media than the Starting Marker Entry.<br>
+<br>
+The Starting Marker Entry uses the following format:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 5 -
+Starting Marker Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Entry type (0x02 for the
+Starting Marker Entry)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01<br>
+      </td>
+      <td style="vertical-align: top;">63<br>
+      </td>
+      <td style="vertical-align: top;">Unused/reserved</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The entry type is used to determine that this is a Starting Marker
+Entry and not any other type of index area entry. <br>
+<br>
+<br>
+<br>
+<big><big><a name="Unused"></a>Index Area - Unused Entry</big></big><br>
+<br>
+Unused Entries are used to mark an index area entry as unused (not to
+mark blocks within the data area as unused).<br>
+<br>
+The format for an Unused Entry is:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 6 -
+Unused Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Entry type (0x10 for Unused
+Entries)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01</td>
+      <td style="vertical-align: top;">63<br>
+      </td>
+      <td style="vertical-align: top;">Unused/reserved </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The entry type is used to determine that this is an Unused Entry and
+not any other type of index area entry. <br>
+<br>
+<br>
+<br>
+<big><big><a name="Directory"></a>Index Area - Directory Entry</big></big><br>
+<br>
+Each Directory Entry in the index area uses the following format:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 7 -
+Directory Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Entry type (0x11 for Directory
+Entries)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Number of continuation entries
+following this entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x02<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Time stamp</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0A</td>
+      <td style="vertical-align: top;">54<br>
+      </td>
+      <td style="vertical-align: top;">Directory name in UTF-8<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The entry type is used to determine that this is a Directory Entry and
+not any other type of index area entry. <br>
+<br>
+The number of continuation entries is used to determine how many
+Continuation Entries immediately follow an entry when the directory
+name is too long to store in the Directory Entry alone. A value of zero
+indicates that
+there are no Continuation Entries. See the description of <a href="#Continuation_Entry">Continuation Entries</a> for more
+information.<br>
+<br>
+The time stamp field indicates when the Directory Entry information was
+last
+modified. It is stored in the same format as <a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Time_Stamps">all time stamps</a> used by the Simple
+File System. Optionally, the time stamp within a Directory Entry may be
+updated when a file or sub-directory within the associated directory is
+created, deleted, moved or renamed.<br>
+<br>
+The directory name field is used to store the name of the directory,
+including the path. For example, for the directory "foo/bar" this field
+will contain the characters "foo/bar" followed by a zero to mark
+the end of the string (not just "bar"). If the directory name is too
+long to store in the Directory Entry, Continuation Entries are used.
+See the description of <span style="text-decoration: underline;"></span><a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Continuation_Entry">Continuation Entries</a> for more
+information.<br>
+<br>
+<br>
+<br>
+<big><big><a name="File_Entry"></a>Index Area - File Entry</big></big><br>
+<br>
+Each File
+Entry in the index area uses the following format:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 8 -
+File Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Entry type (0x12 for File
+Entries)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Number of continuation entries
+following this entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x02<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Time stamp</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0A<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Starting block number in the
+data area<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x12<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Ending block number in the data
+area</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x1A<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">File length in bytes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x22</td>
+      <td style="vertical-align: top;">30<br>
+      </td>
+      <td style="vertical-align: top;">File name in UTF-8<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The entry type is used to determine that this is a File Entry and not
+any other type of index area entry. <br>
+<br>
+The number of continuation entries is used to determine how many
+Continuation Entries immediately follow an entry when the file
+name is too long to store in the File Entry alone. A value of zero
+indicates that
+there are no Continuation Entries. See the description of <a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Continuation_Entry">Continuation Entries</a> for more
+information.<br>
+<br>
+The time stamp field indicates when the File Entry information or
+associated file data was last
+modified. It is stored in the same format as <a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Time_Stamps">all time stamps</a>
+used by the Simple
+File System.<br>
+<br>
+The starting block number and ending block number is used to find the
+start and end of the region within the data area used to store the
+file's data. The ending block
+number must be higher than the starting block number, unless the entry
+does not use any blocks in the data area (a zero length file) in which
+case the starting and ending block numbers
+should both be zero.<br>
+<br>
+The file length records how long a file actually is. This value must
+not be larger than the starting and ending block numbers indicate, but
+may be significantly less to reserve space for data to be appended to a
+file (and will often be slightly less because most file lengths aren't
+a multiple of the block size). <br>
+<br>
+The file name field is used to store the name of the file,
+including the path. For example, for the file "foo/bar.txt" this field
+will contain the characters "foo/bar.txt" followed by a zero to mark
+the end of the string (not just "bar.txt"). If the file name is too
+long to store in the File Entry, Continuation Entries are
+used. See the description of <span style="text-decoration: underline;"></span><a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Continuation_Entry">Continuation Entries</a> for more
+information.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Unusable_Entry"></a>Index Area - Unusable Entry</big></big><br>
+<br>
+An Unusable Entry is used to mark unusable areas of the media (for
+example, bad sectors), and should not be confused with <a href="#Unused">Unused Entries</a>.<br>
+<br>
+Each Unusable
+Entry in the index area uses the following format:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 9 -
+Unusable Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Entry type (0x18 for Unusable
+Entries)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01<br>
+      </td>
+      <td style="vertical-align: top;">9<br>
+      </td>
+      <td style="vertical-align: top;">Unused/reserved </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0A<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Starting block number in the
+data area<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x12<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Ending block number in the data
+area</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x1A</td>
+      <td style="vertical-align: top;">38<br>
+      </td>
+      <td style="vertical-align: top;">Unused/reserved </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The entry type is used to determine that this is an Unusable Entry and
+not any other type of index area entry. <br>
+<br>
+The starting block number and ending block number is used to find the
+start and end of the region within the data area that is unusable. The
+ending block
+number must be higher than the starting block number.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Deleted_Directory"></a>Index Area - Deleted
+Directory Entry</big></big><br>
+<br>
+Each Deleted Directory Entry in the index area uses the following
+format:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 10 -
+Deleted Directory Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Entry type (0x19 for Deleted
+Directory Entries)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Number of continuation entries
+following this entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x02<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Time stamp</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0A</td>
+      <td style="vertical-align: top;">54<br>
+      </td>
+      <td style="vertical-align: top;">Directory name in UTF-8<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The entry type is used to determine that this is a Deleted Directory
+Entry and not any other type of index area entry. <br>
+<br>
+The time stamp field indicates when the original Directory Entry was
+deleted (or when the Deleted Directory Entry was created). It is stored
+in the same format as <a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Time_Stamps">all time stamps</a>
+used by the Simple
+File System.<br>
+<br>
+All other fields within a Deleted Directory Entry must remain the same
+as the original <a href="#Directory">Directory Entry</a> to allow the
+directory to be restored by changing the entry type back to 0x11
+(Directory Entry).<br>
+<br>
+<br>
+<big><big><a name="Deleted_File"></a>Index Area - Deleted File Entry</big></big><br>
+<br>
+Each File
+Entry in the index area uses the following format:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 11 -
+Deleted File Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Entry type (0x1A for Deleted
+File
+Entries)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x01<br>
+      </td>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">Number of continuation entries
+following this entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x02<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Time stamp</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x0A<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Starting block number in the
+data area<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x12<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">Ending block number in the data
+area</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x1A<br>
+      </td>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">File length in bytes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x22</td>
+      <td style="vertical-align: top;">30<br>
+      </td>
+      <td style="vertical-align: top;">File name in UTF-8<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The entry type is used to determine that this is a Deleted File Entry
+and not any other type of index area entry. <br>
+<br>
+The time stamp field indicates when the original File Entry was
+deleted (or when the Deleted File Entry was created). It is stored
+in the same format as <a href="https://www.d-rift.nl/combuster/vdisk/sfs.html#Time_Stamps">all time stamps</a>
+used by the Simple
+File System.<br>
+<br>
+All other fields within a Deleted File Entry must remain the same as
+the original <a href="#File_Entry">File Entry</a> to allow the file to
+be restored by changing the entry type back to 0x12 (File Entry). This
+includes all blocks within the data area.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Continuation_Entry"></a>Index Area - Continuation
+Entry</big></big><br>
+<br>
+Continuation entries are used when the name field in a
+preceding Directory Entry, File Entry, Deleted Directory Entry or
+Deleted File Entry is not long enough to contain the entire name. This
+forms a consecutive series of entries, beginning with a initial entry
+(the closest entry to the start of the media) followed
+by none or more continuation entries.<br>
+<br>
+The format for a continuation entry is:<br>
+<br>
+<table style="margin-left: auto; margin-right: auto; width: 80%; text-align: left;" border="1" cellpadding="2" cellspacing="0">
+  <caption align="bottom"><small style="font-weight: bold;">Table 12 -
+Continuation Entry format</small><br>
+  </caption><tbody>
+    <tr>
+      <th style="vertical-align: top;">Offset<br>
+      </th>
+      <th style="vertical-align: top;">Size in bytes<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0x00<br>
+      </td>
+      <td style="vertical-align: top;">64<br>
+      </td>
+      <td style="vertical-align: top;">Entry name in UTF8 </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+To allow for much longer entry names, multiple continuation entries can
+be used. The number of continuation entries is stored in the associated
+Directory Entry, File Entry, Deleted Directory Entry or Deleted File
+Entry. Because this field is limited to a maximum value of 255, the
+number of continuation entries is limited to 255. This provides for a
+maximum directory name length of 16374 bytes including the
+zero terminator, and a maximum file name length of 16350 bytes
+including the
+zero terminator. However, it is recommended that directory names and
+file
+names be limited to a reasonable value when they are created.<br>
+<br>
+Because bytes with values less than 32 aren't possible within directory
+names and file
+names<span style="font-weight: bold;"></span>, it is possible to
+determine if an entry is a continuation entry
+or any other type of entry by checking the first byte of the entry. If
+the first byte is below 0x20 the entry is not a continuation entry, and
+if the first byte is above or equal to 0x20 then it must be a
+continuation entry.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Time_Stamps"></a>Time Stamps</big></big><br>
+<br>
+All time stamps are signed 64 bit values that
+represent the number of 1/65536<sup>ths</sup>
+of a second since the beginning of
+the 1st of January 1970. For example, the
+value 0x00000000003C0000 would represent one minute past midnight on
+the 1st of January 1970, while the value 0x0000000000000001 would
+represent roughly 15259 ns past midnight on
+the 1st of January 1970. All time stamps are in UTC (Universal
+Co-ordinated Time) so that problems with time zones and daylight
+savings are avoided.<br>
+<br>
+This format is similar to the typical time stamp format used by Unix
+systems (a signed 32 bit value representing seconds since since the
+beginning of the 1st of January 1970), except that it is a lot more
+accurate (15.25
+us intervals) and a lot less limited (a range of roughly 4.46 million
+years before and after 1970, instead of 68 years before and after
+1970). The additional accuracy can avoid problems with some utilities,
+and the extra range avoids the problem that most Unix based file
+systems will have in the year 2038.<br>
+<br>
+<br>
+<br>
+<a name="Name_Strings"></a><big><big>Name Strings</big></big><br>
+<br>
+All name strings used as part of the Simple File System use UTF-8
+format, according to the <a href="http://www.unicode.org/">Unicode
+Specification published by the Unicode Consortium</a>.<br>
+<br>
+Some characters are not allowed within a file name, directory name or
+volume name.
+These characters include all characters with codes below 32 (excluding
+the space character, code 0x0020), all characters with codes between
+0x0080 and 0x009F (inclusive), and any of the following characters:<br>
+<ul>
+  <li>" (double quote, 0x0022)</li>
+  <li>* (asterix, 0x002A)</li>
+  <li>: (colon, 0x003A)</li>
+  <li>&lt; (less than sign, 0x003C)</li>
+  <li>&gt; (greater than sign, 0x003E)</li>
+  <li>? (question mark, 0x003F)</li>
+  <li>\ (backward slash, 0x005C)</li>
+  <li>DEL (delete, 0x007F)</li>
+  <li>NBSP (no break space character, 0x00A0)<br>
+  </li>
+</ul>
+For the "no break space" character (code 0x00A0), it is expected that
+the file system driver (or operating system code) silently replaces it
+with a normal space character (code 0x0020). This is intended to reduce
+confusion (as both characters look the same).<br>
+<br>
+The forward slash character ('/', code 0x002F) must be used as a
+directory separator only, and is not allowed within a volume label. It
+is expected that some systems will silently
+replace these characters with a backward slash character ('\', code
+0x005C) to maintain consistency with the intended environment.<br>
+<br>
+All names must end with a null character
+(0x0000). It is also recommended that any unused bytes within any name
+field contain the byte 0x00.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Compatibility"></a>Compatibility</big></big><br>
+<br>
+The Simple File System has been carefully designed to co-exist with a
+legacy FAT file system. To achieve this the reserved area at the
+beginning of the Simple File System is made large enough to cover the
+entire
+FAT file system, with the remainder of the media used by the Simple
+File System.<br>
+<br>
+This ability makes it possible to have a floppy disk or flash memory
+device (for example) with a small FAT file system&nbsp; that contains
+any instructions, drivers or files needed to access the Simple File
+System on the
+rest of the media.<br>
+<br>
+<br>
+<br>
+<big><big><a name="Appendix_A"></a>Appendix A - Algorithms</big></big><br>
+<br>
+<span style="color: rgb(255, 0, 0);">
+[TODO - need algorithms for common operations, with the simplest
+possible code and most secure code (with suggestions for optimization
+and guidelines for things like directory entry usage and "compaction")]</span><br>
+<br>
+<br>
+
+
+</body></html>
