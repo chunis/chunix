@@ -1,0 +1,32 @@
+How to Run Chunix
+
+
+1. Preparation
+
+You need to build Chunix under Linux, and with below tools available: gcc, as,
+ar, ld, nm, make, qemu
+Also you need 'sudo' permission since we need run 'mount' to update kernel
+You may using bochs instead of qemu, but I haven't checked with bochs for a
+very long time, so...Good Luck! :)
+
+
+2. Build
+
+Build is very simple, but need pay a little attention, since some Makefile
+targets doesn't work (yet).
+These 2 targets work for sure: grub-sfs and grub-sfs-gdb, so run one of these:
+>> make grub-sfs	# just run
+>> make grub-sfs-gdb	# enable gdb debug
+You may run 'make clean' or 'make cleanall' if you like.
+
+
+
+3. Run
+
+With ablow command, you should already run Chunix now. You can run it again
+without re-make it by one of these:
+>> qemu -m 32 -serial mon:stdio -fda floppy.img -hdb hd.img
+>> qemu -m 32 -serial mon:stdio -fda floppy.img -hdb hd.img -S -gdb tcp::1234
+
+
+Enjoy!  :-)

@@ -1,0 +1,82 @@
+How to debug Chunix
+
+Generally speaking, there are two ways to debug Chunix.
+Of course, you can combine both together.
+
+
+Simple Words
+
+Way 1: Classical printf
+* printk/dprintk/DBGx/DBGd/DBGs/DBG for kernel
+* printf/dprintf for userland
+
+Way 2: Using gdb, qemu or bochs
+* run xxx-gdb to enable gdb debug
+* enable bochs' debug option for debug
+* enter qemu's debug console by 'ctrl-a c' in the same window as run qemu
+
+
+More Details
+
+Below are more details for above 2 ways to do the debug.
+
+Way 1: Classical printf
+You can add as much 'printf' as you like, and don't need to worry about the
+output is scrolled from the screen and never be seen again, since all output
+logs are also redirected to console from where you run qemu or bochs.
+1.a) Basic functions for output:
+	in kernel, using: printk()
+	in userspace, using printf()
+1.b) functions can be turned on or off:
+	in kernel, using: dprintk()
+	in userspace, using dprintf()
+to control their on/off by control below two macros:
+	for kernel(inc/printf.h):  #define KERN_DEBUG 1
+	for userspace(inc/user.h): #define USER_DEBUG 1
+1.c) Bonus:
+for kernel, after enable KERN_DEBUG, you can DBGx()/DBGd()/DBGs()/DBG()
+instead of dprintk() or printk(). These functions add the location(file/line)
+besides the messages you provide. Defined in inc/printf.h.
+
+Way 2: Using gdb, qemu or bochs
+I'll just give some details and a few commands for using gdb to debug Chunix.
+There are already a '.gdbinit' in the root of ChuniX source code, so you can
+just run 'gdb' at the same directory in another console.
+
+However, you may encounter a error message as:
+	warning: File "/home/faye/workspace/todo/Debug/.gdbinit" auto-loading 
+	 has been declined by your `auto-load safe-path' set to 
+	  "$debugdir:$datadir/auto-load:/usr/bin/mono-gdb.py". 
+	To enable execution of this file add 
+	add-auto-load-safe-path /home/faye/workspace/todo/Debug/.gdbinit 
+	line to your configuration file "/home/faye/.gdbinit". 
+	To completely disable this security protection add 
+	set auto-load safe-path / 
+	line to your configuration file "/home/faye/.gdbinit". 
+	For more information about this security protection see the 
+	"Auto-loading safe path" section in the GDB manual. E.g., run from the shell:
+	info "(gdb)Auto-loading safe path"
+To resolve this, you have a few choices, you can google them, or refer to:
+http://www.fayewilliams.com/2014/02/24/gdb-auto-loading-has-been-declined-by-your-auto-load-safe-path/
+I've chosen the simplest one by run:
+	$ echo "set auto-load safe-path /" >> ~/.gdbinit
+
+After gdb runs, you can hit 'c' to keep ChuniX run until the start of 'main()'.
+You need to setup the connect and load symbols if you don't use '.gdbinit':
+(gdb) target remote localhost:26000
+(gdb) file kernel
+(gdb) b main
+
+Below are commands.
+(gdb) b 88      # set breakpoint in line 88 of the current file
+(gdb) b exec    # set breakpoint in function exec()
+(gdb) s		# step
+(gdb) si	# step instruments
+(gdb) disassemble $eip
+(gdb) info registers # print the general purpose registers
+
+below 'addr' can be replaced by '$eip' for current location
+(gdb) x/Nx addr # display a hex dump of N words starting at virtual address addr
+(gdb) x/Ni addr # display the N assembly instructions starting at addr
+
+More commands please refer to GDB's manual.
