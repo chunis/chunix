@@ -134,6 +134,12 @@ struct sfs_inode {
 	struct sfs_index sindex;  // index block (64bytes)
 }__attribute__((packed));
 
+#define DIRENT_LEN(x) (4 + 4 + (x) + 1)
+struct sfs_dirent {
+	uint32_t len;	// dirent len, equal (4+4+strlen(name)+1)
+	uint32_t ino;	// inode number
+	char *name;
+};
 
 #define SFS_TYPE_FILE	1   // file
 #define SFS_TYPE_DIR	2   // directory

@@ -25,6 +25,7 @@ uint32_t reserved_blk = 1;     // no block for reserved
 uint32_t da_blocks = 0;  // data area size in blocks, as free block index start from 0
 uint32_t ia_num = 0;  // index area size = ia_num * IE_SIZE, and pointed to START_MARK
 struct sfs_mark mark = { START_MARK, };
+static int root_ia_num = 1; // root node ('/') in index area always is 1, after mark node
 
 static void inc_and_verify(uint32_t *var, int n)
 {
@@ -170,6 +171,61 @@ static void init_index(void)
 	write_index(ia_num, &mark);
 }
 
+// create directory items '.' and '..' located at block blk_num,
+// '..' pointed to index area inode number 'parent_inum'.
+// return the length of bytes taked by them.
+int create_dot_dir_items(int parent_inum, int self_inum, int blk_num)
+{
+	char buf[BLKSZ];
+	struct sfs_dirent sdirent;
+	char *p = (char *)&sdirent;
+	char *self = ".";
+	char *parent = "..";
+	int len = 0;
+
+	memset(buf, 0, BLKSZ);
+
+	// process '.'
+	sdirent.len = DIRENT_LEN(strlen(self));
+	sdirent.ino = self_inum;
+	sdirent.name = self;
+	memmove(buf, p, 8); // len+ino = 8 bytes
+	memmove(buf+8, sdirent.name, strlen(self));
+	len += sdirent.len;
+
+	// process '..'
+	sdirent.len = DIRENT_LEN(strlen(parent));
+	sdirent.ino = parent_inum;
+	sdirent.name = parent;
+	memmove(buf+len, p, 8); // len+ino = 8 bytes
+	memmove(buf+len+8, sdirent.name, strlen(self));
+	len += sdirent.len;
+
+	return len;
+}
+
+// init '/', makes both '..' and '.' point to itself
+void init_root(void)
+{
+	struct sfs_dir sdir;
+
+	memset(&sdir, 0, IE_SIZE);
+	sdir.etype = DIR_ENT;
+	sdir.ne = 0;
+	sdir.time = 0;
+	sdir.blk_start = da_blocks;
+	sdir.blk_end = da_blocks;
+	sdir.len = create_dot_dir_items(root_ia_num, root_ia_num, da_blocks);
+
+	strcpy(sdir.name, "/");
+	write_index(ia_num, &sdir);
+
+	// move boundary
+	inc_and_verify(&da_blocks, 1);
+	inc_and_verify(&ia_num, 1);
+	write_index(ia_num, &mark);
+}
+
 static void write_file(char *name)
 {
 	struct sfs_dir *dirp = NULL;
@@ -262,6 +318,7 @@ int main(int argc, char *argv[])
 
 	init_sb();
 	init_index();
+	init_root();
 
 	for(i = 2; i < argc; i++){
 		//printf("file: %s\n", argv[i]);
