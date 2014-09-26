@@ -93,12 +93,13 @@ int main(struct multiboot_info *mboot_ptr)
 	install_timer(100);
 	init_keyboard();
 	init_serial();
-	init_hd();
+	get_time();
 
+	init_hd();
 	init_buffer();
 	init_sfs();
 	fs_root = init_initrd_sfs();
-	get_time();
+	open_fs(fs_root, 0);
 	//check_initrd_fs();
 
 #if 1

@@ -109,15 +109,4 @@ struct sfs_index {
 	uint8_t data[63];
 };
 
-// inode cache in memory for index
-struct sfs_inode {
-	int nb;		// block number in hd
-	uint8_t ni;	// index number in a single block
-	int8_t nref;	// reference count
-	int8_t rw;	// read/write flag
-	int8_t dirty;	// is this inode changed?
-
-	struct sfs_index *sindex;  // index block (64bytes)
-}__attribute__((packed));
-
 #endif

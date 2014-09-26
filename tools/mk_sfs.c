@@ -22,9 +22,18 @@ struct sfs_superblock sb;
 uint32_t nblk = NBLK;
 uint32_t nindex = NBLK * (BLKSZ / IE_SIZE);
 uint32_t reserved_blk = 1;     // no block for reserved
-uint32_t da_blocks = 0;  // data area size in blocks
-uint32_t ia_num = 0;  // index area size = ia_num * IE_SIZE
+uint32_t da_blocks = 0;  // data area size in blocks, as free block index start from 0
+uint32_t ia_num = 0;  // index area size = ia_num * IE_SIZE, and pointed to START_MARK
 struct sfs_mark mark = { START_MARK, };
+
+static void inc_and_verify(uint32_t *var, int n)
+{
+	*var += n;
+	if(da_blocks + ((ia_num + 1)/8 + 1) >= nblk){
+		printf("Error! No free space left!\n");
+		exit(0);
+	}
+}
 
 static char calc_checksum(char *sb)
 {
@@ -137,7 +146,7 @@ static void write_data(const char *name, long len, struct sfs_file *filep)
 		}
 		write_block(BLOCK_INDEX(da_blocks), buf);
 		len -= BLKSZ;
-		da_blocks++;
+		inc_and_verify(&da_blocks, 1);
 	}
 
 	filep->blk_start = blkstart;
@@ -157,7 +166,7 @@ static void init_index(void)
 	strcpy(id.name, "sfs-1.0");
 	write_index(ia_num, &id);
 
-	ia_num++;
+	inc_and_verify(&ia_num, 1);
 	write_index(ia_num, &mark);
 }
 
@@ -194,7 +203,7 @@ static void write_file(char *name)
 	}
 
 	// move marker
-	ia_num += nie + 1;
+	inc_and_verify(&ia_num, nie + 1);
 	write_index(ia_num, &mark);
 
 	memset(&index, 0, IE_SIZE);
@@ -206,7 +215,7 @@ static void write_file(char *name)
 		write_index(ia_num - 1, dirp);
 
 		for(i = 0; i < nie; i++){
-			j = ia_num - 2;
+			j = ia_num - 2 - i;
 			strncpy(p, name + DIR_SPACE + IE_SIZE * i, IE_SIZE);
 			write_index(j, p);
 		}
@@ -228,6 +237,8 @@ static void write_file(char *name)
 	}
 }
 
+// copy path/to/file to sfs /path/to/file
+// e.g.: host: doc/test ==> chunix: /doc/test
 int main(int argc, char *argv[])
 {
 	int i;

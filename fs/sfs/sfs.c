@@ -1,7 +1,6 @@
 /*
   A trival implement for SFS (Simple File System).
-  Refer to: http://dimensionalrift.homelinux.net/combuster/vdisk/sfs.html
-        or: http://www.d-rift.nl/combuster/vdisk/sfs.html
+  Refer to: http://www.d-rift.nl/combuster/vdisk/sfs.html
 */
 
 #include <types.h>
@@ -14,45 +13,25 @@
 #include <printf.h>
 #include "../kern/task.h"
 
+struct fs_node *sfs_root;	// root directory node
 
 #define SFS_DEV MKDEV(MEM_MAJOR, 0)
 //#define SFS_DEV MKDEV(HD_MAJOR, 0)
 #define BLOCK_INDEX(da_num) ((da_num) + reserved_blk)
 
 #define NIBUF	32
-struct sfs_inode ibuf[NIBUF];  // static variable contains all zeros
+static struct sfs_inode ibuf[NIBUF];  // static variable contains all zeros
 
-char buf[SECT_SIZE];
-struct sfs_superblock sb;
-uint32_t nblk;  // total number of block
-uint32_t reserved_blk;  // superblock + reserved block
-uint32_t da_blocks;  // number of data area block
-uint32_t ia_num;  // number of index area
-uint32_t block_size;  // 2 means 512
+static char buf[SECT_SIZE];
+static struct sfs_superblock sb;
+static uint32_t nblk;  // total number of block
+static uint32_t reserved_blk;  // superblock + reserved block
+static uint32_t da_blocks;  // number of data area block
+static uint32_t ia_num;  // number of index area
+static uint32_t block_size;  // 2 means 512
 
 static int sfs_find_index(const char *file, struct sfs_index *idxp);
 
-
-#if 0
-struct fs_node sfs_fs = {
-	NULL,
-	"sfs",
-	1,
-	NULL,
-};
-
-void add_sfs_fs(void)
-{
-	register_filesystem(&sfs_fs);
-}
-
-void del_sfs_fs(void)
-{
-	unregister_filesystem(&sfs_fs);
-}
-#endif
-
-void sfs_init(void) {}
 
 void sfs_read_sb(void){}
 void sfs_write_sb(void){}
@@ -318,7 +297,7 @@ int sfs_read(int fd, void *buf, int n)
 	return count;
 }
 
-int write(int fd, const void *buf, int n)
+int sfs_write(int fd, const void *buf, int n)
 {
 	int count;
 
@@ -326,7 +305,7 @@ int write(int fd, const void *buf, int n)
 	return count;
 }
 
-int close(int fd)
+int sfs_close(int fd)
 {
 	int ret;
 
@@ -351,11 +330,11 @@ int sfs_stat(const char *path, struct sfs_stat *buf)
 	}
 
 	idxp = &indp->sindex;
-	if(idxp->etype == DIR_ENT){
+	if(idxp->etype == IAT_DIR_ENT){
 		buf->st_mode = SFS_TYPE_DIR;
 		//dirp = (struct sfs_dir *)idxp;
 		buf->st_size = 0;
-	} else if (idxp->etype == FILE_ENT){
+	} else if (idxp->etype == IAT_FILE_ENT){
 		buf->st_mode = SFS_TYPE_FILE;
 		filep = (struct sfs_file *)idxp;
 		buf->st_size = filep->len;
@@ -382,7 +361,7 @@ static void obtain_sb_info(struct sfs_superblock *sb)
 	uint64_t time = sb->time_stamp;
 
 	nblk = sb->total_blk;
-	reserved_blk = sb->rev_blk;
+	reserved_blk = sb->resv_blk;
 	da_blocks = sb->da_blk;
 	ia_num = sb->ia_size / IE_SIZE;
 	block_size = sb->blk_size;
@@ -431,7 +410,7 @@ static int sfs_find_index(const char *file, struct sfs_index *idxp)
 
 	while(nindex > 0){
 		read_index(nindex, (char *)idxp);
-		if(idxp->etype == DIR_ENT){
+		if(idxp->etype == IAT_DIR_ENT){
 			dirp = (struct sfs_dir *)idxp;
 			nindex -= dirp->ne + 1;
 			if(dirp->ne == 0 && len <= DIR_SPACE){
@@ -459,7 +438,7 @@ static int sfs_find_index(const char *file, struct sfs_index *idxp)
 				}
 				kfree(str);
 			}
-		} else if(idxp->etype == FILE_ENT){
+		} else if(idxp->etype == IAT_FILE_ENT){
 			filep = (struct sfs_file *)idxp;
 			nindex -= filep->ne + 1;
 			if(filep->ne == 0 && len <= FILE_SPACE){
@@ -514,7 +493,7 @@ int sfs_read_file(const char *file, char *buf, int nb)
 		return -1;
 
 	filep = (struct sfs_file *)&idx;
-	if(filep->etype != FILE_ENT)
+	if(filep->etype != IAT_FILE_ENT)
 		return -1;
 
 	memset(buf, 0, nb);
@@ -547,7 +526,7 @@ void sfs_cat_file(const char *file)
 		return;
 
 	filep = (struct sfs_file *)&idx;
-	if(filep->etype != FILE_ENT)
+	if(filep->etype != IAT_FILE_ENT)
 		return;
 
 	m = filep->blk_start;
@@ -569,8 +548,36 @@ void init_sfs(void)
 	sfs_cat_file("README");
 }
 
+void _sfs_open(struct fs_node *node, int flag)
+{
+	// for test
+	sfs_cat_file("etc/motd");
+}
+
 struct fs_node *init_initrd_sfs(void)
 {
-	printk("---- in init_initrd_sfs() ----\n");
-	//return s;
+	// TODO: Below will panic, since we are running for a task but just kernel
+	// sfs_root = (struct fs_node *)kmalloc(sizeof(struct fs_node));
+	// so use kalloc_page() instead, which is wasteful.
+	// Maybe we need a kmalloc_kernel() besides kmalloc()?
+	sfs_root = (struct fs_node *)kalloc_page(sizeof(struct fs_node));
+
+	strcpy(sfs_root->name, "sfs");
+	sfs_root->mask = 0;
+	sfs_root->uid = 0;
+	sfs_root->gid = 0;
+	sfs_root->flags = FS_DIR;
+	sfs_root->inode = 0;
+	sfs_root->length = 0;
+	sfs_root->impl = 0;
+
+	sfs_root->open = _sfs_open;
+	sfs_root->close = 0;
+	sfs_root->read = 0;
+	sfs_root->write = 0;
+	sfs_root->readdir = 0;
+	sfs_root->finddir = 0;
+	sfs_root->ptr = 0;
+
+	return sfs_root;
 }
