@@ -15,7 +15,9 @@
 #endif
 
 #define BLKSZ	512
+#define NAME_MAX     255   // # chars in a file name
 #define BLOCK_INDEX(da_num) ((da_num) + reserved_blk)
+#define ROOT_INODE 1
 
 int sfs_fd;
 struct sfs_superblock sb;
@@ -26,6 +28,10 @@ uint32_t da_blocks = 0;  // data area size in blocks, as free block index start 
 uint32_t ia_num = 0;  // index area size = ia_num * IE_SIZE, and pointed to START_MARK
 struct sfs_mark mark = { START_MARK, };
 static int root_ia_num = 1; // root node ('/') in index area always is 1, after mark node
+
+#define NIBUF	32
+static struct sfs_inode ibuf[NIBUF];  // static variable contains all zeros
+
 
 static void inc_and_verify(uint32_t *var, int n)
 {
@@ -89,6 +95,65 @@ static void read_index(uint32_t sec, void *buf)
 static void write_index(uint32_t sec, void *buf)
 {
 	write_elem(nindex - sec - 1, IE_SIZE, buf);
+}
+
+// inode process
+// return the index of free position in ibuf or -1 if no slot available
+static int sfs_inode_alloc(void)
+{
+	int i;
+
+	for(i = 0; i < NIBUF; i++){
+		if(ibuf[i].flags == 0)
+			break;
+	}
+	return (i >= NIBUF ? -1 : i);
+}
+
+// return the index of ibuf whose ni is equal to the searched ni.
+// return -1 if not found
+static int sfs_inode_search(int ni)
+{
+	int i;
+
+	for(i = 0; i < NIBUF; i++){
+		if(ibuf[i].ni == ni)
+			break;
+	}
+	return (i >= NIBUF ? -1 : i);
+}
+
+void sfs_init_inode(void)
+{
+	// nothing need to be done,since ibuf[] should be NULL already
+}
+
+// return j
+struct sfs_inode *sfs_inode_load(int ino)
+{
+	int i;
+	struct sfs_inode *ip;
+
+	i = sfs_inode_search(ino);
+	if(i >= 0)
+		return &ibuf[i]; // TODO: check flag
+
+	i = sfs_inode_alloc();
+	if(i == -1)
+		return NULL;
+
+	ip = &ibuf[i];
+	ip->ni = ino;
+	ip->nref = 1;
+	ip->flags = SFS_INODE_INUSE;
+	read_index(ino, &ip->sindex);
+
+	return ip;
+}
+
+void sfs_inode_free(int ino)
+{
+	return;
 }
 
 static void init_sb(void)
@@ -202,6 +267,106 @@ int create_dot_dir_items(int parent_inum, int self_inum, int blk_num)
 	len += sdirent.len;
 
 	return len;
+}
+
+struct sfs_inode *search_dir(struct sfs_inode *ip, char *name)
+{
+	struct sfs_dir *dp;
+	struct sfs_dirent *drtp;
+	char *buf, *p = buf;
+	int len, i = 0;
+	int namelen = strlen(name);
+
+	dp = (struct sfs_dir *)&(ip->sindex);
+
+	if(dp->etype != DIR_ENT){
+		printf("Error! not a dir\n");
+		return NULL;
+	}
+
+	len = dp->len;
+	buf = malloc(len);
+	while(len > 0){
+		read_block(dp->blk_start + i, p);
+		i++;
+		len -= BUFSIZ;
+		p += BUFSIZ;
+	}
+
+	p = buf;
+	len = dp->len;
+	while(len > 0){
+		drtp = (struct sfs_dirent *)p;
+		len -= drtp->len;
+
+		if(drtp->len - 9 != namelen)
+			continue;
+		if(strcmp(name, drtp->name) == 0){ // find now
+			return sfs_inode_load(drtp->ino);
+		}
+	}
+
+	return NULL;
+}
+
+// search path, skip leading '/', save path's first element to 'name',
+// return the start of following element without any leading '/'.
+static char* path_down(char *path, char *name)
+{
+	char *pp;
+	int len;
+
+	pp = path;
+	while(*pp == '/')
+		pp++;
+	if(*pp == 0)
+		return 0;
+
+	path = pp;
+	while(*pp != '/' && *pp != 0)
+		pp++;
+	len = pp - path;
+	if(len >= NAME_MAX){
+		memmove(name, path, NAME_MAX);
+	} else {
+		memmove(name, path, len);
+		name[len] = 0;
+	}
+
+	while(*pp == '/')
+		pp++;
+
+	return pp;
+}
+
+// name to sfs_inode translation
+struct sfs_inode *namei(char *path)
+{
+	char name[NAME_MAX];
+	struct sfs_inode *ip, *next;
+
+	if(*path == '/')
+		ip = sfs_inode_load(ROOT_INODE);
+	//	ip = iget(ROOTDEV, ROOTINO);
+	//else
+	//	ip = idup(current->cwd);
+	//dump_inode(ip);
+
+	while((path = path_down(path, name)) != 0){
+		printf("namei: path: %s, name: %s\n", path, name);
+		if(ip->sindex.etype != DIR_ENT){
+			printf("ip(ino = %d) isn't a dir\n", ip->ni);
+			return NULL;
+		}
+
+		if((next = search_dir(ip, name)) == NULL){
+			printf("file not found\n");
+			return NULL;
+		}
+
+		ip = next;
+	}
+	return ip;
 }
 
 // init '/', makes both '..' and '.' point to itself

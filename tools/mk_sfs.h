@@ -119,4 +119,20 @@ struct sfs_dirent {
 	char *name;
 };
 
+#define SFS_INODE_FREE  0x000
+#define SFS_INODE_INUSE 0x001
+#define SFS_INODE_READ  0x002
+#define SFS_INODE_WRITE 0x004
+#define SFS_INODE_DIRTY 0x008
+
+// inode cache in memory for index
+struct sfs_inode {
+	uint8_t ni;	// index number in index area, start from 0(volume id entry)
+	int8_t nref;	// reference count
+	int8_t flags;
+	uint8_t *name;
+	struct sfs_index sindex;  // index block (64bytes)
+}__attribute__((packed));
+
+
 #endif
