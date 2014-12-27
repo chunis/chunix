@@ -1,3 +1,9 @@
+#
+# This file is part of ChuniX and is released under the terms of
+# GNU GPLv3 License, see License for details.
+#
+# Copyright (C) 2014, Chunis Deng (<chunchengfh@gmail.com>)
+#
 .set KER_CODE,	0x08	# kernel code segment selector
 .set KER_DATA,	0x10	# kernel data segment selector
 

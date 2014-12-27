@@ -1,3 +1,9 @@
+#
+# This file is part of ChuniX and is released under the terms of
+# GNU GPLv3 License, see License for details.
+#
+# Copyright (C) 2014, Chunis Deng (<chunchengfh@gmail.com>)
+#
 #include "asm.h"
 
 # switch to 32-bit protected mode, and jump into C
