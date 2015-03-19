@@ -186,22 +186,118 @@ void dump_ext2(uint32_t start_addr)
 }
 
 
+static struct ext2_inode *ext2_namei(const char *name)
+{
+}
+
+static struct ext2_inode *ext2_create(const char *path, int type)
+{
+}
+
+int ext2_open(const char *pathname, int flags)
+{
+	int fd = -1;
+	int i;
+
+	printk("in sfs_open: pathname=%s, flags = %d\n", pathname, flags);
+
+#if 0
+	inp = ext2_namei(pathname);
+	if(! inp){		// file doesn't exist
+		if(flags & O_CREAT){
+			inp = ext2_create(pathname, flags);
+			if(!inp){
+				printk("Create file fail!\n");
+				return -1;
+			}
+		} else {
+			return -1;
+		}
+	}
+
+	// search free slot in ofile[]
+	for(i = 0; i < NOFILE; i++){
+		if(current->ofile[i] == 0){
+			fd = i;
+			break;
+		}
+	}
+	if(fd < 0 || fd >= NOFILE){
+		printk("open: ofile[] is full!");
+		return -1;
+	}
+
+	// search free slot in fdtable[]
+	fdp = fd_alloc();
+	if(fdp == NULL){
+		printk("open: fdtable[] is full!");
+		return -1;
+	}
+
+	fdp->f_type = 0;
+	fdp->f_mode = 0;
+	fdp->f_flags = flags;
+	fdp->f_pos = 0;
+	fdp->f_inode = inp;
+	current->ofile[fd] = fdp;
+
+	printk("fd = %d\n", fd);
+	return fd;
+#endif
+}
+
+#define min(a, b)  ((a) < (b) ? (a) : (b))
+int ext2_read(int fd, void *buf, int n)
+{
+	int count;
+
+	if(fd >= NOFILE){
+		printk("ERROR! fd = %d doesn't existed\n");
+		return -1;
+	}
+
+	return count;
+}
+
+int ext2_write(int fd, const void *buf, int n)
+{
+	int count;
+
+	printk("In write\n");
+	return count;
+}
+
+int ext2_close(int fd)
+{
+	int ret;
+
+	printk("In close\n");
+	return 0;
+}
+
+// return 0 if succeed, -1 if fail
+int ext2_stat(void)
+{
+	return 0;
+}
+
+
+// read at most n bytes content of file to buf.
+// return the number of bytes sucessfully read.
+// make sure buf has space no less than nb bytes.
+// return -1 if something wrong.
+int ext2_read_file(const char *file, char *buf, int nb)
+{
+	int len, ret = 0;
+
+	return ret;
+}
+
 // obtain superblock info
 static void ext2_obtain_sb_info(void)
 {
 	ext2_read_sb();
 	dump_ext2_superblock(sbp);
-
-#if 0
-	nblk = sb->total_blk;
-	reserved_blk = sb->resv_blk;
-
-	settextcolor(11, 0);
-	printk("data area blocks: %d\n", da_blocks);
-	printk("index area items: %d\n", ia_num);
-	printk("block_size: %d (2 = 512, 3 = 1024 bytes)\n", block_size);
-	resettextcolor();
-#endif
 }
 
 
@@ -212,11 +308,28 @@ void ext2_cat_file(const char *file)
 	resettextcolor();
 }
 
-void _ext2_open(struct fs_node *node, int flag)
+
+void fs_ext2_open(struct fs_node *node, int flag)
 {
 	// for test
 	ext2_cat_file("etc/motd");
 }
+
+void fs_ext2_close(struct fs_node *node)
+{
+	return;
+}
+
+uint32_t fs_ext2_read(struct fs_node *node, uint32_t fd, uint32_t n, char *buf)
+{
+	return 0;
+}
+
+uint32_t fs_ext2_write(struct fs_node *node, uint32_t fd, uint32_t n, char *buf)
+{
+	return 0;
+}
+
 
 struct fs_node *init_ext2(void)
 {
@@ -235,10 +348,10 @@ struct fs_node *init_ext2(void)
 	ext2_root->length = 0;
 	ext2_root->impl = 0;
 
-	ext2_root->open = _ext2_open;
-	ext2_root->close = 0;
-	ext2_root->read = 0;
-	ext2_root->write = 0;
+	ext2_root->open = fs_ext2_open;
+	ext2_root->close = fs_ext2_close;
+	ext2_root->read = fs_ext2_read;
+	ext2_root->write = fs_ext2_write;
 	ext2_root->readdir = 0;
 	ext2_root->finddir = 0;
 	ext2_root->ptr = 0;
