@@ -49,11 +49,11 @@ grub-sfs-gdb: kernel mk_sfs_initrd $(HD) .gdbinit
 	$(QEMU) -fda $(FD) -hdb $(HD) $(GDB_ARG)
 
 grub: kernel $(HD)
-	tools/update_kernel.sh ext2
+	tools/update_kernel.sh ext2 $(FS_FILE)
 	$(QEMU) -fda $(FD) -hdb $(HD)
 
 grub-gdb: kernel $(HD) .gdbinit
-	tools/update_kernel.sh ext2
+	tools/update_kernel.sh ext2 $(FS_FILE)
 	$(QEMU) -fda $(FD) -hdb $(HD) $(GDB_ARG)
 
 chunix.img: bootsect kernel tools/blank_hd.img.bz2

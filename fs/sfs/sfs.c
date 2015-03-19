@@ -206,7 +206,7 @@ static struct sfs_inode *sfs_create(const char *path, int type)
 	return (struct sfs_inode *)(++sp);
 #endif
 	return NULL;
-};
+}
 
 int sfs_open(const char *pathname, int flags)
 {
@@ -562,7 +562,7 @@ void _sfs_open(struct fs_node *node, int flag)
 
 struct fs_node *init_initrd_sfs(void)
 {
-	// TODO: Below will panic, since we are running for a task but just kernel
+	// TODO: Below will panic, since we are not running for any task
 	// sfs_root = (struct fs_node *)kmalloc(sizeof(struct fs_node));
 	// so use kalloc_page() instead, which is wasteful.
 	// Maybe we need a kmalloc_kernel() besides kmalloc()?

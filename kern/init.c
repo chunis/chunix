@@ -52,6 +52,7 @@ int main(struct multiboot_info *mboot_ptr)
 	struct multiboot_mod_list *mod;
 	uint32_t *mm_start = end;
 	uint32_t mm_size = 0;
+	uint32_t ramhd_start;
 
 	// save %eax to check if booted from multiboot loader
 	__asm __volatile("movl %%eax, %0" : "=r" (eax));
@@ -63,30 +64,32 @@ int main(struct multiboot_info *mboot_ptr)
 	cons_init();
 	printk("%s\n", os_str);
 
-	if(eax == MBT_BOOTLOADER_MAGIC){
-		// check memory
-		printk("mm lower: %d\n", mboot_ptr->mem_lower);
-		printk("mm upper: %d\n", mboot_ptr->mem_upper);
-		mm_size = mboot_ptr->mem_upper + 1024;	// KB
-
-		mod = (struct multiboot_mod_list *)mboot_ptr->mods_addr;
-		printk("mod start: %x\n", mod->mod_start);
-		printk("mod end: %x\n", mod->mod_end);
-		printk("mod cmdline: %s\n", mod->cmdline);
-		mm_start = P2V(mod->mod_end);
-		if(mm_start < end)
-			mm_start = end;
-		printk("mm_start: %x, mm_size: %d KB\n", mm_start, mm_size);
-
-		settextcolor(12, 0);
-		dump_multiboot(mboot_ptr);
-		settextcolor(13, 0);
-		//dump_ext2(mod->mod_start);
-		resettextcolor();
-
-		init_memhd((uint8_t *)P2V(mod->mod_start),
-				(mod->mod_end - mod->mod_start));
+	if(eax != MBT_BOOTLOADER_MAGIC){  // we must boot from grub now
+		printk("PANIC!! Grub is needed for booting ChuniX\n");
+		for(;;);
 	}
+
+	// check memory
+	printk("mm lower: %d\n", mboot_ptr->mem_lower);
+	printk("mm upper: %d\n", mboot_ptr->mem_upper);
+	mm_size = mboot_ptr->mem_upper + 1024;	// KB
+
+	mod = (struct multiboot_mod_list *)mboot_ptr->mods_addr;
+	printk("mod start: %x\n", mod->mod_start);
+	printk("mod end: %x\n", mod->mod_end);
+	printk("mod cmdline: %s\n", mod->cmdline);
+	mm_start = P2V(mod->mod_end);
+	ramhd_start = mod->mod_start;
+	if(mm_start < end)
+		mm_start = end;
+	printk("mm_start: %x, mm_size: %d KB\n", mm_start, mm_size);
+
+	settextcolor(12, 0);
+	dump_multiboot(mboot_ptr);
+	resettextcolor();
+
+	init_memhd((uint8_t *)P2V(mod->mod_start),
+			(mod->mod_end - mod->mod_start));
 
 	mem_init1(mm_start, mm_size);
 	setupkvm();
@@ -103,12 +106,20 @@ int main(struct multiboot_info *mboot_ptr)
 
 	init_hd();
 	init_buffer();
-	init_sfs();
-	fs_root = init_initrd_sfs();
+
+	//settextcolor(13, 0);
+	//dump_ext2((uint8_t *)P2V(ramhd_start));
+	//resettextcolor();
+
+	fs_root = init_ext2();
 	open_fs(fs_root, 0);
+
+	//init_sfs();
+	//fs_root = init_initrd_sfs();
+	//open_fs(fs_root, 0);
 	//check_initrd_fs();
 
-#if 1
+#if 0
 	rootp = 0;
 	current = rootp;
 	mytask1 = task_create(_binary_user_init_start,

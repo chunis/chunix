@@ -6,10 +6,87 @@
 //
 #include <types.h>
 #include <const.h>
+#include <hd.h>
 #include <fs.h>
 #include <ext2.h>
 #include <printf.h>
+#include <console.h>
+#include <x86.h>
 
+#include "../kern/task.h"
+
+
+// *** BLOCK PART ***
+
+#define EXT2_DEV MKDEV(MEM_MAJOR, 0)
+//#define EXT2_DEV MKDEV(HD_MAJOR, 0)
+
+static void read_block(uint32_t sec, void *buf)
+{
+	struct buf *bp;
+
+	bp = bread(EXT2_DEV, sec);
+	memmove(buf, bp->data, 512);
+	brelse(bp);
+}
+
+// read n blocks from hd. make sure buf is no smaller than SECT_SIZE*n.
+static void read_nblocks(uint32_t sec, void *buf, int n)
+{
+	struct buf *bp;
+	char *p = buf;
+
+	while(n-- > 0){
+		bp = bread(EXT2_DEV, sec);
+		memmove(p, bp->data, 512);
+		brelse(bp);
+		p += SECT_SIZE;
+	}
+}
+
+static void write_block(uint32_t sec, void *buf)
+{
+	return;
+}
+
+static void write_nblocks(uint32_t sec, void *buf, int n)
+{
+	return;
+}
+
+
+// *** INODE PART ***
+
+#define NIBUF	32
+static struct ext2_inode ibuf[NIBUF];  // static variable contains all zeros
+
+static void ext2_iupdate(void)
+{
+}
+
+static void ext2_ialloc(void)
+{
+}
+
+// *** EXT2 PART ***
+
+#define SB_BLOCK ((sizeof (struct ext2_super_block) -1) / SECT_SIZE + 1)
+#define SB_BUF_SIZE (SB_BLOCK * SECT_SIZE)
+
+struct fs_node *ext2_root;	// root directory node
+
+static char buf[SECT_SIZE];
+static char sbb[SB_BUF_SIZE];	// super_block buffer
+static struct ext2_super_block *sbp = sbb;
+
+void ext2_read_sb(void)
+{
+	read_nblocks(2, sbp, SB_BLOCK);
+}
+
+void ext2_write_sb(void)
+{
+}
 
 void dump_ext2_superblock(struct ext2_super_block *sb_ptr)
 {
@@ -106,4 +183,71 @@ void dump_ext2(uint32_t start_addr)
 			}
 		}
 	}
+}
+
+
+// obtain superblock info
+static void ext2_obtain_sb_info(void)
+{
+	ext2_read_sb();
+	dump_ext2_superblock(sbp);
+
+#if 0
+	nblk = sb->total_blk;
+	reserved_blk = sb->resv_blk;
+
+	settextcolor(11, 0);
+	printk("data area blocks: %d\n", da_blocks);
+	printk("index area items: %d\n", ia_num);
+	printk("block_size: %d (2 = 512, 3 = 1024 bytes)\n", block_size);
+	resettextcolor();
+#endif
+}
+
+
+void ext2_cat_file(const char *file)
+{
+	settextcolor(15, 0);
+	printk("From function ext2_cat_file(): file = %s\n", file);
+	resettextcolor();
+}
+
+void _ext2_open(struct fs_node *node, int flag)
+{
+	// for test
+	ext2_cat_file("etc/motd");
+}
+
+struct fs_node *init_ext2(void)
+{
+	// TODO: Below will panic, since we are not running for any task
+	// ext2_root = (struct fs_node *)kmalloc(sizeof(struct fs_node));
+	// so use kalloc_page() instead, which is wasteful.
+	// Maybe we need a kmalloc_kernel() besides kmalloc()?
+	ext2_root = (struct fs_node *)kalloc_page(sizeof(struct fs_node));
+
+	strcpy(ext2_root->name, "ext2");
+	ext2_root->mask = 0;
+	ext2_root->uid = 0;
+	ext2_root->gid = 0;
+	ext2_root->flags = FS_DIR;
+	ext2_root->inode = 0;
+	ext2_root->length = 0;
+	ext2_root->impl = 0;
+
+	ext2_root->open = _ext2_open;
+	ext2_root->close = 0;
+	ext2_root->read = 0;
+	ext2_root->write = 0;
+	ext2_root->readdir = 0;
+	ext2_root->finddir = 0;
+	ext2_root->ptr = 0;
+
+	// cache super block info
+	ext2_obtain_sb_info();
+
+	// just for test
+	ext2_cat_file("README");
+
+	return ext2_root;
 }
