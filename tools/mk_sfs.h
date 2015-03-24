@@ -14,12 +14,12 @@
 #define __MK_SFS_H__
 
 
-#define DIR_SPACE 54
+#define DIR_SPACE  30
 #define FILE_SPACE 30
 
 // Number of Index entries needed for a name str whose length is 'len'
 #define NIE_FILE(len) (((len)+34+1)/IE_SIZE) // first 1 byte for '\0'
-#define NIE_DIR(len) (((len)+10+1)/IE_SIZE) // first 1 byte for '\0'
+#define NIE_DIR(len) NIE_FILE(len)
 
 #define IE_SIZE 64	// Index entries size is 64 bytes each
 
@@ -89,7 +89,10 @@ struct sfs_dir {
 	uint8_t etype;
 	uint8_t ne;  // number of entry
 	uint64_t time;
-	uint8_t name[54];
+	uint64_t blk_start;
+	uint64_t blk_end;
+	uint64_t len;
+	uint8_t name[30];
 }__attribute__((packed));
 
 struct sfs_file {
@@ -115,15 +118,27 @@ struct sfs_index {
 	uint8_t data[63];
 };
 
+#define DIRENT_LEN(x) (4 + 4 + (x) + 1)
+struct sfs_dirent {
+	uint32_t len;	// dirent len, equal (4+4+strlen(name)+1)
+	uint32_t ino;	// inode number
+	char *name;
+};
+
+#define SFS_INODE_FREE  0x000
+#define SFS_INODE_INUSE 0x001
+#define SFS_INODE_READ  0x002
+#define SFS_INODE_WRITE 0x004
+#define SFS_INODE_DIRTY 0x008
+
 // inode cache in memory for index
 struct sfs_inode {
-	int nb;		// block number in hd
-	uint8_t ni;	// index number in a single block
+	uint8_t ni;	// index number in index area, start from 0(volume id entry)
 	int8_t nref;	// reference count
-	int8_t rw;	// read/write flag
-	int8_t dirty;	// is this inode changed?
-
-	struct sfs_index *sindex;  // index block (64bytes)
+	int8_t flags;
+	uint8_t *name;
+	struct sfs_index sindex;  // index block (64bytes)
 }__attribute__((packed));
+
 
 #endif
