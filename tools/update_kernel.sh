@@ -27,5 +27,7 @@ sudo mount -o loop floppy.img $tmpmnt
 sudo cp tools/grub.conf $tmpmnt/BOOT/GRUB/MENU.LST
 sudo cp kernel $tmpmnt/kernel
 sudo mv initrd $tmpmnt/initrd
+
+sleep 1
 sudo umount $tmpmnt
 rmdir $tmpmnt
